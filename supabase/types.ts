@@ -77,7 +77,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       assistant_files: {
@@ -123,7 +123,46 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          }
+        ]
+      }
+      assistant_platform_tools: {
+        Row: {
+          assistant_id: string
+          created_at: string
+          tool_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assistant_id: string
+          created_at?: string
+          tool_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assistant_id?: string
+          created_at?: string
+          tool_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistant_platform_tools_assistant_id_fkey"
+            columns: ["assistant_id"]
+            isOneToOne: false
+            referencedRelation: "assistants"
+            referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "assistant_platform_tools_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
         ]
       }
       assistant_tools: {
@@ -169,7 +208,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       assistant_workspaces: {
@@ -215,7 +254,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       assistants: {
@@ -287,7 +326,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       chat_files: {
@@ -333,7 +372,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       chats: {
@@ -348,6 +387,7 @@ export type Database = {
           include_workspace_instructions: boolean
           model: string
           name: string
+          pinned: boolean | null
           prompt: string
           sharing: string
           temperature: number
@@ -366,6 +406,7 @@ export type Database = {
           include_workspace_instructions: boolean
           model: string
           name: string
+          pinned?: boolean | null
           prompt: string
           sharing?: string
           temperature: number
@@ -384,6 +425,7 @@ export type Database = {
           include_workspace_instructions?: boolean
           model?: string
           name?: string
+          pinned?: boolean | null
           prompt?: string
           sharing?: string
           temperature?: number
@@ -419,7 +461,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       collection_files: {
@@ -465,7 +507,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       collection_workspaces: {
@@ -511,7 +553,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       collections: {
@@ -559,7 +601,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       file_items: {
@@ -613,7 +655,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       file_workspaces: {
@@ -659,7 +701,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       files: {
@@ -719,7 +761,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       folders: {
@@ -767,7 +809,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       message_file_items: {
@@ -813,11 +855,12 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       messages: {
         Row: {
+          annotation: Json | null
           assistant_id: string | null
           chat_id: string
           content: string
@@ -829,8 +872,10 @@ export type Database = {
           sequence_number: number
           updated_at: string | null
           user_id: string
+          word_count: number | null
         }
         Insert: {
+          annotation?: Json | null
           assistant_id?: string | null
           chat_id: string
           content: string
@@ -842,8 +887,10 @@ export type Database = {
           sequence_number: number
           updated_at?: string | null
           user_id: string
+          word_count?: number | null
         }
         Update: {
+          annotation?: Json | null
           assistant_id?: string | null
           chat_id?: string
           content?: string
@@ -855,6 +902,7 @@ export type Database = {
           sequence_number?: number
           updated_at?: string | null
           user_id?: string
+          word_count?: number | null
         }
         Relationships: [
           {
@@ -877,7 +925,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       model_workspaces: {
@@ -923,7 +971,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       models: {
@@ -983,7 +1031,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       preset_workspaces: {
@@ -1029,7 +1077,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       presets: {
@@ -1098,12 +1146,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       profiles: {
         Row: {
           anthropic_api_key: string | null
+          assistant_command: string | null
           azure_openai_35_turbo_id: string | null
           azure_openai_45_turbo_id: string | null
           azure_openai_45_vision_id: string | null
@@ -1113,6 +1162,7 @@ export type Database = {
           bio: string
           created_at: string
           display_name: string
+          files_command: string | null
           google_gemini_api_key: string | null
           groq_api_key: string | null
           has_onboarded: boolean
@@ -1120,11 +1170,18 @@ export type Database = {
           image_path: string
           image_url: string
           mistral_api_key: string | null
+          model_visibility: Json | null
           openai_api_key: string | null
           openai_organization_id: string | null
           openrouter_api_key: string | null
           perplexity_api_key: string | null
+          plan: string
           profile_context: string
+          prompt_command: string | null
+          send_message_on_enter: boolean | null
+          stripe_customer_id: string | null
+          system_prompt_template: string | null
+          tools_command: string | null
           updated_at: string | null
           use_azure_openai: boolean
           user_id: string
@@ -1132,6 +1189,7 @@ export type Database = {
         }
         Insert: {
           anthropic_api_key?: string | null
+          assistant_command?: string | null
           azure_openai_35_turbo_id?: string | null
           azure_openai_45_turbo_id?: string | null
           azure_openai_45_vision_id?: string | null
@@ -1141,6 +1199,7 @@ export type Database = {
           bio: string
           created_at?: string
           display_name: string
+          files_command?: string | null
           google_gemini_api_key?: string | null
           groq_api_key?: string | null
           has_onboarded?: boolean
@@ -1148,11 +1207,18 @@ export type Database = {
           image_path: string
           image_url: string
           mistral_api_key?: string | null
+          model_visibility?: Json | null
           openai_api_key?: string | null
           openai_organization_id?: string | null
           openrouter_api_key?: string | null
           perplexity_api_key?: string | null
+          plan?: string
           profile_context: string
+          prompt_command?: string | null
+          send_message_on_enter?: boolean | null
+          stripe_customer_id?: string | null
+          system_prompt_template?: string | null
+          tools_command?: string | null
           updated_at?: string | null
           use_azure_openai: boolean
           user_id: string
@@ -1160,6 +1226,7 @@ export type Database = {
         }
         Update: {
           anthropic_api_key?: string | null
+          assistant_command?: string | null
           azure_openai_35_turbo_id?: string | null
           azure_openai_45_turbo_id?: string | null
           azure_openai_45_vision_id?: string | null
@@ -1169,6 +1236,7 @@ export type Database = {
           bio?: string
           created_at?: string
           display_name?: string
+          files_command?: string | null
           google_gemini_api_key?: string | null
           groq_api_key?: string | null
           has_onboarded?: boolean
@@ -1176,11 +1244,18 @@ export type Database = {
           image_path?: string
           image_url?: string
           mistral_api_key?: string | null
+          model_visibility?: Json | null
           openai_api_key?: string | null
           openai_organization_id?: string | null
           openrouter_api_key?: string | null
           perplexity_api_key?: string | null
+          plan?: string
           profile_context?: string
+          prompt_command?: string | null
+          send_message_on_enter?: boolean | null
+          stripe_customer_id?: string | null
+          system_prompt_template?: string | null
+          tools_command?: string | null
           updated_at?: string | null
           use_azure_openai?: boolean
           user_id?: string
@@ -1193,7 +1268,7 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       prompt_workspaces: {
@@ -1239,7 +1314,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       prompts: {
@@ -1287,7 +1362,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       tool_workspaces: {
@@ -1333,7 +1408,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       tools: {
@@ -1390,7 +1465,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       workspaces: {
@@ -1458,12 +1533,18 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      recent_models: {
+        Row: {
+          last_used_at: string | null
+          model: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_duplicate_messages_for_new_chat: {
@@ -1667,7 +1748,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "buckets"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       s3_multipart_uploads: {
@@ -1708,7 +1789,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "buckets"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       s3_multipart_uploads_parts: {
@@ -1762,7 +1843,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "s3_multipart_uploads"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
     }
@@ -1874,7 +1955,7 @@ export type Tables<
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -1898,7 +1979,7 @@ export type TablesInsert<
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
@@ -1919,7 +2000,7 @@ export type TablesUpdate<
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
@@ -1940,10 +2021,9 @@ export type Enums<
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never = never
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
-
