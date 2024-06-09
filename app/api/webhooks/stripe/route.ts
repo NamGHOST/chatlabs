@@ -173,8 +173,7 @@ export async function POST(req: Request) {
 
   const permittedEvents: string[] = [
     "customer.subscription.deleted",
-    "customer.subscription.updated",
-    "customer.subscription.created"
+    "customer.subscription.updated"
   ]
 
   if (permittedEvents.includes(event.type)) {
@@ -254,7 +253,6 @@ export async function POST(req: Request) {
           })
           logger.log("Profile updated with free plan")
           break
-        case "customer.subscription.created":
         case "customer.subscription.updated":
           const status = subscription.status
           let plan = PLAN_FREE
