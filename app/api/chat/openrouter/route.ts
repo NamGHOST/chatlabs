@@ -23,7 +23,8 @@ export async function POST(request: Request) {
 
     if (
       profile.openrouter_api_key === null ||
-      profile.openrouter_api_key === ""
+      profile.openrouter_api_key === "" ||
+      !process.env.OPENROUTER_API_KEY_ADMIN
     ) {
       throw new Error(`OpenRouter API Key not found`)
     }
@@ -31,7 +32,8 @@ export async function POST(request: Request) {
     await validateModelAndMessageCount(chatSettings.model, new Date())
 
     const openai = new OpenAI({
-      apiKey: profile.openrouter_api_key || "",
+      apiKey:
+        profile.openrouter_api_key || process.env.OPENROUTER_API_KEY_ADMIN,
       baseURL: "https://openrouter.ai/api/v1",
       defaultHeaders: {
         "HTTP-Referer": `https://writingmate.ai/labs`,
