@@ -143,9 +143,9 @@ function ModelSettings({ models }: { models?: LLM[] }) {
             <TabsTrigger value={"basic"} title={"Basic settings"}>
               Model parameters
             </TabsTrigger>
-            {/* <TabsTrigger value={"visibility"} title={"Model visibility"}>
+            <TabsTrigger value={"visibility"} title={"Model visibility"}>
               Model visibility
-            </TabsTrigger> */}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value={"basic"}>
             <div className="mb-4 mt-2 flex items-center space-x-2">

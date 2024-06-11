@@ -56,7 +56,7 @@ export function ModelDetails({
       </div>
       <div className="grid grid-cols-1 divide-y pt-4 text-xs">
         <Row label={"Context"} value={formattedContextLength + " tokens"} />
-        {model.pricing && (
+        {/* {model.pricing && (
           <>
             <Row
               label={"Input pricing"}
@@ -67,7 +67,7 @@ export function ModelDetails({
               value={"$" + outputCost + " / million tokens"}
             />
           </>
-        )}
+        )} */}
         <Row
           label={"Supports vision"}
           value={

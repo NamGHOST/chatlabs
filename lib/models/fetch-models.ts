@@ -175,14 +175,13 @@ export const fetchOpenRouterModels = async (plan: string) => {
 
     const { data } = await response.json()
 
-    let SUPPORTED_OPENROUTER_MODELS = parseSupportedModelsFromEnv()
-
     const byokModel = [
       "databricks/dbrx-instruct",
       "cohere/command-r-plus",
       "mistralai/mixtral-8x22b-instruct",
       "microsoft/wizardlm-2-8x22b",
-      "openai/gpt-4o-2024-05-13"
+      "openai/gpt-4o-2024-05-13",
+      "openai/gpt-4-vision-preview"
     ]
 
     const proModel = ["meta-llama/llama-3-70b-instruct"]
