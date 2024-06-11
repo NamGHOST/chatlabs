@@ -22,8 +22,8 @@ export async function POST(request: Request) {
     const profile = await getServerProfile()
 
     if (
-      profile.openrouter_api_key === null ||
-      profile.openrouter_api_key === "" ||
+      (profile.openrouter_api_key === null ||
+        profile.openrouter_api_key === "") &&
       !process.env.OPENROUTER_API_KEY_ADMIN
     ) {
       throw new Error(`OpenRouter API Key not found`)
