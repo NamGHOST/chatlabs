@@ -19,7 +19,8 @@ export const ChatSettings: FC<ChatSettingsProps> = ({ className }) => {
     models,
     availableHostedModels,
     availableLocalModels,
-    availableOpenRouterModels
+    availableOpenRouterModels,
+    availableGroqModels
   } = useContext(ChatbotUIContext)
 
   const { chatSettings, setChatSettings, selectedTools, setSelectedTools } =
@@ -63,7 +64,8 @@ export const ChatSettings: FC<ChatSettingsProps> = ({ className }) => {
     })),
     ...availableHostedModels,
     ...availableLocalModels,
-    ...availableOpenRouterModels
+    ...availableOpenRouterModels,
+    ...availableGroqModels
   ]
 
   const handleSelectModel = (modelId: LLMID) => {

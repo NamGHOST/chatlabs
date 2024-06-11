@@ -2,6 +2,7 @@ import { Tables } from "@/supabase/types"
 import { LLM, LLMID, OpenRouterLLM } from "@/types"
 import { toast } from "sonner"
 import { LLM_LIST_MAP } from "./llm/llm-list"
+import { GROQ_LLM_LIST } from "./llm/groq-llm-list"
 
 const KNOWN_MODEL_NAMES: {
   [key: string]: {
@@ -77,7 +78,7 @@ export const fetchHostedModels = async (
   profile: Tables<"profiles"> | null | undefined
 ) => {
   try {
-    const providers = ["google", "anthropic", "mistral", "groq", "perplexity"]
+    const providers = ["google", "anthropic", "mistral", "perplexity"]
 
     if (profile?.use_azure_openai) {
       providers.push("azure")
@@ -217,4 +218,8 @@ export const fetchOpenRouterModels = async () => {
     console.error("Error fetching Open Router models: " + error)
     toast.error("Error fetching Open Router models: " + error)
   }
+}
+
+export const fetchGroqModels = async () => {
+  return GROQ_LLM_LIST
 }

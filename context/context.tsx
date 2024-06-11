@@ -50,6 +50,8 @@ interface ChatbotUIContext {
   setAvailableLocalModels: Dispatch<SetStateAction<LLM[]>>
   availableOpenRouterModels: OpenRouterLLM[]
   setAvailableOpenRouterModels: Dispatch<SetStateAction<OpenRouterLLM[]>>
+  availableGroqModels: LLM[]
+  setAvailableGroqModels: Dispatch<SetStateAction<LLM[]>>
 
   // WORKSPACE STORE
   selectedWorkspace: Tables<"workspaces"> | null
@@ -204,6 +206,8 @@ export const ChatbotUIContext = createContext<ChatbotUIContext>({
   setAvailableLocalModels: () => {},
   availableOpenRouterModels: [],
   setAvailableOpenRouterModels: () => {},
+  availableGroqModels: [],
+  setAvailableGroqModels: () => {},
 
   // WORKSPACE STORE
   selectedWorkspace: null,

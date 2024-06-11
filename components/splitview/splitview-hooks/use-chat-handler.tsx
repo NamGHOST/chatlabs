@@ -40,6 +40,7 @@ export const useChatHandler = () => {
     // setSelectedTools,
     availableLocalModels,
     availableOpenRouterModels,
+    availableGroqModels,
     newMessageImages,
     selectedAssistant,
     chatImages,
@@ -238,7 +239,8 @@ export const useChatHandler = () => {
         })),
         ...LLM_LIST,
         ...availableLocalModels,
-        ...availableOpenRouterModels
+        ...availableOpenRouterModels,
+        ...availableGroqModels
       ].find(llm => llm.modelId === chatSettings?.model)
 
       validateChatSettings(

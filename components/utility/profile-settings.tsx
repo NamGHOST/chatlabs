@@ -8,11 +8,14 @@ import {
 import { updateProfile } from "@/db/profile"
 import { uploadProfileImage } from "@/db/storage/profile-images"
 import { exportLocalStorageAsJSON } from "@/lib/export-old-data"
-import { fetchOpenRouterModels } from "@/lib/models/fetch-models"
+import {
+  fetchGroqModels,
+  fetchOpenRouterModels
+} from "@/lib/models/fetch-models"
 import { LLM_LIST_MAP } from "@/lib/models/llm/llm-list"
 import { supabase } from "@/lib/supabase/browser-client"
 import { cn } from "@/lib/utils"
-import { OpenRouterLLM } from "@/types"
+import { LLM, OpenRouterLLM } from "@/types"
 import {
   IconCircleCheckFilled,
   IconCircleXFilled,
@@ -61,6 +64,8 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
     setAvailableHostedModels,
     setAvailableOpenRouterModels,
     availableOpenRouterModels,
+    availableGroqModels,
+    setAvailableGroqModels,
     setIsPaywallOpen
   } = useContext(ChatbotUIContext)
 
@@ -227,7 +232,10 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
         const hasApiKey = !!updatedProfile[providerKey]
 
         if (provider === "openrouter") {
-          if (hasApiKey && availableOpenRouterModels.length === 0) {
+          if (
+            (hasApiKey && availableOpenRouterModels.length === 0) ||
+            process.env.OPENROUTER_API_KEY_ADMIN
+          ) {
             const openrouterModels: OpenRouterLLM[] =
               await fetchOpenRouterModels()
             setAvailableOpenRouterModels(prev => {
@@ -239,6 +247,22 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
             })
           } else {
             setAvailableOpenRouterModels([])
+          }
+        } else if (provider === "groq") {
+          if (
+            (hasApiKey && availableGroqModels.length === 0) ||
+            process.env.GROQ_API_KEY_ADMIN
+          ) {
+            const groqModels: LLM[] = await fetchGroqModels()
+            setAvailableGroqModels(prev => {
+              const newModels = groqModels.filter(
+                model =>
+                  !prev.some(prevModel => prevModel.modelId === model.modelId)
+              )
+              return [...prev, ...newModels]
+            })
+          } else {
+            setAvailableGroqModels([])
           }
         } else {
           if (hasApiKey && Array.isArray(models)) {

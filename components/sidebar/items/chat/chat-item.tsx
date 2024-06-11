@@ -30,6 +30,7 @@ export const ChatItem: FC<ChatItemProps> = ({ chat }) => {
     availableLocalModels,
     assistantImages,
     availableOpenRouterModels,
+    availableGroqModels,
     setChats
   } = useContext(ChatbotUIContext)
 
@@ -56,7 +57,8 @@ export const ChatItem: FC<ChatItemProps> = ({ chat }) => {
   const MODEL_DATA = [
     ...LLM_LIST,
     ...availableLocalModels,
-    ...availableOpenRouterModels
+    ...availableOpenRouterModels,
+    ...availableGroqModels
   ].find(llm => llm.modelId === chat.model) as LLM
 
   const assistantImage = assistantImages.find(

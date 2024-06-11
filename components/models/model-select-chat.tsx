@@ -50,6 +50,7 @@ export const ModelSelectChat: FC<ModelSelectProps> = ({
     availableHostedModels,
     availableLocalModels,
     availableOpenRouterModels,
+    availableGroqModels,
     setIsPaywallOpen
   } = useContext(ChatbotUIContext)
 
@@ -95,7 +96,8 @@ export const ModelSelectChat: FC<ModelSelectProps> = ({
     })),
     ...availableHostedModels,
     ...availableLocalModels,
-    ...availableOpenRouterModels
+    ...availableOpenRouterModels,
+    ...availableGroqModels
   ]
 
   useEffect(() => {
@@ -115,6 +117,7 @@ export const ModelSelectChat: FC<ModelSelectProps> = ({
       if (tab === "hosted") return model.provider !== "ollama"
       if (tab === "local") return model.provider === "ollama"
       if (tab === "openrouter") return model.provider === "openrouter"
+      if (tab === "groq") return model.provider === "groq"
     })
     .filter(
       model =>

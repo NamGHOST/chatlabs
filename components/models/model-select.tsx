@@ -29,6 +29,7 @@ export const ModelSelect: FC<ModelSelectProps> = ({
     availableHostedModels,
     availableLocalModels,
     availableOpenRouterModels,
+    availableGroqModels,
     setIsPaywallOpen
   } = useContext(ChatbotUIContext)
 
@@ -71,7 +72,8 @@ export const ModelSelect: FC<ModelSelectProps> = ({
     })),
     ...availableHostedModels,
     ...availableLocalModels,
-    ...availableOpenRouterModels
+    ...availableOpenRouterModels,
+    ...availableGroqModels
   ]
 
   const groupedModels = allModels.reduce<Record<string, LLM[]>>(

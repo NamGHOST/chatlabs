@@ -65,7 +65,8 @@ const ChatWrapper = forwardRef(
       models,
       availableHostedModels,
       availableLocalModels,
-      availableOpenRouterModels
+      availableOpenRouterModels,
+      availableGroqModels
     } = useContext(ChatbotUIContext)
     const { handleSendEdit, handleStopMessage, handleSendMessage } =
       useChatHandler()
@@ -98,7 +99,8 @@ const ChatWrapper = forwardRef(
       })),
       ...availableHostedModels,
       ...availableLocalModels,
-      ...availableOpenRouterModels
+      ...availableOpenRouterModels,
+      ...availableGroqModels
     ]
 
     const responseTimePadding = getResponseTimePadding(

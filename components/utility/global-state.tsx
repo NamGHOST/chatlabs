@@ -8,6 +8,7 @@ import { getWorkspaceImageFromStorage } from "@/db/storage/workspace-images"
 import { getWorkspacesByUserId } from "@/db/workspaces"
 import { convertBlobToBase64 } from "@/lib/blob-to-b64"
 import {
+  fetchGroqModels,
   fetchHostedModels,
   fetchOllamaModels,
   fetchOpenRouterModels
@@ -56,6 +57,7 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
   const [envKeyMap, setEnvKeyMap] = useState<Record<string, VALID_ENV_KEYS>>({})
   const [availableHostedModels, setAvailableHostedModels] = useState<LLM[]>([])
   const [availableLocalModels, setAvailableLocalModels] = useState<LLM[]>([])
+  const [availableGroqModels, setAvailableGroqModels] = useState<LLM[]>([])
   const [availableOpenRouterModels, setAvailableOpenRouterModels] = useState<
     OpenRouterLLM[]
   >([])
@@ -168,9 +170,15 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
           return router.push("/setup")
         }
 
+        if (profile.plan.includes("pro") || profile.plan.includes("byok")) {
+          const groqModels = await fetchGroqModels()
+          setAvailableGroqModels(groqModels)
+        }
+
         if (
           profile["openrouter_api_key"] ||
-          hostedModelRes.envKeyMap["openrouter"]
+          hostedModelRes.envKeyMap["openrouter"] ||
+          profile.plan.includes("pro")
         ) {
           const openRouterModels = await fetchOpenRouterModels()
           if (!openRouterModels) return
@@ -282,6 +290,8 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
         setAvailableLocalModels,
         availableOpenRouterModels,
         setAvailableOpenRouterModels,
+        availableGroqModels,
+        setAvailableGroqModels,
 
         // WORKSPACE STORE
         selectedWorkspace,

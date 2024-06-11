@@ -120,8 +120,8 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                           data-testid="Pro-pricing-column-cost"
                         >
                           {billingCycle === "yearly"
-                            ? "$6.99/month"
-                            : "$9.99/month"}
+                            ? "$160/month"
+                            : "$160/month"}
                         </p>
                         <p
                           className={
@@ -129,7 +129,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                           }
                         >
                           {billingCycle === "yearly" &&
-                            "billed yearly $83.88/year"}
+                            "billed yearly $1920/year"}
                         </p>
                       </div>
                     </div>
@@ -178,8 +178,8 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                         data-testid="Pro-pricing-column-cost"
                       >
                         {billingCycle === "yearly"
-                          ? "$19.99/month"
-                          : "$29.99/month"}
+                          ? "$240/month"
+                          : "$240/month"}
                       </p>
                       <p
                         className={
@@ -187,7 +187,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                         }
                       >
                         {billingCycle === "yearly" &&
-                          "billed yearly $239.88/year"}
+                          "billed yearly $2880/year"}
                       </p>
                     </div>
                   </div>

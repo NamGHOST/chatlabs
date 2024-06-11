@@ -28,7 +28,7 @@ import { updateWorkspace } from "@/db/workspaces"
 export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "gpt-3.5-turbo-0125": true,
   "gpt-4-vision-preview": true,
-  "gpt-4-turbo-preview": false,
+  "gpt-4-turbo-preview": true,
   "gpt-4-turbo": true,
   "claude-3-haiku-20240307": true,
   "claude-3-sonnet-20240229": true,
@@ -39,30 +39,35 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "mixtral-8x7b-32768": true,
   "sonar-small-online": true,
   "sonar-medium-online": true,
-  "sonar-small-chat": false,
-  "sonar-medium-chat": false,
-  "gpt-4": false,
-  "gpt-3.5-turbo": false,
-  "gemini-1.5-pro-latest": false,
-  "claude-2.1": false,
-  "claude-instant-1.2": false,
-  "mistral-tiny": false,
-  "mistral-small": false,
-  "mistral-medium": false,
-  // "llama2-70b-4096": false,
-  "pplx-7b-online": false,
-  "pplx-70b-online": false,
-  "pplx-7b-chat": false,
-  "pplx-70b-chat": false,
-  "mixtral-8x7b-instruct": false,
-  "mistral-7b-instruct": false,
-  "llama-2-70b-chat": false,
-  "codellama-34b-instruct": false,
-  "codellama-70b-instruct": false,
-  "llama3-70b-8192": false,
-  "llama3-8b-8192": false,
+  "sonar-small-chat": true,
+  "sonar-medium-chat": true,
+  "gpt-4": true,
+  "gpt-3.5-turbo": true,
+  "gemini-1.5-pro-latest": true,
+  "claude-2.1": true,
+  "claude-instant-1.2": true,
+  "mistral-tiny": true,
+  "mistral-small": true,
+  "mistral-medium": true,
+  // "llama2-70b-4096": true,
+  "pplx-7b-online": true,
+  "pplx-70b-online": true,
+  "pplx-7b-chat": true,
+  "pplx-70b-chat": true,
+  "mixtral-8x7b-instruct": true,
+  "mistral-7b-instruct": true,
+  "llama-2-70b-chat": true,
+  "codellama-34b-instruct": true,
+  "codellama-70b-instruct": true,
+  "llama3-70b-8192": true,
+  "llama3-8b-8192": true,
   "gpt-4o": true,
-  "gemini-1.5-flash-latest": true
+  "gemini-1.5-flash-latest": true,
+  "databricks/dbrx-instruct": true,
+  "cohere/command-r-plus": true,
+  "mistralai/mixtral-8x22b-instruct": true,
+  "microsoft/wizardlm-2-8x22b": true,
+  "meta-llama/llama-3-70b-instruct": true
 }
 
 const SYSTEM_PROMPT_DESCRIPTION = `
@@ -138,9 +143,9 @@ function ModelSettings({ models }: { models?: LLM[] }) {
             <TabsTrigger value={"basic"} title={"Basic settings"}>
               Model parameters
             </TabsTrigger>
-            <TabsTrigger value={"visibility"} title={"Model visibility"}>
+            {/* <TabsTrigger value={"visibility"} title={"Model visibility"}>
               Model visibility
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
           <TabsContent value={"basic"}>
             <div className="mb-4 mt-2 flex items-center space-x-2">
