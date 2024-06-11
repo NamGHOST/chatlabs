@@ -177,7 +177,8 @@ export const fetchOpenRouterModels = async (plan: string) => {
       "databricks/dbrx-instruct",
       "cohere/command-r-plus",
       "mistralai/mixtral-8x22b-instruct",
-      "microsoft/wizardlm-2-8x22b"
+      "microsoft/wizardlm-2-8x22b",
+      "openai/gpt-4o-2024-05-13"
     ]
 
     const proModel = ["meta-llama/llama-3-70b-instruct"]
