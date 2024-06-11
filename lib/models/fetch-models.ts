@@ -29,6 +29,10 @@ const KNOWN_MODEL_NAMES: {
   "microsoft/wizardlm-2-8x22b": {
     modelProvider: "microsoft",
     modelName: "WizardLM 2 8x22B"
+  },
+  "openai/gpt-4o-2024-05-13": {
+    modelProvider: "openai",
+    modelName: "GPT 4o"
   }
 }
 
