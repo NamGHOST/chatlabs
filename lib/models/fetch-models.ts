@@ -216,7 +216,7 @@ export const fetchOpenRouterModels = async (plan: string) => {
           return byokModel.includes(modelId)
         }
         if (plan.includes("pro")) {
-          return proModel.includes(modelId)
+          return [...byokModel, ...proModel].includes(modelId)
         }
         return []
       })
