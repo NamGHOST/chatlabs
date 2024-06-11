@@ -203,16 +203,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
 
     toast.success("Profile updated!")
 
-    const providers = [
-      "openai",
-      "google",
-      "azure",
-      "anthropic",
-      "mistral",
-      "groq",
-      "perplexity",
-      "openrouter"
-    ]
+    const providers = ["groq", "openrouter"]
 
     providers.forEach(async provider => {
       let providerKey: keyof typeof profile
@@ -232,12 +223,9 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
         const hasApiKey = !!updatedProfile[providerKey]
 
         if (provider === "openrouter") {
-          if (
-            (hasApiKey && availableOpenRouterModels.length === 0) ||
-            process.env.OPENROUTER_API_KEY_ADMIN
-          ) {
+          if (hasApiKey) {
             const openrouterModels: OpenRouterLLM[] =
-              await fetchOpenRouterModels()
+              await fetchOpenRouterModels(profile.plan)
             setAvailableOpenRouterModels(prev => {
               const newModels = openrouterModels.filter(
                 model =>
@@ -248,36 +236,27 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
           } else {
             setAvailableOpenRouterModels([])
           }
-        } else if (provider === "groq") {
-          if (
-            (hasApiKey && availableGroqModels.length === 0) ||
-            process.env.GROQ_API_KEY_ADMIN
-          ) {
+        }
+        if (provider === "groq") {
+          if (hasApiKey || process.env.GROQ_API_KEY_ADMIN) {
             const groqModels: LLM[] = await fetchGroqModels()
-            setAvailableGroqModels(prev => {
-              const newModels = groqModels.filter(
-                model =>
-                  !prev.some(prevModel => prevModel.modelId === model.modelId)
-              )
-              return [...prev, ...newModels]
-            })
+            setAvailableGroqModels(groqModels)
           } else {
             setAvailableGroqModels([])
           }
-        } else {
-          if (hasApiKey && Array.isArray(models)) {
-            setAvailableHostedModels(prev => {
-              const newModels = models.filter(
-                model =>
-                  !prev.some(prevModel => prevModel.modelId === model.modelId)
-              )
-              return [...prev, ...newModels]
-            })
-          } else if (!hasApiKey && Array.isArray(models)) {
-            setAvailableHostedModels(prev =>
-              prev.filter(model => !models.includes(model))
+        }
+        if (hasApiKey && Array.isArray(models)) {
+          setAvailableHostedModels(prev => {
+            const newModels = models.filter(
+              model =>
+                !prev.some(prevModel => prevModel.modelId === model.modelId)
             )
-          }
+            return [...prev, ...newModels]
+          })
+        } else if (!hasApiKey && Array.isArray(models)) {
+          setAvailableHostedModels(prev =>
+            prev.filter(model => !models.includes(model))
+          )
         }
       }
     })

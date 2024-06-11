@@ -161,7 +161,7 @@ export const fetchOllamaModels = async () => {
   }
 }
 
-export const fetchOpenRouterModels = async () => {
+export const fetchOpenRouterModels = async (plan: string) => {
   try {
     const response = await fetch("https://openrouter.ai/api/v1/models")
 
@@ -172,6 +172,15 @@ export const fetchOpenRouterModels = async () => {
     const { data } = await response.json()
 
     let SUPPORTED_OPENROUTER_MODELS = parseSupportedModelsFromEnv()
+
+    const byokModel = [
+      "databricks/dbrx-instruct",
+      "cohere/command-r-plus",
+      "mistralai/mixtral-8x22b-instruct",
+      "microsoft/wizardlm-2-8x22b"
+    ]
+
+    const proModel = ["meta-llama/llama-3-70b-instruct"]
 
     const openRouterModels = data
       .map(
@@ -202,9 +211,15 @@ export const fetchOpenRouterModels = async () => {
           }
         })
       )
-      .filter(({ modelId }: { modelId: string }) =>
-        SUPPORTED_OPENROUTER_MODELS.includes(modelId)
-      )
+      .filter(({ modelId }: { modelId: string }) => {
+        if (plan.includes("byok")) {
+          return byokModel.includes(modelId)
+        }
+        if (plan.includes("pro")) {
+          return proModel.includes(modelId)
+        }
+        return []
+      })
       .map((model: any) => {
         const { modelName } = parseOpenRouterModelName(model.modelId)
         return {

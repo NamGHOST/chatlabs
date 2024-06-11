@@ -170,17 +170,16 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
           return router.push("/setup")
         }
 
-        if (profile.plan.includes("pro") || profile.plan.includes("byok")) {
-          const groqModels = await fetchGroqModels()
-          setAvailableGroqModels(groqModels)
-        }
+        const groqModels = await fetchGroqModels()
+        setAvailableGroqModels(groqModels)
 
         if (
           profile["openrouter_api_key"] ||
           hostedModelRes.envKeyMap["openrouter"] ||
+          profile.plan.includes("byok") ||
           profile.plan.includes("pro")
         ) {
-          const openRouterModels = await fetchOpenRouterModels()
+          const openRouterModels = await fetchOpenRouterModels(profile.plan)
           if (!openRouterModels) return
           setAvailableOpenRouterModels(openRouterModels)
         }
