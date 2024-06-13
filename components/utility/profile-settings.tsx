@@ -763,19 +763,15 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
               {profile?.plan.startsWith("byok_") ||
                 (profile?.plan.startsWith("pro_") && (
                   <div className="space-y-1">
-                    {envKeyMap["groq"] ? (
-                      <Label>Groq API key set by admin.</Label>
-                    ) : (
-                      <>
-                        <Label>Groq API Key</Label>
-                        <Input
-                          placeholder="Groq API Key"
-                          type="password"
-                          value={groqAPIKey}
-                          onChange={e => setGroqAPIKey(e.target.value)}
-                        />
-                      </>
-                    )}
+                    <>
+                      <Label>Groq API Key</Label>
+                      <Input
+                        placeholder="Groq API Key"
+                        type="password"
+                        value={groqAPIKey}
+                        onChange={e => setGroqAPIKey(e.target.value)}
+                      />
+                    </>
                   </div>
                 ))}
               {profile?.plan.startsWith("pro_") && (
