@@ -120,7 +120,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                           data-testid="Pro-pricing-column-cost"
                         >
                           {billingCycle === "yearly"
-                            ? "$160/month"
+                            ? "$136/month"
                             : "$160/month"}
                         </p>
                         <p
@@ -129,7 +129,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                           }
                         >
                           {billingCycle === "yearly" &&
-                            "billed yearly $1920/year"}
+                            "billed yearly $1632/year"}
                         </p>
                       </div>
                     </div>
@@ -199,7 +199,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                         data-testid="Pro-pricing-column-cost"
                       >
                         {billingCycle === "yearly"
-                          ? "$240/month"
+                          ? "$204/month"
                           : "$240/month"}
                       </p>
                       <p
@@ -208,7 +208,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                         }
                       >
                         {billingCycle === "yearly" &&
-                          "billed yearly $2880/year"}
+                          "billed yearly $2448/year"}
                       </p>
                     </div>
                   </div>
