@@ -510,7 +510,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
             </TabsContent>
 
             <TabsContent className="mt-4 space-y-4" value="keys">
-              {profile?.plan.startsWith("pro_") && (
+              {profile?.plan.includes("pro_") && (
                 <div className="mt-5 space-y-2">
                   <Label className="flex items-center">
                     {useAzureOpenai
@@ -566,7 +566,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
                   )}
                 </div>
               )}
-              {profile?.plan.startsWith("pro_") && (
+              {profile?.plan.includes("pro_") && (
                 <div className="ml-8 space-y-3">
                   {useAzureOpenai ? (
                     <>
@@ -709,7 +709,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
                   )}
                 </div>
               )}
-              {profile?.plan.startsWith("pro_") && (
+              {profile?.plan.includes("pro_") && (
                 <div className="space-y-1">
                   {envKeyMap["anthropic"] ? (
                     <Label>Anthropic API key set by admin.</Label>
@@ -726,7 +726,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
                   )}
                 </div>
               )}
-              {profile?.plan.startsWith("pro_") && (
+              {profile?.plan.includes("pro_") && (
                 <div className="space-y-1">
                   {envKeyMap["google"] ? (
                     <Label>Google Gemini API key set by admin.</Label>
@@ -743,7 +743,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
                   )}
                 </div>
               )}
-              {profile?.plan.startsWith("pro_") && (
+              {profile?.plan.includes("pro_") && (
                 <div className="space-y-1">
                   {envKeyMap["mistral"] ? (
                     <Label>Mistral API key set by admin.</Label>
@@ -760,8 +760,8 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
                   )}
                 </div>
               )}
-              {profile?.plan.startsWith("byok_") ||
-                (profile?.plan.startsWith("pro_") && (
+              {profile?.plan.includes("byok_") ||
+                (profile?.plan.includes("pro_") && (
                   <div className="space-y-1">
                     <>
                       <Label>Groq API Key</Label>
@@ -774,7 +774,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
                     </>
                   </div>
                 ))}
-              {profile?.plan.startsWith("pro_") && (
+              {profile?.plan.includes("pro_") && (
                 <div className="space-y-1">
                   {envKeyMap["perplexity"] ? (
                     <Label>Perplexity API key set by admin.</Label>
