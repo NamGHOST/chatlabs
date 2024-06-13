@@ -153,16 +153,9 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                   <PlanFeature title={"獨立Groq api 接口，無限制使用"} />
                   <PlanFeature title={"大量語言模型（100+）"} />
                   <PlanFeature title={"雙視窗同步對話"} />
-                  <PlanFeature
-                    check={false}
-                    title={
-                      <>
-                        <PlanFeature title={"與圖像對話"} />
-                        <PlanFeature title={"與文件對話"} />
-                        <PlanFeature title={"自定義助手"} />
-                      </>
-                    }
-                  />
+                  <PlanFeature title={"與圖像對話"} />
+                  <PlanFeature title={"與文件對話"} />
+                  <PlanFeature title={"自定義助手"} />
                   <PlanFeature title={"自定義插件"} />
                   <PlanFeature
                     title={"圖像生成（Dall-E, Stable Diffusion 3)"}
