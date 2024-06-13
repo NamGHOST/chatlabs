@@ -6,13 +6,17 @@ import Plans from "@/components/upgrade/plans"
 
 interface PlanPickerProps {}
 
-export function PlanFeature({ title }: { title: string | ReactNode }) {
+export function PlanFeature({
+  title,
+  check = true
+}: {
+  title: string | ReactNode
+  check?: boolean
+}) {
   return (
     <div className="bg-token-main-surface-primary relative">
       <div className="text-l flex justify-start gap-2">
-        <div className="w-8 shrink-0">
-          <IconCheck size={18} />
-        </div>
+        <div className="w-8 shrink-0">{check && <IconCheck size={18} />}</div>
         <span>{title}</span>
       </div>
     </div>

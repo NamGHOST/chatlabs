@@ -10,29 +10,77 @@ const KNOWN_MODEL_NAMES: {
     modelName: string
   }
 } = {
-  "databricks/dbrx-instruct": {
-    modelProvider: "databricks",
-    modelName: "DBRX Instruct"
+  "openai/gpt-4o-2024-05-13": {
+    modelProvider: "openai",
+    modelName: "GPT-4o"
+  },
+  "openai/gpt-4-vision-preview": {
+    modelProvider: "openai",
+    modelName: "GPT-4 Vision Preview"
+  },
+  "google/gemini-pro-1.5": {
+    modelProvider: "google",
+    modelName: "Gemini Pro 1.5"
+  },
+  "google/gemini-pro-vision": {
+    modelProvider: "google",
+    modelName: "Gemini Pro Vision"
+  },
+  "liuhaotian/llava-yi-34b": {
+    modelProvider: "liuhaotian",
+    modelName: "Llava Yi 34b"
+  },
+  "fireworks/firellava-13b": {
+    modelProvider: "fireworks",
+    modelName: "Firellava 13b"
+  },
+  "anthropic/claude-3-haiku": {
+    modelProvider: "anthropic",
+    modelName: "Claude 3 Haiku"
+  },
+  "anthropic/claude-3-sonnet": {
+    modelProvider: "anthropic",
+    modelName: "Claude 3 Sonnet"
+  },
+  "qwen/qwen-2-72b-instruct": {
+    modelProvider: "qwen",
+    modelName: "Qwen 2 72b Instruct"
+  },
+  "cognitivecomputations/dolphin-mixtral-8x22b": {
+    modelProvider: "cognitivecomputations",
+    modelName: "Dolphin Mixtral 8x22b"
+  },
+  "meta-llama/llama-3-70b": {
+    modelProvider: "meta-llama",
+    modelName: "Llama 3 70b"
   },
   "cohere/command-r-plus": {
     modelProvider: "cohere",
     modelName: "Command R Plus"
   },
-  "mistralai/mixtral-8x22b-instruct": {
-    modelProvider: "mistral",
-    modelName: "Mixtral 8x22B"
+  "01-ai/yi-34b-chat": {
+    modelProvider: "01-ai",
+    modelName: "Yi 34b Chat"
   },
-  "meta-llama/llama-3-70b-instruct": {
-    modelProvider: "meta",
-    modelName: "Meta Llama 3 70B"
-  },
-  "microsoft/wizardlm-2-8x22b": {
-    modelProvider: "microsoft",
-    modelName: "WizardLM 2 8x22B"
-  },
-  "openai/gpt-4o-2024-05-13": {
+  "openai/gpt-3.5-turbo-16k": {
     modelProvider: "openai",
-    modelName: "GPT 4o"
+    modelName: "GPT-3.5 Turbo 16k"
+  },
+  "mistralai/mistral-medium": {
+    modelProvider: "mistralai",
+    modelName: "Mistral Medium"
+  },
+  "perplexity/llama-3-sonar-large-32k-online": {
+    modelProvider: "perplexity",
+    modelName: "Llama 3 Sonar Large 32k Online"
+  },
+  "perplexity/llama-3-sonar-large-32k-chat": {
+    modelProvider: "perplexity",
+    modelName: "Llama 3 Sonar Large 32k Chat"
+  },
+  "google/gemini-flash-1.5": {
+    modelProvider: "google",
+    modelName: "Gemini Flash 1.5"
   }
 }
 
@@ -176,12 +224,24 @@ export const fetchOpenRouterModels = async (plan: string) => {
     const { data } = await response.json()
 
     const byokModel = [
-      "databricks/dbrx-instruct",
-      "cohere/command-r-plus",
-      "mistralai/mixtral-8x22b-instruct",
-      "microsoft/wizardlm-2-8x22b",
       "openai/gpt-4o-2024-05-13",
-      "openai/gpt-4-vision-preview"
+      "openai/gpt-4-vision-preview",
+      "google/gemini-pro-1.5",
+      "google/gemini-pro-vision",
+      "liuhaotian/llava-yi-34b",
+      "fireworks/firellava-13b",
+      "anthropic/claude-3-haiku",
+      "anthropic/claude-3-sonnet",
+      "qwen/qwen-2-72b-instruct",
+      "cognitivecomputations/dolphin-mixtral-8x22b",
+      "meta-llama/llama-3-70b",
+      "cohere/command-r-plus",
+      "01-ai/yi-34b-chat",
+      "openai/gpt-3.5-turbo-16k",
+      "mistralai/mistral-medium",
+      "perplexity/llama-3-sonar-large-32k-online",
+      "perplexity/llama-3-sonar-large-32k-chat",
+      "google/gemini-flash-1.5"
     ]
 
     const proModel = ["meta-llama/llama-3-70b-instruct"]

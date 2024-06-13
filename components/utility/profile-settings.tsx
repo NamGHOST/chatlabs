@@ -778,22 +778,23 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
                     )}
                   </div>
                 ))}
-
-              <div className="space-y-1">
-                {envKeyMap["perplexity"] ? (
-                  <Label>Perplexity API key set by admin.</Label>
-                ) : (
-                  <>
-                    <Label>Perplexity API Key</Label>
-                    <Input
-                      placeholder="Perplexity API Key"
-                      type="password"
-                      value={perplexityAPIKey}
-                      onChange={e => setPerplexityAPIKey(e.target.value)}
-                    />
-                  </>
-                )}
-              </div>
+              {profile?.plan.startsWith("pro_") && (
+                <div className="space-y-1">
+                  {envKeyMap["perplexity"] ? (
+                    <Label>Perplexity API key set by admin.</Label>
+                  ) : (
+                    <>
+                      <Label>Perplexity API Key</Label>
+                      <Input
+                        placeholder="Perplexity API Key"
+                        type="password"
+                        value={perplexityAPIKey}
+                        onChange={e => setPerplexityAPIKey(e.target.value)}
+                      />
+                    </>
+                  )}
+                </div>
+              )}
             </TabsContent>
             <TabsContent className="mt-4 space-y-4 py-2" value="shortcuts">
               <div className="space-y-5">

@@ -105,11 +105,11 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                   <div className="flex flex-col gap-1">
                     <WithTooltip
                       side={"top"}
-                      display={"Bring your own key"}
+                      display={"Standard"}
                       trigger={
                         <p className="flex items-center gap-2 text-xl font-medium">
                           <IconSparkles className={"text-violet-700"} />
-                          BYOK
+                          Standard
                         </p>
                       }
                     />
@@ -148,18 +148,39 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                 </div>
                 <div className="flex grow flex-col gap-2">
                   <PlanFeature
+                    title={" 旗艦模型: GPT-4o、Gemini-Pro-1.5、Claude-3等"}
+                  />
+                  <PlanFeature title={"獨立Groq api 接口，無限制使用"} />
+                  <PlanFeature title={"大量語言模型（100+）"} />
+                  <PlanFeature title={"雙視窗同步對話"} />
+                  <PlanFeature
+                    check={false}
                     title={
                       <>
-                        <b>Use your API keys</b>
-                        <br /> to access OpenAI,
-                        <br /> Mistral, Claude, Gemini, and Perplexity
+                        <PlanFeature title={"與圖像對話"} />
+                        <PlanFeature title={"與文件對話"} />
+                        <PlanFeature title={"自定義助手"} />
                       </>
                     }
                   />
-                  <PlanFeature title={"Access to all AI Assistants"} />
-                  <PlanFeature title={"AI Image Generation"} />
-                  <PlanFeature title={"GPT-4 Vision"} />
-                  <PlanFeature title={"Web Browsing"} />
+                  <PlanFeature title={"自定義插件"} />
+                  <PlanFeature
+                    title={"圖像生成（Dall-E, Stable Diffusion 3)"}
+                  />
+                  <PlanFeature title={"持續更新的助手教學內容"} />
+                  <PlanFeature
+                    check={false}
+                    title={
+                      <>
+                        <PlanFeature title={"加入我們的社群"} />
+                        <PlanFeature title={"持續更新的資訊內容"} />
+                        <PlanFeature
+                          title={"訪問我們的Prompt Wiki（持續更新）"}
+                        />
+                        <PlanFeature title={"800+ AI工具（持續更新）"} />
+                      </>
+                    }
+                  />
                 </div>
               </div>
               <div
@@ -205,19 +226,20 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                   </Button>
                 </div>
                 <div className="flex grow flex-col gap-2">
+                  <PlanFeature title="包括標準計劃中的所有內容" />
+                  <PlanFeature title="全獨立api 接口（OpenAI, Gemini, perplexity, Claude)" />
+                  <PlanFeature title={"高級內容:"} />
                   <PlanFeature
+                    check={false}
                     title={
                       <>
-                        <b>No API keys required.</b>
-                        <br /> Unlimited access to OpenAI, Mistral, Claude,
-                        Gemini, and Perplexity
+                        <PlanFeature title={"進階的人工智能使用技巧"} />
+                        <PlanFeature
+                          title={"AI+自動化、AI+金融等專門領域內容"}
+                        />
                       </>
                     }
                   />
-                  <PlanFeature title={"Access to all AI Assistants"} />
-                  <PlanFeature title={"GPT-4 Vision"} />
-                  <PlanFeature title={"AI Image Generation"} />
-                  <PlanFeature title={"Web Browsing"} />
                 </div>
               </div>
             </div>
