@@ -760,20 +760,20 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
                   )}
                 </div>
               )}
-              {profile?.plan.includes("byok_") ||
-                (profile?.plan.includes("pro_") && (
-                  <div className="space-y-1">
-                    <>
-                      <Label>Groq API Key</Label>
-                      <Input
-                        placeholder="Groq API Key"
-                        type="password"
-                        value={groqAPIKey}
-                        onChange={e => setGroqAPIKey(e.target.value)}
-                      />
-                    </>
-                  </div>
-                ))}
+              {(profile?.plan.includes("byok_") ||
+                profile?.plan.includes("pro_")) && (
+                <div className="space-y-1">
+                  <>
+                    <Label>Groq API Key</Label>
+                    <Input
+                      placeholder="Groq API Key"
+                      type="password"
+                      value={groqAPIKey}
+                      onChange={e => setGroqAPIKey(e.target.value)}
+                    />
+                  </>
+                </div>
+              )}
               {profile?.plan.includes("pro_") && (
                 <div className="space-y-1">
                   {envKeyMap["perplexity"] ? (
