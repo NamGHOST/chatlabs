@@ -36,8 +36,8 @@ export async function POST(request: Request) {
         profile.openrouter_api_key || process.env.OPENROUTER_API_KEY_ADMIN,
       baseURL: "https://openrouter.ai/api/v1",
       defaultHeaders: {
-        "HTTP-Referer": `https://writingmate.ai/labs`,
-        "X-Title": `ChatLabs`,
+        "HTTP-Referer": `https://Imogenai.app`,
+        "X-Title": `ImogenAI`,
         "X-Description": `Chat with all best AI models in one place`
       }
     })

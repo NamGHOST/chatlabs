@@ -72,11 +72,11 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
 
 const SYSTEM_PROMPT_DESCRIPTION = `
 The system prompt is a message that the AI will use to start the conversation. 
-It should contain the following dynamic variables for ChatLabs functioning properly: {profile_context}, {local_date}, and {assistant}. {profile_context} is the user's profile context, {local_date} is the current date, and {assistant} is the name of the assistant and it's instructions.
+It should contain the following dynamic variables for ImogenAI functioning properly: {profile_context}, {local_date}, and {assistant}. {profile_context} is the user's profile context, {local_date} is the current date, and {assistant} is the name of the assistant and it's instructions.
 `
 
 const SYSTEM_PROMPT_WARNING = `
-The system prompt should contain the following dynamic variables for ChatLabs functioning properly: {profile_context}, {local_date}, and {assistant}. {profile_context} is the user's profile context, {local_date} is the current date, and {assistant} is the name of the assistant and it's instructions.`
+The system prompt should contain the following dynamic variables for ImogenAI functioning properly: {profile_context}, {local_date}, and {assistant}. {profile_context} is the user's profile context, {local_date} is the current date, and {assistant} is the name of the assistant and it's instructions.`
 
 function ModelSettings({ models }: { models?: LLM[] }) {
   const {
