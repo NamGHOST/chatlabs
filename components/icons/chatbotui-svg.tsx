@@ -1,5 +1,6 @@
 import { FC } from "react"
-
+import * as React from "react"
+import { SVGProps } from "react"
 interface ChatbotUISVGProps {
   theme: "dark" | "light"
   scale?: number
