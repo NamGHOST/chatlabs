@@ -29,7 +29,7 @@ interface RootLayoutProps {
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
-  metadataBase: new URL("https://writingmate.ai/labs/"),
+  metadataBase: new URL("https://imogenai.app"),
   title: {
     default: APP_DEFAULT_TITLE,
     template: APP_TITLE_TEMPLATE
