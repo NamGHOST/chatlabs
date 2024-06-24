@@ -247,7 +247,7 @@ export const fetchOpenRouterModels = async (plan: string) => {
     ]
 
     const proModel = ["meta-llama/llama-3-70b-instruct"
-      
+
     ]
 
     const openRouterModels = data
@@ -268,7 +268,7 @@ export const fetchOpenRouterModels = async (plan: string) => {
           provider: "openrouter",
           hostedId: model.id,
           platformLink: "https://openrouter.dev",
-          imageInput: false,
+          imageInput: true,
           maxContext: model.context_length,
           description: model.description,
           pricing: {
