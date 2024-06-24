@@ -231,7 +231,7 @@ export const fetchOpenRouterModels = async (plan: string) => {
       "liuhaotian/llava-yi-34b",
       "fireworks/firellava-13b",
       "anthropic/claude-3-haiku",
-      "anthropic/claude-3-sonnet",
+      "anthropic/claude-3.5-sonnet",
       "qwen/qwen-2-72b-instruct",
       "cognitivecomputations/dolphin-mixtral-8x22b",
       "meta-llama/llama-3-70b",
@@ -241,10 +241,14 @@ export const fetchOpenRouterModels = async (plan: string) => {
       "mistralai/mistral-medium",
       "perplexity/llama-3-sonar-large-32k-online",
       "perplexity/llama-3-sonar-large-32k-chat",
-      "google/gemini-flash-1.5"
+      "google/gemini-flash-1.5",
+      "deepseek/deepseek-coder",
+      "nvidia/nemotron-4-340b-instruct"
     ]
 
-    const proModel = ["meta-llama/llama-3-70b-instruct"]
+    const proModel = ["meta-llama/llama-3-70b-instruct"
+      
+    ]
 
     const openRouterModels = data
       .map(
