@@ -13,6 +13,9 @@ export const PLAN_PREMIUM_YEARLY = "premium_yearly"
 export const PLAN_BYOK_MONTHLY = "byok_monthly"
 
 export const PLAN_BYOK_YEARLY = "byok_yearly"
+export const PLAN_STD_MONTHLY = "standard_monthly"
+
+export const PLAN_STD_YEARLY = "standard_yearly"
 
 export const PLANS = [
   PLAN_FREE,
@@ -21,7 +24,9 @@ export const PLANS = [
   PLAN_PREMIUM_MONTHLY,
   PLAN_PREMIUM_YEARLY,
   PLAN_BYOK_MONTHLY,
-  PLAN_BYOK_YEARLY
+  PLAN_BYOK_YEARLY,
+  PLAN_STD_MONTHLY,
+  PLAN_STD_YEARLY
 ]
 
 export const ACTIVE_PLAN_STATUSES = ["active", "trialing"]

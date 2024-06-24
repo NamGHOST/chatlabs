@@ -10,6 +10,7 @@ import { createCheckoutSession } from "@/actions/stripe"
 import { router } from "next/client"
 
 const BYOK_PLAN_PREFIX = "byok"
+const STD_PLAN_PREFIX = "standard"
 const PRO_PLAN_PREFIX = "pro"
 const BILLING_CYCLE_YEARLY = "yearly"
 const BILLING_CYCLE_MONTHLY = "monthly"
@@ -96,7 +97,73 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
+
             <div className="flex flex-col md:flex-row">
+              <div
+                className="border-token-border-light relative flex flex-1 flex-col gap-5 border-t px-6 py-4 text-sm last:border-r-0 md:max-w-xs md:border-r md:border-t-0"
+                data-testid="Premium-pricing-modal-column"
+              >
+                <div className="bg-token-main-surface-primary relative flex flex-col">
+                  <div className="flex flex-col gap-1">
+                    <WithTooltip
+                      side={"top"}
+                      display={"Bring your own key"}
+                      trigger={
+                        <p className="flex items-center gap-2 text-xl font-medium">
+                          <IconSparkles className={"text-violet-700"} />
+                          Lite
+                        </p>
+                      }
+                    />
+                    <div className="flex items-baseline gap-[6px]">
+                      <div className="min-h-[56px] flex-col items-baseline gap-[6px]">
+                        <p
+                          className="text-token-text-tertiary text-base font-light"
+                          data-testid="Pro-pricing-column-cost"
+                        >
+                          {billingCycle === "yearly"
+                            ? "$54.58/month"
+                            : "$80.00/month"}
+                        </p>
+                        <p
+                          className={
+                            "text-token-text-tertiary text-xs font-light"
+                          }
+                        >
+                          {billingCycle === "yearly" &&
+                            "billed yearly $654.94/year"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-token-main-surface-primary relative flex flex-col">
+                  <Button
+                    disabled={loading !== "" && loading !== BYOK_PLAN_PREFIX}
+                    loading={loading === BYOK_PLAN_PREFIX}
+                    formAction={createFormAction(BYOK_PLAN_PREFIX)}
+                    onClick={() => handleClick(BYOK_PLAN_PREFIX)}
+                    className={"bg-violet-700 text-white"}
+                  >
+                    Upgrade now
+                  </Button>
+                </div>
+                <div className="flex grow flex-col gap-2">
+                  <PlanFeature
+                    title={
+                      <>
+                        <b>Use your API keys</b>
+                        <br /> to access OpenAI,
+                        <br /> Mistral, Claude, Gemini, and Perplexity
+                      </>
+                    }
+                  />
+                  <PlanFeature title={"Access to all AI Assistants"} />
+                  <PlanFeature title={"AI Image Generation"} />
+                  <PlanFeature title={"GPT-4 Vision"} />
+                  <PlanFeature title={"Web Browsing"} />
+                </div>
+              </div>
               <div
                 className="border-token-border-light relative flex flex-1 flex-col gap-5 border-t px-6 py-4 text-sm last:border-r-0 md:max-w-xs md:border-r md:border-t-0"
                 data-testid="Premium-pricing-modal-column"
@@ -137,10 +204,10 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                 </div>
                 <div className="bg-token-main-surface-primary relative flex flex-col">
                   <Button
-                    disabled={loading !== "" && loading !== BYOK_PLAN_PREFIX}
-                    loading={loading === BYOK_PLAN_PREFIX}
-                    formAction={createFormAction(BYOK_PLAN_PREFIX)}
-                    onClick={() => handleClick(BYOK_PLAN_PREFIX)}
+                    disabled={loading !== "" && loading !== STD_PLAN_PREFIX}
+                    loading={loading === STD_PLAN_PREFIX}
+                    formAction={createFormAction(STD_PLAN_PREFIX)}
+                    onClick={() => handleClick(STD_PLAN_PREFIX)}
                     className={"bg-violet-700 text-white"}
                   >
                     Upgrade now

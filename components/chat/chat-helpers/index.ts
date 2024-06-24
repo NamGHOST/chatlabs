@@ -625,7 +625,14 @@ export const handleCreateMessages = async (
 
     chatMessages[chatMessages.length - 1].message = updatedMessage
 
-    setChatMessages([...chatMessages])
+    setChatMessages(
+      [...chatMessages].sort((a, b) => {
+        return (
+          new Date(a.message.created_at).getTime() -
+          new Date(b.message.created_at).getTime()
+        )
+      })
+    )
   } else {
     const createdMessages = cleanGeneratedText
       ? await createMessages([finalUserMessage, finalAssistantMessage])
@@ -696,7 +703,14 @@ export const handleCreateMessages = async (
     })
 
     if (updateState) {
-      setChatMessages(finalChatMessages)
+      setChatMessages(
+        finalChatMessages.sort((a, b) => {
+          return (
+            new Date(a.message.created_at).getTime() -
+            new Date(b.message.created_at).getTime()
+          )
+        })
+      )
     }
   }
 }
