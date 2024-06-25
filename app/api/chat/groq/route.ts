@@ -18,8 +18,8 @@ export async function POST(request: Request) {
     if (
       !(
         (profile.plan.includes("pro") || profile.plan.includes("standard")) &&
-        !process.env.GROQ_API_KEY_ADMIN
-      ) ||
+        process.env.GROQ_API_KEY_ADMIN
+      ) &&
       !profile.groq_api_key
     ) {
       throw new Error(`Groq API Key not found`)
