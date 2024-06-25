@@ -44,10 +44,13 @@ export async function getServerProfile() {
 
   const profileWithKeys = addApiKeysToProfile(profile)
 
-  return profileWithKeys
+  return profile.plan.includes("pro") || profile.plan.includes("standard")
+    ? profileWithKeys
+    : profile
 }
 
 function addApiKeysToProfile(profile: Tables<"profiles">) {
+  let clonedProfile = { ...profile }
   const apiKeys = {
     [VALID_ENV_KEYS.OPENAI_API_KEY]: "openai_api_key",
     [VALID_ENV_KEYS.ANTHROPIC_API_KEY]: "anthropic_api_key",
@@ -68,12 +71,12 @@ function addApiKeysToProfile(profile: Tables<"profiles">) {
   }
 
   for (const [envKey, profileKey] of Object.entries(apiKeys)) {
-    if (process.env[envKey] && !(profile as any)[profileKey]) {
-      ;(profile as any)[profileKey] = process.env[envKey]
+    if (process.env[envKey] && !(clonedProfile as any)[profileKey]) {
+      ;(clonedProfile as any)[profileKey] = process.env[envKey]
     }
   }
 
-  return profile
+  return clonedProfile
 }
 
 export function checkApiKey(apiKey: string | null, keyName: string) {

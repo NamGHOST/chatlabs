@@ -16,8 +16,11 @@ export async function POST(request: Request) {
     const profile = await getServerProfile()
 
     if (
-      (profile.groq_api_key === null || profile.groq_api_key === "") &&
-      !process.env.GROQ_API_KEY_ADMIN
+      !(
+        (profile.plan.includes("pro") || profile.plan.includes("standard")) &&
+        !process.env.GROQ_API_KEY_ADMIN
+      ) ||
+      !profile.groq_api_key
     ) {
       throw new Error(`Groq API Key not found`)
     }
