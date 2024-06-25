@@ -1,0 +1,118 @@
+import { LLM } from "@/types"
+
+const OPENROUTER_PLATFORM_LINK =
+
+const GPT4O: LLM = {
+    modelId: "gpt-4o",
+    modelName: "GPT-4o",
+    provider: "openrouter",
+    hostedId: "gpt-4o",
+    platformLink: OPENROUTER_PLATFORM_LINK,
+    imageInput: true,
+    tools: true,
+    paid: true,
+    supportsStreaming: true,
+    pricing: {
+      currency: "USD",
+      unit: "1M tokens",
+      inputCost: 5.0,
+      outputCost: 15.0
+    }
+}
+
+const GPT4Vision: LLM = {
+    modelId: "gpt-4-vision-preview",
+    modelName: "GPT-4 Vision",
+    provider: "openrouter",
+    hostedId: "gpt-4-vision-preview",
+    platformLink: OPENROUTER_PLATFORM_LINK,
+    imageInput: true,
+    paid: true,
+    tools: false,
+    supportsStreaming: true,
+    pricing: {
+      currency: "USD",
+      unit: "1M tokens",
+      inputCost: 10
+    }
+  }
+
+  const GEMINI_PRO_VISION: LLM = {
+    modelId: "gemini-pro-vision",
+    modelName: "Gemini 1.0 Pro Vision",
+    provider: "openrouter",
+    hostedId: "gemini-pro-vision",
+    platformLink: OPENROUTER_PLATFORM_LINK,
+    imageInput: true,
+    paid: true
+  }
+  
+  const GEMINI_PRO_15: LLM = {
+    modelId: "gemini-1.5-pro-latest",
+    modelName: "Gemini 1.5 Pro",
+    provider: "openrouter",
+    hostedId: "gemini-1.5-pro-latest",
+    platformLink: OPENROUTER_PLATFORM_LINK,
+    imageInput: true,
+    paid: true
+  }
+
+  const LLAVA_YI_34b: LLM = {
+    modelId: "llava-yi-34b",
+    modelName: "Llava-yi-34b",
+    provider: "openrouter",
+    hostedId: "llava-yi-34b",
+    platformLink: OPENROUTER_PLATFORM_LINK,
+    imageInput: true,
+    paid: true
+  }
+  
+  const FIRELLAVA_13b: LLM = {
+    modelId: "firellava-13b",
+    modelName: "Firellava-13b",
+    provider: "openrouter",
+    hostedId: "firellava-13b",
+    platformLink: OPENROUTER_PLATFORM_LINK,
+    imageInput: true,
+    paid: true
+  }
+
+  const CLAUDE_3_HAIKU: LLM = {
+    modelId: "claude-3-haiku",
+    modelName: "Claude 3 Haiku",
+    provider: "openrouter",
+    hostedId: "claude-3-haiku",
+    platformLink: OPENROUTER_PLATFORM_LINK,
+    imageInput: true,
+    paid: true
+  }
+  
+  const CLAUDE_35_SONNET: LLM = {
+    modelId: "claude-3.5-sonnet",
+    modelName: "Claude 3.5 Sonnet",
+    provider: "openrouter",
+    hostedId: "claude-3.5-sonnet",
+    platformLink: OPENROUTER_PLATFORM_LINK,
+    imageInput: true,
+    paid: true,
+   
+  }
+
+  export const OPENROUTER_LLM_LIST: LLM[] = [
+    GPT4O,
+    GPT4Vision,
+    GEMINI_PRO_VISION,
+    GEMINI_PRO_15,
+    LLAVA_YI_34b,
+    FIRELLAVA_13b,
+    CLAUDE_3_HAIKU,
+    CLAUDE_35_SONNET
+  ]
+//- openai/gpt-4o-2024-05-13
+//- openai/gpt-4-vision-preview
+//- google/gemini-pro-1.5
+//- google/gemini-pro-vision
+//- liuhaotian/llava-yi-34b
+//- fireworks/firellava-13b
+//- anthropic/claude-3-haiku
+//- anthropic/claude-3.5-sonnet
