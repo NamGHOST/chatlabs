@@ -376,7 +376,8 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
               <TabsTrigger className={"flex-1"} value="shortcuts">
                 Shortcuts
               </TabsTrigger>
-              {profile?.plan.startsWith("byok_") && (
+              {(profile?.plan.startsWith("byok_") ||
+                profile?.plan.startsWith("pro_")) && (
                 <TabsTrigger className={"flex-1"} value="keys">
                   API Keys
                 </TabsTrigger>
