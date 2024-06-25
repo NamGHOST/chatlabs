@@ -7,11 +7,7 @@ interface ChatbotUISVGProps {
 
 export const ChatbotUISVG: FC<ChatbotUISVGProps> = ({ theme, scale = 1 }) => {
   return (
-    <svg
-      height={200 * scale}
-      width={200 * scale}
-      viewBox="0 0 200 200"
-    >
+    <svg height={200 * scale} width={200 * scale} viewBox="0 0 200 200">
       <g>
         <path
           d="M118.173 107.168C116.678 106.271 115.758 104.66 115.746 102.917L115.283 38.4834C115.255 34.6067 119.46 32.1756 122.806 34.1341L157.991 54.7306C159.52 55.6256 160.461 57.2631 160.464 59.0347L160.584 123.768C160.591 127.656 156.35 130.063 153.015 128.063L118.173 107.168Z"

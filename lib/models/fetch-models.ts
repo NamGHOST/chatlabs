@@ -246,9 +246,7 @@ export const fetchOpenRouterModels = async (plan: string) => {
       "nvidia/nemotron-4-340b-instruct"
     ]
 
-    const proModel = ["meta-llama/llama-3-70b-instruct"
-
-    ]
+    const proModel = ["meta-llama/llama-3-70b-instruct"]
 
     const openRouterModels = data
       .map(
