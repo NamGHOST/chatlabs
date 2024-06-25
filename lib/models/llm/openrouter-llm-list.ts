@@ -3,7 +3,7 @@ import { LLM } from "@/types"
 const OPENROUTER_PLATFORM_LINK = "https://openrouter.ai/api/v1"
 
 const GPT4O: LLM = {
-    modelId: "gpt-4o",
+    modelId: "openai/gpt-4o-2024-05-13",
     modelName: "GPT-4o",
     provider: "openrouter",
     hostedId: "gpt-4o",
@@ -21,7 +21,7 @@ const GPT4O: LLM = {
 }
 
 const GPT4Vision: LLM = {
-    modelId: "gpt-4-vision-preview",
+    modelId: "openai/gpt-4-vision-preview",
     modelName: "GPT-4 Vision",
     provider: "openrouter",
     hostedId: "gpt-4-vision-preview",
@@ -38,7 +38,7 @@ const GPT4Vision: LLM = {
   }
 
   const GEMINI_PRO_VISION: LLM = {
-    modelId: "gemini-pro-vision",
+    modelId: "google/gemini-pro-vision",
     modelName: "Gemini 1.0 Pro Vision",
     provider: "openrouter",
     hostedId: "gemini-pro-vision",
@@ -48,7 +48,7 @@ const GPT4Vision: LLM = {
   }
   
   const GEMINI_PRO_15: LLM = {
-    modelId: "gemini-1.5-pro-latest",
+    modelId: "google/gemini-pro-1.5",
     modelName: "Gemini 1.5 Pro",
     provider: "openrouter",
     hostedId: "gemini-1.5-pro-latest",
@@ -58,7 +58,7 @@ const GPT4Vision: LLM = {
   }
 
   const LLAVA_YI_34b: LLM = {
-    modelId: "llava-yi-34b",
+    modelId: "liuhaotian/llava-yi-34b",
     modelName: "Llava-yi-34b",
     provider: "openrouter",
     hostedId: "llava-yi-34b",
@@ -68,7 +68,7 @@ const GPT4Vision: LLM = {
   }
   
   const FIRELLAVA_13b: LLM = {
-    modelId: "firellava-13b",
+    modelId: "fireworks/firellava-13b",
     modelName: "Firellava-13b",
     provider: "openrouter",
     hostedId: "firellava-13b",
@@ -78,7 +78,7 @@ const GPT4Vision: LLM = {
   }
 
   const CLAUDE_3_HAIKU: LLM = {
-    modelId: "claude-3-haiku",
+    modelId: "anthropic/claude-3-haiku",
     modelName: "Claude 3 Haiku",
     provider: "openrouter",
     hostedId: "claude-3-haiku",
@@ -88,7 +88,7 @@ const GPT4Vision: LLM = {
   }
   
   const CLAUDE_35_SONNET: LLM = {
-    modelId: "claude-3.5-sonnet",
+    modelId: "anthropic/claude-3.5-sonnet",
     modelName: "Claude 3.5 Sonnet",
     provider: "openrouter",
     hostedId: "claude-3.5-sonnet",
