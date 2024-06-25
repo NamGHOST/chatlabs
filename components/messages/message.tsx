@@ -243,7 +243,6 @@ export const Message: FC<MessageProps> = ({
     if (!annotation) {
       return null
     }
-
     if (Array.isArray(annotation)) {
       annotation = annotation.reduce((acc, item) => {
         acc = {

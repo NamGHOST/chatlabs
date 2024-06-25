@@ -19,7 +19,6 @@ export function WebSearch({
   if ("result" in result) {
     result = result.result
   }
-
   const { organic } = result
 
   return (
@@ -55,7 +54,7 @@ export function WebSearch({
           </Card>
         )
       })}
-      {organic.length > 4 &&
+      {organic?.length > 4 &&
         (!showAll ? (
           <a
             href={"#"}

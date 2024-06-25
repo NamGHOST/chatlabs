@@ -143,7 +143,10 @@ export const ChatbotUIChatProvider: FC<ChatbotUIChatProviderProps> = ({
       localStorage.setItem(chatSettingsKey, JSON.stringify(chatSettings))
     }
   }, [chatSettings])
-
+  console.log(
+    chatMessages.map(message => message.message.annotation),
+    "dasadhasdhasufhasufhasufhashfdiasf"
+  )
   return (
     <ChatbotUIChatContext.Provider
       value={{

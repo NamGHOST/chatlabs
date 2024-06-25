@@ -149,7 +149,7 @@ export async function POST(request: Request) {
     messages: any[]
     selectedTools: Tables<"tools">[]
   }
-
+  // console.log(selectedTools, 'selectedTools')
   prependSystemPrompt(messages)
 
   const streamData = new experimental_StreamData()

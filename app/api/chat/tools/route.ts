@@ -142,7 +142,7 @@ export async function POST(request: Request) {
           schemaDetails,
           toolCall.function as any
         )
-
+        console.log("data ", data)
         streamData.appendMessageAnnotation({
           [`${toolCall.function.name}`]: {
             ...data,
