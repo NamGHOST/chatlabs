@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
   try {
     const profile = await getServerProfile()
-    console.log("profile ", profile.openai_api_key, profile.plan)
+    // console.log("profile ", profile.openai_api_key, profile.plan)
     checkApiKey(profile.openai_api_key, "OpenAI")
 
     await validateModelAndMessageCount(chatSettings.model, new Date())

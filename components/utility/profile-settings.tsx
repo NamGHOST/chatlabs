@@ -541,7 +541,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
                   </>
                 ) : (
                   <>
-                    {envKeyMap["openai"] ? (
+                    {envKeyMap["openai"] && !profile.plan.includes("pro") ? (
                       <Label>OpenAI API key set by admin.</Label>
                     ) : (
                       <Input

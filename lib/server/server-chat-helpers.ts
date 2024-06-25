@@ -72,7 +72,9 @@ function addApiKeysToProfile(profile: Tables<"profiles">) {
 
   for (const [envKey, profileKey] of Object.entries(apiKeys)) {
     if (process.env[envKey] && !(clonedProfile as any)[profileKey]) {
-      ;(clonedProfile as any)[profileKey] = process.env[envKey]
+      if (!(clonedProfile as any)[profileKey]) {
+        ;(clonedProfile as any)[profileKey] = process.env[envKey]
+      }
     }
   }
 
