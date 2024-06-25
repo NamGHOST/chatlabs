@@ -1,6 +1,6 @@
 import { LLM } from "@/types"
 
-const OPENROUTER_PLATFORM_LINK =
+const OPENROUTER_PLATFORM_LINK = "https://openrouter.ai/api/v1"
 
 const GPT4O: LLM = {
     modelId: "gpt-4o",
