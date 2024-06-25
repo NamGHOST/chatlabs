@@ -271,5 +271,53 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TEMPERATURE: 0,
     MAX_TOKEN_OUTPUT_LENGTH: 0,
     MAX_CONTEXT_LENGTH: 0
+  },
+  "openai/gpt-4o-2024-05-13": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 0,
+    MAX_TOKEN_OUTPUT_LENGTH: 0,
+    MAX_CONTEXT_LENGTH: 0
+  },
+  "openai/gpt-4-vision-preview": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 0,
+    MAX_TOKEN_OUTPUT_LENGTH: 0,
+    MAX_CONTEXT_LENGTH: 0
+  },
+  "google/gemini-pro-1.5": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 0,
+    MAX_TOKEN_OUTPUT_LENGTH: 0,
+    MAX_CONTEXT_LENGTH: 0
+  },
+  "google/gemini-pro-vision": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 0,
+    MAX_TOKEN_OUTPUT_LENGTH: 0,
+    MAX_CONTEXT_LENGTH: 0
+  },
+  "liuhaotian/llava-yi-34b": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 0,
+    MAX_TOKEN_OUTPUT_LENGTH: 0,
+    MAX_CONTEXT_LENGTH: 0
+  },
+  "fireworks/firellava-13b": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 0,
+    MAX_TOKEN_OUTPUT_LENGTH: 0,
+    MAX_CONTEXT_LENGTH: 0
+  },
+  "anthropic/claude-3-haiku": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 0,
+    MAX_TOKEN_OUTPUT_LENGTH: 0,
+    MAX_CONTEXT_LENGTH: 0
+  },
+  "anthropic/claude-3.5-sonnet": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 0,
+    MAX_TOKEN_OUTPUT_LENGTH: 0,
+    MAX_CONTEXT_LENGTH: 0
   }
 }
