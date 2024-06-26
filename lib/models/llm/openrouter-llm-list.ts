@@ -44,6 +44,8 @@ const GEMINI_PRO_VISION: LLM = {
   hostedId: "gemini-pro-vision",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: true,
+  tools: false,
+  supportsStreaming: true,
   paid: true
 }
 
@@ -54,6 +56,8 @@ const GEMINI_PRO_15: LLM = {
   hostedId: "gemini-1.5-pro-latest",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: true,
+  tools: false,
+  supportsStreaming: true,
   paid: true
 }
 
@@ -64,6 +68,8 @@ const LLAVA_YI_34b: LLM = {
   hostedId: "llava-yi-34b",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: true,
+  tools: false,
+  supportsStreaming: true,
   paid: true
 }
 
@@ -74,6 +80,8 @@ const FIRELLAVA_13b: LLM = {
   hostedId: "firellava-13b",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: true,
+  tools: false,
+  supportsStreaming: true,
   paid: true
 }
 
@@ -84,6 +92,8 @@ const CLAUDE_3_HAIKU: LLM = {
   hostedId: "claude-3-haiku",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: true,
+  tools: false,
+  supportsStreaming: true,
   paid: true
 }
 
@@ -94,6 +104,8 @@ const CLAUDE_35_SONNET: LLM = {
   hostedId: "claude-3.5-sonnet",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: true,
+  tools: true,
+  supportsStreaming: true,
   paid: true
 }
 
