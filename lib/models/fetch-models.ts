@@ -106,7 +106,8 @@ function parseSupportedModelsFromEnv() {
     "cohere/command-r-plus",
     "mistralai/mixtral-8x22b-instruct",
     "microsoft/wizardlm-2-8x22b",
-    "meta-llama/llama-3-70b-instruct"
+    "meta-llama/llama-3-70b-instruct",
+    "anthropic/claude-3.5-sonnet"
   ]
 
   if (process.env.NEXT_PUBLIC_OPENROUTER_MODELS) {
