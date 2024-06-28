@@ -266,7 +266,7 @@ export const fetchOpenRouterModels = async (plan: string) => {
           provider: "openrouter",
           hostedId: model.id,
           platformLink: "https://openrouter.dev",
-          imageInput: false,
+          imageInput: true,
           maxContext: model.context_length,
           description: model.description,
           pricing: {

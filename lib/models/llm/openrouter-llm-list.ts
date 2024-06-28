@@ -37,19 +37,6 @@ const GPT4Vision: LLM = {
   }
 }
 
-
-const GEMINI_PRO_15: LLM = {
-  modelId: "google/gemini-pro-1.5",
-  modelName: "Gemini 1.5 Pro",
-  provider: "openrouter",
-  hostedId: "gemini-1.5-pro-latest",
-  platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: false,
-  tools: false,
-  supportsStreaming: true,
-  paid: true
-}
-
 const LLAVA_YI_34b: LLM = {
   modelId: "liuhaotian/llava-yi-34b",
   modelName: "Llava-yi-34b",
@@ -74,38 +61,12 @@ const FIRELLAVA_13b: LLM = {
   paid: true
 }
 
-const CLAUDE_3_HAIKU: LLM = {
-  modelId: "anthropic/claude-3-haiku",
-  modelName: "Claude 3 Haiku",
-  provider: "openrouter",
-  hostedId: "claude-3-haiku",
-  platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: false,
-  tools: false,
-  supportsStreaming: true,
-  paid: true
-}
-
-const CLAUDE_35_SONNET: LLM = {
-  modelId: "anthropic/claude-3.5-sonnet",
-  modelName: "Claude 3.5 Sonnet",
-  provider: "openrouter",
-  hostedId: "claude-3.5-sonnet",
-  platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: false,
-  tools: true,
-  supportsStreaming: true,
-  paid: true
-}
-
 export const OPENROUTER_LLM_LIST: LLM[] = [
   GPT4O,
   GPT4Vision,
-  GEMINI_PRO_15,
+
   LLAVA_YI_34b,
-  FIRELLAVA_13b,
-  CLAUDE_3_HAIKU,
-  CLAUDE_35_SONNET
+  FIRELLAVA_13b
 ]
 //- openai/gpt-4o-2024-05-13
 //- openai/gpt-4-vision-preview
