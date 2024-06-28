@@ -1,5 +1,5 @@
 import { ChatSettings } from "@/types"
-import { OpenAIStream, StreamingTextResponse } from "ai"
+import { AnthropicStream, OpenAIStream, StreamingTextResponse } from "ai"
 import { ServerRuntime } from "next"
 import OpenAI from "openai"
 import { ChatCompletionCreateParamsBase } from "openai/resources/chat/completions.mjs"
@@ -23,7 +23,6 @@ export async function POST(request: Request) {
   try {
     const profile = await getServerProfile()
 
-    // Check for API keys
     if (
       (profile.openrouter_api_key === null ||
         profile.openrouter_api_key === "") &&
@@ -34,14 +33,13 @@ export async function POST(request: Request) {
 
     await validateModelAndMessageCount(chatSettings.model, new Date())
 
-    let response
+    let response: Response
 
     if (
       image &&
       (chatSettings.model.startsWith("anthropic/") ||
         chatSettings.model.startsWith("google/"))
     ) {
-      // Handle image processing for Anthropic and Google models
       if (chatSettings.model.startsWith("anthropic/")) {
         response = await handleAnthropicWithImage(
           chatSettings,
@@ -56,17 +54,29 @@ export async function POST(request: Request) {
           image,
           profile
         )
+      } else {
+        throw new Error("Unsupported model for image processing")
       }
     } else {
-      // Use OpenRouter for text-based interactions or other models
       response = await handleOpenRouter(chatSettings, messages, profile)
     }
 
-    const stream = OpenAIStream(response)
-    return new StreamingTextResponse(stream)
+    return response
   } catch (error: any) {
-    // Error handling (unchanged)
-    // ...
+    let errorMessage = error.message || "An unexpected error occurred"
+    const errorCode = error.status || 500
+
+    if (errorMessage.toLowerCase().includes("api key not found")) {
+      errorMessage =
+        "API Key not found. Please set it in your profile settings."
+    } else if (errorMessage.toLowerCase().includes("api key not valid")) {
+      errorMessage =
+        "API Key is incorrect. Please fix it in your profile settings."
+    }
+
+    return new Response(JSON.stringify({ message: errorMessage }), {
+      status: errorCode
+    })
   }
 }
 
@@ -74,7 +84,7 @@ async function handleOpenRouter(
   chatSettings: ChatSettings,
   messages: any[],
   profile: any
-) {
+): Promise<Response> {
   const openai = new OpenAI({
     apiKey: profile.openrouter_api_key || process.env.OPENROUTER_API_KEY_ADMIN,
     baseURL: "https://openrouter.ai/api/v1",
@@ -85,13 +95,16 @@ async function handleOpenRouter(
     }
   })
 
-  return await openai.chat.completions.create({
+  const response = await openai.chat.completions.create({
     model: chatSettings.model as ChatCompletionCreateParamsBase["model"],
-    messages: messages as ChatCompletionCreateParamsBase["messages"],
+    messages: messages,
     temperature: chatSettings.temperature,
     max_tokens: undefined,
     stream: true
   })
+
+  const stream = OpenAIStream(response)
+  return new StreamingTextResponse(stream)
 }
 
 async function handleAnthropicWithImage(
@@ -99,7 +112,7 @@ async function handleAnthropicWithImage(
   messages: any[],
   image: string,
   profile: any
-) {
+): Promise<Response> {
   const anthropic = new Anthropic({
     apiKey: profile.anthropic_api_key || process.env.ANTHROPIC_API_KEY
   })
@@ -115,16 +128,19 @@ async function handleAnthropicWithImage(
             },
             { type: "text", text: msg.content }
           ]
-        : [{ type: "text", text: msg.content }]
+        : msg.content
   }))
 
-  return await anthropic.messages.create({
+  const response = await anthropic.messages.create({
     model: chatSettings.model.replace("anthropic/", ""),
     max_tokens: 1024,
     messages: formattedMessages,
     temperature: chatSettings.temperature,
     stream: true
   })
+
+  const stream = AnthropicStream(response)
+  return new StreamingTextResponse(stream)
 }
 
 async function handleGoogleWithImage(
@@ -132,7 +148,7 @@ async function handleGoogleWithImage(
   messages: any[],
   image: string,
   profile: any
-) {
+): Promise<Response> {
   const genAI = new GoogleGenerativeAI(
     profile.google_api_key || process.env.GOOGLE_API_KEY
   )
@@ -150,5 +166,20 @@ async function handleGoogleWithImage(
     }
   ]
 
-  return await model.generateContentStream(formattedPrompt)
+  const response = await model.generateContentStream(formattedPrompt)
+
+  const encoder = new TextEncoder()
+  const readableStream = new ReadableStream({
+    async start(controller) {
+      for await (const chunk of response.stream) {
+        const chunkText = chunk.text()
+        controller.enqueue(encoder.encode(chunkText))
+      }
+      controller.close()
+    }
+  })
+
+  return new Response(readableStream, {
+    headers: { "Content-Type": "text/plain" }
+  })
 }
