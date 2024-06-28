@@ -26,13 +26,14 @@ import { WithTooltip } from "@/components/ui/with-tooltip"
 import { updateWorkspace } from "@/db/workspaces"
 
 export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
-  "gpt-3.5-turbo-0125": true,
+  "gpt-3.5-turbo-0125": false,
   "gpt-4-vision-preview": true,
-  "gpt-4-turbo-preview": true,
-  "gpt-4-turbo": true,
+  "gpt-4-turbo-preview": false,
+  "gpt-4-turbo": false,
   "claude-3-haiku-20240307": true,
-  "claude-3-sonnet-20240229": true,
-  "claude-3-opus-20240229": true,
+  "claude-3-sonnet-20240229": false,
+  "claude-3-opus-20240229": false,
+  "claude-3-5-sonnet-20240620": true,
   "gemini-pro": false,
   "gemini-pro-vision": false,
   "mistral-large-latest": false,
