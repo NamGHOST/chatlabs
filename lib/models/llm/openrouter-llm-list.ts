@@ -37,17 +37,6 @@ const GPT4Vision: LLM = {
   }
 }
 
-const GEMINI_PRO_VISION: LLM = {
-  modelId: "google/gemini-pro-vision",
-  modelName: "Gemini 1.0 Pro Vision",
-  provider: "openrouter",
-  hostedId: "gemini-pro-vision",
-  platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: true,
-  tools: false,
-  supportsStreaming: true,
-  paid: true
-}
 
 const GEMINI_PRO_15: LLM = {
   modelId: "google/gemini-pro-1.5",
@@ -55,7 +44,7 @@ const GEMINI_PRO_15: LLM = {
   provider: "openrouter",
   hostedId: "gemini-1.5-pro-latest",
   platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: true,
+  imageInput: false,
   tools: false,
   supportsStreaming: true,
   paid: true
@@ -91,7 +80,7 @@ const CLAUDE_3_HAIKU: LLM = {
   provider: "openrouter",
   hostedId: "claude-3-haiku",
   platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: true,
+  imageInput: false,
   tools: false,
   supportsStreaming: true,
   paid: true
@@ -103,7 +92,7 @@ const CLAUDE_35_SONNET: LLM = {
   provider: "openrouter",
   hostedId: "claude-3.5-sonnet",
   platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: true,
+  imageInput: false,
   tools: true,
   supportsStreaming: true,
   paid: true
@@ -112,7 +101,6 @@ const CLAUDE_35_SONNET: LLM = {
 export const OPENROUTER_LLM_LIST: LLM[] = [
   GPT4O,
   GPT4Vision,
-  GEMINI_PRO_VISION,
   GEMINI_PRO_15,
   LLAVA_YI_34b,
   FIRELLAVA_13b,
