@@ -1,10 +1,8 @@
 import { ChatSettings } from "@/types"
-import { AnthropicStream, OpenAIStream, StreamingTextResponse } from "ai"
+import { OpenAIStream, StreamingTextResponse } from "ai"
 import { ServerRuntime } from "next"
 import OpenAI from "openai"
 import { ChatCompletionCreateParamsBase } from "openai/resources/chat/completions.mjs"
-import Anthropic from "@anthropic-ai/sdk"
-import { GoogleGenerativeAI } from "@google/generative-ai"
 import {
   getServerProfile,
   validateModelAndMessageCount
@@ -33,33 +31,12 @@ export async function POST(request: Request) {
 
     await validateModelAndMessageCount(chatSettings.model, new Date())
 
-    let response: Response
-
-    if (
-      image &&
-      (chatSettings.model.startsWith("anthropic/") ||
-        chatSettings.model.startsWith("google/"))
-    ) {
-      if (chatSettings.model.startsWith("anthropic/")) {
-        response = await handleAnthropicWithImage(
-          chatSettings,
-          messages,
-          image,
-          profile
-        )
-      } else if (chatSettings.model.startsWith("google/")) {
-        response = await handleGoogleWithImage(
-          chatSettings,
-          messages,
-          image,
-          profile
-        )
-      } else {
-        throw new Error("Unsupported model for image processing")
-      }
-    } else {
-      response = await handleOpenRouter(chatSettings, messages, profile)
-    }
+    const response = await handleOpenRouter(
+      chatSettings,
+      messages,
+      image,
+      profile
+    )
 
     return response
   } catch (error: any) {
@@ -83,6 +60,7 @@ export async function POST(request: Request) {
 async function handleOpenRouter(
   chatSettings: ChatSettings,
   messages: any[],
+  image: string | undefined,
   profile: any
 ): Promise<Response> {
   const openai = new OpenAI({
@@ -95,9 +73,29 @@ async function handleOpenRouter(
     }
   })
 
+  const formattedMessages = messages.map(msg => {
+    if (
+      msg.role === "user" &&
+      messages.indexOf(msg) === messages.length - 1 &&
+      image
+    ) {
+      return {
+        role: msg.role,
+        content: [
+          {
+            type: "image_url",
+            image_url: { url: `data:image/jpeg;base64,${image}` }
+          },
+          { type: "text", text: msg.content }
+        ]
+      }
+    }
+    return msg
+  })
+
   const response = await openai.chat.completions.create({
     model: chatSettings.model as ChatCompletionCreateParamsBase["model"],
-    messages: messages,
+    messages: formattedMessages,
     temperature: chatSettings.temperature,
     max_tokens: undefined,
     stream: true
@@ -105,81 +103,4 @@ async function handleOpenRouter(
 
   const stream = OpenAIStream(response)
   return new StreamingTextResponse(stream)
-}
-
-async function handleAnthropicWithImage(
-  chatSettings: ChatSettings,
-  messages: any[],
-  image: string,
-  profile: any
-): Promise<Response> {
-  const anthropic = new Anthropic({
-    apiKey: profile.anthropic_api_key || process.env.ANTHROPIC_API_KEY
-  })
-
-  const formattedMessages = messages.map(msg => ({
-    role: msg.role,
-    content:
-      msg.role === "user" && messages.indexOf(msg) === messages.length - 1
-        ? [
-            {
-              type: "image",
-              source: { type: "base64", media_type: "image/jpeg", data: image }
-            },
-            { type: "text", text: msg.content }
-          ]
-        : msg.content
-  }))
-
-  const response = await anthropic.messages.create({
-    model: chatSettings.model.replace("anthropic/", ""),
-    max_tokens: 1024,
-    messages: formattedMessages,
-    temperature: chatSettings.temperature,
-    stream: true
-  })
-
-  const stream = AnthropicStream(response)
-  return new StreamingTextResponse(stream)
-}
-
-async function handleGoogleWithImage(
-  chatSettings: ChatSettings,
-  messages: any[],
-  image: string,
-  profile: any
-): Promise<Response> {
-  const genAI = new GoogleGenerativeAI(
-    profile.google_api_key || process.env.GOOGLE_API_KEY
-  )
-  const model = genAI.getGenerativeModel({
-    model: chatSettings.model.replace("google/", "")
-  })
-
-  const formattedPrompt = [
-    ...messages.map(msg => msg.content),
-    {
-      inlineData: {
-        mimeType: "image/jpeg",
-        data: image
-      }
-    }
-  ]
-
-  const response = await model.generateContentStream(formattedPrompt)
-
-  const encoder = new TextEncoder()
-  const readableStream = new ReadableStream({
-    async start(controller) {
-      for await (const chunk of response.stream) {
-        const chunkText = chunk.text()
-        controller.enqueue(encoder.encode(chunkText))
-      }
-      controller.close()
-    }
-  })
-
-  return new Response(readableStream, {
-    headers: { "Content-Type": "text/plain" }
-  })
 }
