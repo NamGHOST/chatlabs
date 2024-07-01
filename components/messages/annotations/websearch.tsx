@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card"
 import Image from "next/image"
 import { Annotation, Annotation2 } from "@/types/annotation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export function WebSearch({
   annotation
@@ -9,6 +9,10 @@ export function WebSearch({
   annotation: Annotation | Annotation2
 }) {
   const [showAll, setShowAll] = useState(false)
+
+  useEffect(() => {
+    console.log({ annotation })
+  }, [annotation])
 
   let result = annotation.webScraper__googleSearch
 

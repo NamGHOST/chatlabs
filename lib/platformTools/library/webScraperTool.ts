@@ -29,7 +29,7 @@ const webScraper = async (
   if ("parameters" in params) {
     params = params.parameters
   }
-
+  console.log(params, "web scraper")
   const url = params.url
 
   if (url === undefined) {
@@ -98,7 +98,7 @@ async function getYoutubeCaptions(
   params: any
 ): Promise<Omit<GetYoutubeCaptionsResult, "responseTime">> {
   let videoId = params.videoId || params.parameters?.videoId || ""
-
+  console.log(videoId, "youtube video id")
   if (!videoId) {
     throw new Error("videoId is required")
   }
@@ -134,7 +134,6 @@ async function getYoutubeCaptions(
     videoUrl: "https://www.youtube.com/watch?v=" + videoId
   }
 }
-
 async function googleSearch(
   params:
     | {
@@ -142,6 +141,8 @@ async function googleSearch(
       }
     | { query: string }
 ): Promise<Partial<GoogleSearchResult>> {
+  console.log(process.env.SERPER_API_KEY, "google search")
+
   if ("parameters" in params) {
     params = params.parameters
   }
@@ -151,23 +152,34 @@ async function googleSearch(
     throw new Error("Query is required")
   }
 
-  const response = await fetch("https://google.serper.dev/search", {
-    method: "POST",
-    headers: {
-      "X-API-KEY": process.env.SERPER_API_KEY as string,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ q: query })
-  })
+  try {
+    const response = await fetch("https://google.serper.dev/search", {
+      method: "POST",
+      headers: {
+        "X-API-KEY": process.env.SERPER_API_KEY as string,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ q: query })
+    })
 
-  if (!response.ok) {
-    throw new Error(response.statusText)
-  }
+    console.log(response, "google response")
 
-  const result = await response.json()
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`Error: ${response.status} - ${errorText}`)
+      throw new Error(
+        `Request failed with status ${response.status}: ${errorText}`
+      )
+    }
 
-  return {
-    organic: result.organic.slice(0, 3)
+    const result = await response.json()
+
+    return {
+      organic: result.organic.slice(0, 3)
+    }
+  } catch (error: any) {
+    console.error("Error during Google search:", error)
+    throw new Error(`Google search failed: ${error.message}`)
   }
 }
 

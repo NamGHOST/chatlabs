@@ -29,7 +29,11 @@ export const getAssistantToolsByAssistantId = async (assistantId: string) => {
   const allAssistantTools = (assistantTools.tools || []).concat(
     platformTools || []
   )
-
+  console.log({
+    tools: allAssistantTools,
+    id: assistantTools.id,
+    name: assistantTools.name
+  })
   return {
     tools: allAssistantTools,
     id: assistantTools.id,
