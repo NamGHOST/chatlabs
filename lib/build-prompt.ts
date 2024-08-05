@@ -68,6 +68,8 @@ export async function buildFinalMessages(
     BUILT_PROMPT += SYSTEM_PROMPT_CODE_EDITOR
   }
 
+  console.log(chatSettings)
+
   let CHUNK_SIZE = 4096 // sane default
   if (chatSettings.contextLength) {
     CHUNK_SIZE = chatSettings.contextLength
@@ -167,6 +169,20 @@ export async function buildFinalMessages(
 
             if (chatImage) {
               formedUrl = chatImage.base64
+            }
+          }
+
+          if (chatSettings.model === "anthropic/claude-3.5-sonnet") {
+            // parse data:image/png;base64 media_type
+            try {
+              return {
+                type: "image_url",
+                image_url: {
+                  url: formedUrl
+                }
+              }
+            } catch (error) {
+              console.log(error)
             }
           }
 

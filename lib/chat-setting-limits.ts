@@ -288,9 +288,9 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
   },
   "anthropic/claude-3.5-sonnet": {
     MIN_TEMPERATURE: 0,
-    MAX_TEMPERATURE: 0,
-    MAX_TOKEN_OUTPUT_LENGTH: 0,
-    MAX_CONTEXT_LENGTH: 0
+    MAX_TEMPERATURE: 1.0,
+    MAX_TOKEN_OUTPUT_LENGTH: 8192,
+    MAX_CONTEXT_LENGTH: 8192
   },
   "openai/gpt-4o-2024-05-13": {
     MIN_TEMPERATURE: 0,

@@ -1,4 +1,4 @@
-import React, { FC, memo, useMemo, useState } from "react"
+import React, { FC, useState } from "react"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
 import { MessageCodeBlock } from "./message-codeblock"
@@ -7,11 +7,8 @@ import { defaultUrlTransform } from "react-markdown"
 import { ImageWithPreview } from "@/components/image/image-with-preview"
 import { Button } from "@/components/ui/button"
 import { FileIcon } from "@/components/ui/file-icon"
-import Loading from "@/components/ui/loading"
-import { cn } from "@/lib/utils"
 
 interface MessageMarkdownProps {
-  isGenerating?: boolean
   experimentalCodeEditor?: boolean
   content: string
   onPreviewContent?: (content: {
@@ -28,45 +25,7 @@ function urlTransform(url: string) {
   return defaultUrlTransform(url)
 }
 
-const CodePreviewButton = memo(
-  ({
-    isGenerating,
-    fileName,
-    language,
-    onClick
-  }: {
-    isGenerating?: boolean
-    fileName: string
-    language: string
-    onClick: () => void
-  }) => {
-    return (
-      <Button
-        variant={"outline"}
-        size={"lg"}
-        className={
-          "text-foreground flex h-auto w-[260px] items-center justify-start space-x-1 overflow-hidden rounded-lg p-3 text-left font-sans hover:shadow"
-        }
-        onClick={onClick}
-      >
-        <div className={cn("size-10", isGenerating ? "animate-pulse" : "")}>
-          <FileIcon type={fileName.split(".")[1] || language} />
-        </div>
-        <div className={"flex flex-col overflow-hidden"}>
-          <div>{fileName}</div>
-          <span className="text-foreground/60 line-clamp-1 text-ellipsis whitespace-pre-wrap text-xs font-normal">
-            Click to view file
-          </span>
-        </div>
-      </Button>
-    )
-  }
-)
-
-CodePreviewButton.displayName = "CodePreviewButton"
-
 export const MessageMarkdown: FC<MessageMarkdownProps> = ({
-  isGenerating,
   experimentalCodeEditor = false,
   content,
   onPreviewContent
@@ -85,10 +44,7 @@ export const MessageMarkdown: FC<MessageMarkdownProps> = ({
 
   return (
     <MessageMarkdownMemoized
-      className={cn(
-        "prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 min-h-[40px] min-w-full space-y-6 break-words",
-        isGenerating ? "generating" : ""
-      )}
+      className="prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 min-h-[40px] min-w-full space-y-6 break-words"
       // remarkPlugins={[remarkGfm, remarkMath]}
       remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: false }]]}
       urlTransform={urlTransform}
@@ -169,17 +125,31 @@ export const MessageMarkdown: FC<MessageMarkdownProps> = ({
                 update: true
               })
 
-              function handleOnClick() {
-                handleEditorOpen(fileName, language, fileContentWithoutFileName)
-              }
-
               return (
-                <CodePreviewButton
-                  fileName={fileName}
-                  isGenerating={isGenerating}
-                  language={language}
-                  onClick={handleOnClick}
-                />
+                <Button
+                  variant={"outline"}
+                  size={"lg"}
+                  className={
+                    "text-foreground flex h-auto w-[260px] items-center justify-start space-x-1 overflow-hidden rounded-lg p-3 text-left font-sans hover:shadow"
+                  }
+                  onClick={() =>
+                    handleEditorOpen(
+                      fileName,
+                      language,
+                      fileContentWithoutFileName
+                    )
+                  }
+                >
+                  <div>
+                    <FileIcon type={fileName.split(".")[1] || language} />
+                  </div>
+                  <div className={"flex flex-col overflow-hidden"}>
+                    <div>{fileName}</div>
+                    <span className="text-foreground/60 line-clamp-1 text-ellipsis whitespace-pre-wrap text-xs font-normal">
+                      Click to view file
+                    </span>
+                  </div>
+                </Button>
               )
             }
           }
@@ -188,7 +158,6 @@ export const MessageMarkdown: FC<MessageMarkdownProps> = ({
 
           return (
             <MessageCodeBlock
-              isGenerating={isGenerating}
               language={(match && match[1]) || ""}
               value={fileContentWithoutFileName}
               {...props}

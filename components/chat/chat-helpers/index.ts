@@ -492,7 +492,7 @@ export const processResponse = async (
     ): boolean {
       if (!data) return false
 
-      console.log(data)
+      console.log("dsdasdsadsa", data)
 
       return data.some(x => {
         for (const key in x) {
@@ -610,6 +610,8 @@ export const handleCreateMessages = async (
   const cleanGeneratedText = generatedText.trim()
 
   if (isRegeneration && cleanGeneratedText) {
+    console.log("if block")
+
     const lastStartingMessage = chatMessages[chatMessages.length - 1].message
 
     const updatedMessage = await updateMessage(lastStartingMessage.id, {
@@ -624,6 +626,9 @@ export const handleCreateMessages = async (
     const createdMessages = cleanGeneratedText
       ? await createMessages([finalUserMessage, finalAssistantMessage])
       : await createMessages([finalUserMessage])
+
+    console.log("createdMessages")
+    console.log(createdMessages)
 
     const uploadPromises = newMessageImages
       .filter(obj => obj.file !== null)

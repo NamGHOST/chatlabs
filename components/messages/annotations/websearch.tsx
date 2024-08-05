@@ -20,6 +20,8 @@ export function WebSearch({
     result = result.result
   }
 
+  console.log("aaaaaaaaaaaa",result)
+
   const { organic } = result
 
   return (

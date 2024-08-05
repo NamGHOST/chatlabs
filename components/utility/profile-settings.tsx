@@ -480,12 +480,8 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({}) => {
                   />
                 </div>
                 <div className="flex items-center justify-between space-y-1">
-                  <div>
-                    <Label>Enable Experimental Code Editor</Label>
-                    <div className={"text-foreground/60 text-xs"}>
-                      Try experimental side-by-side code editor.
-                    </div>
-                  </div>
+                  <Label>Enable Experimental Code Editor</Label>
+
                   <Switch
                     checked={experimentalCodeEditor}
                     onCheckedChange={setExperimentalCodeEditor}
