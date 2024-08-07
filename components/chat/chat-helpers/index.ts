@@ -8,7 +8,8 @@ import { uploadMessageImage } from "@/db/storage/message-images"
 import {
   buildClaudeFinalMessages,
   buildFinalMessages,
-  buildGoogleGeminiFinalMessages
+  buildGoogleGeminiFinalMessages,
+  buildOpenRouterFinalMessages
 } from "@/lib/build-prompt"
 import { consumeReadableStream, parseDataStream } from "@/lib/consume-stream"
 import { Tables, TablesInsert } from "@/supabase/types"
@@ -295,6 +296,9 @@ export const handleHostedChat = async (
   } else if (provider === "anthropic") {
     ;({ finalMessages: formattedMessages, usedTokens } =
       await buildClaudeFinalMessages(payload, profile, chatImages))
+  } else if (provider === "openrouter") {
+    ;({ finalMessages: formattedMessages, usedTokens } =
+      await buildOpenRouterFinalMessages(payload, profile, chatImages))
   } else {
     ;({ finalMessages: formattedMessages, usedTokens } =
       await buildFinalMessages(payload, profile, chatImages))
@@ -610,8 +614,6 @@ export const handleCreateMessages = async (
   const cleanGeneratedText = generatedText.trim()
 
   if (isRegeneration && cleanGeneratedText) {
-    console.log("if block")
-
     const lastStartingMessage = chatMessages[chatMessages.length - 1].message
 
     const updatedMessage = await updateMessage(lastStartingMessage.id, {
@@ -626,9 +628,6 @@ export const handleCreateMessages = async (
     const createdMessages = cleanGeneratedText
       ? await createMessages([finalUserMessage, finalAssistantMessage])
       : await createMessages([finalUserMessage])
-
-    console.log("createdMessages")
-    console.log(createdMessages)
 
     const uploadPromises = newMessageImages
       .filter(obj => obj.file !== null)
