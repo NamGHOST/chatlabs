@@ -151,20 +151,22 @@ async function googleSearch(
     throw new Error("Query is required")
   }
 
+  const API_KEY = process.env.SERPER_API_KEY as string
+
   const response = await fetch("https://google.serper.dev/search", {
     method: "POST",
     headers: {
-      "X-API-KEY": process.env.SERPER_API_KEY as string,
+      "X-API-KEY": API_KEY,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ q: query })
   })
 
+  const result = await response.json()
+
   if (!response.ok) {
     throw new Error(response.statusText)
   }
-
-  const result = await response.json()
 
   return {
     organic: result.organic.slice(0, 3)

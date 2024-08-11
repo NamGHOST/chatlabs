@@ -19,7 +19,7 @@ const tavilySearch = async (
     throw new Error("Tavily API key is required")
   }
 
-  const apiUrl = "https://api.tavily.com/"
+  const apiUrl = "https://api.tavily.com/search"
   let numResults = 0 // Declare numResults here
   try {
     const response = await fetch(apiUrl, {
@@ -28,14 +28,15 @@ const tavilySearch = async (
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ query })
+      body: JSON.stringify({ query, api_key: apiKey })
     })
+
+    const data = await response.json()
 
     if (!response.ok) {
       throw new Error(`Tavily API error: ${response.statusText}`)
     }
 
-    const data = await response.json()
     const searchResults = data.results.map((result: any) => ({
       title: result.title,
       url: result.url,
