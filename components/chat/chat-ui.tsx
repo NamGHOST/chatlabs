@@ -57,7 +57,7 @@ export const ChatUI: React.FC<ChatUIProps> = ({
   showModelSelector = true
 }) => {
   const params = useParams()
-  const chatId = params.chatid as string
+  const chatId = params?.chatid as string
   const searchParams = useSearchParams()
   const { theme } = useTheme()
 
@@ -125,7 +125,7 @@ export const ChatUI: React.FC<ChatUIProps> = ({
         includeProfileContext: assistant.include_profile_context,
         includeWorkspaceInstructions: assistant.include_workspace_instructions,
         embeddingsProvider: assistant.embeddings_provider as
-          | "cohere"
+          | "jina"
           | "openai"
           | "local"
       })
@@ -220,11 +220,11 @@ ${content}
   }
 
   const handleSearchParams = (): void => {
-    const promptId = searchParams.get("prompt_id")
-    const modelId = searchParams.get("model") as LLMID
-    const remixFileId = searchParams.get("remix")
-    const forkMessageId = searchParams.get("forkMessageId")
-    const forkSequenceNo = parseInt(searchParams.get("forkSequenceNo") || "-1")
+    const promptId = searchParams?.get("prompt_id")
+    const modelId = searchParams?.get("model") as LLMID
+    const remixFileId = searchParams?.get("remix")
+    const forkMessageId = searchParams?.get("forkMessageId")
+    const forkSequenceNo = parseInt(searchParams?.get("forkSequenceNo") || "-1")
 
     if (promptId) {
       getPromptById(parseIdFromSlug(promptId))
@@ -344,7 +344,7 @@ ${content}
       includeProfileContext: chat.include_profile_context,
       includeWorkspaceInstructions: chat.include_workspace_instructions,
       embeddingsProvider: chat.embeddings_provider as
-        | "cohere"
+        | "jina"
         | "openai"
         | "local"
     })

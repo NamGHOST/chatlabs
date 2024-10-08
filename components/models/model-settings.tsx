@@ -27,6 +27,15 @@ import { updateWorkspace } from "@/db/workspaces"
 import { useTranslation } from "react-i18next"
 import { OPENROUTER_LLM_LIST } from "@/lib/models/llm/openrouter-llm-list"
 
+// Update the type to include both OpenRouter and regular LLM IDs
+type HiddenModelID = OpenRouterLLMID | LLMID
+
+// Update the constant to include both types of model IDs
+const PRO_PLAN_HIDDEN_MODELS: HiddenModelID[] = [
+  "openai/o1-preview",
+  "gpt-4-turbo-preview" // Example of a non-OpenRouter model
+]
+
 export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "gpt-3.5-turbo-0125": false,
   "gpt-4-vision-preview": false,
@@ -87,7 +96,6 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "google/gemini-pro-1.5-exp": false,
 
   "databricks/dbrx-instruct": false,
-  "cohere/command-r-plus-08-2024": false,
   "mistralai/mixtral-8x22b-instruct": false,
   "microsoft/wizardlm-2-8x22b": false,
   "meta-llama/llama-3.1-405b-instruct": false,
@@ -182,6 +190,11 @@ function ModelSettings({ models }: { models?: LLM[] }) {
         {modelIds.map(modelId => {
           const model = models?.find(m => m.modelId === modelId)
           if (!model) return null
+
+          // Update this check to work for both OpenRouter and regular models
+          if (PRO_PLAN_HIDDEN_MODELS.includes(modelId as HiddenModelID)) {
+            return null
+          }
 
           let displayName = model.modelName
           if (model.provider === "openrouter") {

@@ -119,7 +119,7 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
   "llama-3.1-70b-versatile": {
     MIN_TEMPERATURE: 0.0,
     MAX_TEMPERATURE: 1.0,
-    MAX_TOKEN_OUTPUT_LENGTH: 8192,
+    MAX_TOKEN_OUTPUT_LENGTH: 8000,
     MAX_CONTEXT_LENGTH: 128000
   },
   "llama3-8b-8192": {
@@ -353,12 +353,6 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 0,
     MAX_CONTEXT_LENGTH: 0
   },
-  "cohere/command-r-plus-08-2024": {
-    MIN_TEMPERATURE: 0,
-    MAX_TEMPERATURE: 1,
-    MAX_TOKEN_OUTPUT_LENGTH: 4000,
-    MAX_CONTEXT_LENGTH: 128000
-  },
   "mistralai/mixtral-8x22b-instruct": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
@@ -368,8 +362,8 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
   "meta-llama/llama-3.1-405b-instruct": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
-    MAX_TOKEN_OUTPUT_LENGTH: 0,
-    MAX_CONTEXT_LENGTH: 0
+    MAX_TOKEN_OUTPUT_LENGTH: 32000,
+    MAX_CONTEXT_LENGTH: 131072
   },
   "microsoft/wizardlm-2-8x22b": {
     MIN_TEMPERATURE: 0,
