@@ -90,7 +90,7 @@ const ChatMessageCounter: React.FC<ChatMessageCounterProps> = () => {
   return (
     <div className="variant-outline flex justify-end p-2">
       <button
-        className="relative flex h-8 w-auto items-center justify-center rounded-full border border-purple-400 bg-gradient-to-r from-purple-500 to-blue-500 px-1.5 transition-all hover:border-pink-200 hover:from-purple-100 hover:to-pink-100"
+        className="relative flex h-8 w-auto items-center justify-center rounded-full border border-purple-200 bg-gradient-to-r from-purple-300 to-blue-500 px-1.5 transition-all hover:border-pink-200 hover:from-purple-100 hover:to-pink-100"
         onClick={() => setIsPaywallOpen(true)}
       >
         <span className="mr-1 font-light text-black">
