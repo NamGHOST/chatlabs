@@ -58,7 +58,8 @@ export const Sidebar: FC = () => {
     showSidebar,
     setShowSidebar,
     isPaywallOpen,
-    setIsPaywallOpen // Use context's state
+    setIsPaywallOpen,
+    setSelectedAssistant // Use context's state
   } = useContext(ChatbotUIContext)
   const { handleNewChat } = useChatHandler()
   const [activeSubmenu, setActiveSubmenu] = useState<ContentType | null>(null)
@@ -118,6 +119,7 @@ export const Sidebar: FC = () => {
   }
 
   const handleCreateChat = () => {
+    setSelectedAssistant(null) // Clear the selected assistant
     handleNewChat()
   }
 
