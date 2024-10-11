@@ -111,7 +111,7 @@ export default function SetupPage() {
     window.location.href = "/"
   }
 
-  const handleShouldProceed = (proceed: boolean) => {
+  const handleOnPlanShouldProceed = (proceed: boolean) => {
     if (proceed) {
       setCurrentStep(currentStep + 1)
     } else {
@@ -189,111 +189,72 @@ export default function SetupPage() {
     setWorkspaces(workspaces)
   }
 
+  const totalSteps = enableProfileStep ? 3 : 2
+
+  function getStepComponents() {
+    const stepComponents = [
+      enableProfileStep ? (
+        <StepContainer
+          key={1}
+          totalSteps={totalSteps}
+          stepDescription="Let's create your profile."
+          stepNum={currentStep}
+          stepTitle="Welcome to ImogenAI"
+          onShouldProceed={handleOnProfileShouldProceed}
+          showNextButton={!!(username && usernameAvailable)}
+          showBackButton={false}
+        >
+          <ProfileStep
+            displayName={displayName}
+            onDisplayNameChange={setDisplayName}
+            onUserQuestionChange={setQuestion}
+            userQuestion={question}
+          />
+        </StepContainer>
+      ) : null,
+      <StepContainer
+        key={2}
+        totalSteps={totalSteps}
+        stepDescription="Pro plan gives unlimited access to over 20 AI models."
+        stepNum={currentStep}
+        stepTitle="Choose your plan"
+        onShouldProceed={handleOnPlanShouldProceed}
+        showNextButton={true}
+        showBackButton={enableProfileStep}
+      >
+        <Plans onClose={() => {}} showCloseIcon={false} />
+      </StepContainer>,
+      <StepContainer
+        key={3}
+        totalSteps={totalSteps}
+        stepDescription="You are all set up!"
+        stepNum={currentStep}
+        stepTitle="Setup Complete"
+        onShouldProceed={handleOnFinishShouldProceed}
+        showNextButton={true}
+        showBackButton={true}
+      >
+        <FinishStep displayName={displayName} />
+      </StepContainer>
+    ].filter(Boolean) as ReactNode[]
+
+    return stepComponents
+  }
+
   const renderStep = (stepNum: number) => {
-    switch (stepNum) {
-      // Profile Step
-      case 1:
-        return (
-          <StepContainer
-            totalSteps={3}
-            stepDescription={t("Let's create your profile.")}
-            stepNum={currentStep}
-            stepTitle={t("Welcome to ImogenAI")}
-            onShouldProceed={handleShouldProceed}
-            showNextButton={!!(username && usernameAvailable)}
-            showBackButton={false}
-          >
-            <ProfileStep
-              displayName={displayName}
-              onDisplayNameChange={setDisplayName}
-              onUserQuestionChange={setQuestion}
-              userQuestion={question}
-            />
-          </StepContainer>
-        )
-
-      case 2:
-        return (
-          <StepContainer
-            totalSteps={3}
-            stepDescription={t(
-              "Pro plan gives unlimited access to over 20 AI models."
-            )}
-            stepNum={currentStep}
-            stepTitle={t("Choose your plan")}
-            onShouldProceed={handleShouldProceed}
-            showNextButton={true}
-            showBackButton={true}
-          >
-            <Plans
-              onClose={() => setIsPaywallOpen(false)}
-              showCloseIcon={false}
-            />
-          </StepContainer>
-        )
-
-      // API Step
-      // case 2:
-      //   return (
-      //     <StepContainer
-      //       stepDescription="Enter API keys for each service you'd like to use."
-      //       stepNum={currentStep}
-      //       stepTitle="Set API Keys (optional)"
-      //       onShouldProceed={handleShouldProceed}
-      //       showNextButton={true}
-      //       showBackButton={true}
-      //     >
-      //       <APIStep
-      //         openaiAPIKey={openaiAPIKey}
-      //         openaiOrgID={openaiOrgID}
-      //         azureOpenaiAPIKey={azureOpenaiAPIKey}
-      //         azureOpenaiEndpoint={azureOpenaiEndpoint}
-      //         azureOpenai35TurboID={azureOpenai35TurboID}
-      //         azureOpenai45TurboID={azureOpenai45TurboID}
-      //         azureOpenai45VisionID={azureOpenai45VisionID}
-      //         azureOpenaiEmbeddingsID={azureOpenaiEmbeddingsID}
-      //         anthropicAPIKey={anthropicAPIKey}
-      //         googleGeminiAPIKey={googleGeminiAPIKey}
-      //         mistralAPIKey={mistralAPIKey}
-      //         perplexityAPIKey={perplexityAPIKey}
-      //         useAzureOpenai={useAzureOpenai}
-      //         onOpenaiAPIKeyChange={setOpenaiAPIKey}
-      //         onOpenaiOrgIDChange={setOpenaiOrgID}
-      //         onAzureOpenaiAPIKeyChange={setAzureOpenaiAPIKey}
-      //         onAzureOpenaiEndpointChange={setAzureOpenaiEndpoint}
-      //         onAzureOpenai35TurboIDChange={setAzureOpenai35TurboID}
-      //         onAzureOpenai45TurboIDChange={setAzureOpenai45TurboID}
-      //         onAzureOpenai45VisionIDChange={setAzureOpenai45VisionID}
-      //         onAzureOpenaiEmbeddingsIDChange={setAzureOpenaiEmbeddingsID}
-      //         onAnthropicAPIKeyChange={setAnthropicAPIKey}
-      //         onGoogleGeminiAPIKeyChange={setGoogleGeminiAPIKey}
-      //         onMistralAPIKeyChange={setMistralAPIKey}
-      //         onPerplexityAPIKeyChange={setPerplexityAPIKey}
-      //         onUseAzureOpenaiChange={setUseAzureOpenai}
-      //         openrouterAPIKey={openrouterAPIKey}
-      //         onOpenrouterAPIKeyChange={setOpenrouterAPIKey}
-      //       />
-      //     </StepContainer>
-      //   )
-
-      // Finish Step
-      case 3:
-        return (
-          <StepContainer
-            totalSteps={3}
-            stepDescription={t("You are all set up!")}
-            stepNum={currentStep}
-            stepTitle={t("Setup Complete")}
-            onShouldProceed={handleShouldProceed}
-            showNextButton={true}
-            showBackButton={true}
-          >
-            <FinishStep displayName={displayName} />
-          </StepContainer>
-        )
-      default:
-        return null
-    }
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={stepNum}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          {getStepComponents()[stepNum - 1]}
+        </motion.div>
+      </AnimatePresence>
+    )
   }
 
   if (bypassOnboardingRedirectLoading || loading) {
