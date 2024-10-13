@@ -10,6 +10,7 @@ import OpenAI from "openai"
 import { ChatCompletionCreateParamsBase } from "openai/resources/chat/completions.mjs"
 import { OPENAI_LLM_LIST } from "@/lib/models/llm/openai-llm-list"
 import { CHAT_SETTING_LIMITS } from "@/lib/chat-setting-limits"
+import axios from "axios"
 
 export const runtime: ServerRuntime = "edge"
 
@@ -26,6 +27,30 @@ export async function POST(request: Request) {
     checkApiKey(profile.openai_api_key, "OpenAI")
 
     await validateModelAndMessageCount(chatSettings.model, new Date())
+
+    const params = {
+      api_key: process.env.GOOGLE_API_KEY || "08467AECD4454E2BAD025E48B5E23FC3",
+      search_type: "images",
+      q: messages[messages.length - 1].content
+    }
+    console.log(params)
+
+    const image_url: any[] = []
+
+    const res = await axios.get("https://api.scaleserp.com/search", { params })
+
+    for (let i = 0; i < 5; i++) {
+      image_url.push(res.data.image_results[i].image)
+    }
+
+    const prompt = `
+      Since the provided URLs are directly associated with the results, ensure to include them accurately in your response.
+      ${image_url}
+
+      User's Qeustion: ${messages[messages.length - 1].content}
+    `
+    console.log(image_url)
+    messages[messages.length - 1].content = prompt
 
     const openai = new OpenAI({
       apiKey: profile.openai_api_key || "",
