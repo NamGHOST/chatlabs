@@ -130,7 +130,11 @@ function parseSupportedModelsFromEnv() {
     "qwen/qwen-2-vl-72b-instruct",
     "cohere/command-r-plus-08-2024",
     "cohere/command-r-08-2024",
-    "mythic/mythomax-13b"
+    "mythic/mythomax-13b",
+    "perplexity/llama-3.1-sonar-large-128k-online",
+    "x-ai/grok-2",
+    "liquid/lfm-40b",
+    "nvidia/llama-3.1-nemotron-70b-instruct"
   ]
 
   if (process.env.NEXT_PUBLIC_OPENROUTER_MODELS) {

@@ -54,10 +54,11 @@ import { Switch } from "@/components/ui/switch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { debounce } from "@/lib/debounce"
 import { Callout, CalloutDescription, CalloutTitle } from "../ui/callout"
-import { Loader } from "lucide-react"
+import { Link, Loader } from "lucide-react"
 import { ButtonWithTooltip } from "../ui/button-with-tooltip"
 import useTranslate from "@/lib/hooks/use-translate"
 import LanguageSwitcher from "../languageswitcher/LanguageSwitcher"
+import { UsageChart } from "./UsageChart"
 
 interface ProfileSettingsProps {
   isCollapsed: boolean
@@ -309,6 +310,27 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
     }
   }
 
+  const renderAPIKeyInput = (
+    label: string,
+    value: string,
+    onChange: (value: string) => void,
+    isDisabled: boolean
+  ) => (
+    <div className="space-y-1">
+      <Label className={isDisabled ? "text-muted-foreground" : ""}>
+        {label}
+      </Label>
+      <Input
+        placeholder={`${label} (Upgrade to edit)`}
+        type="password"
+        value={isDisabled ? "" : value}
+        onChange={e => onChange(e.target.value)}
+        disabled={isDisabled}
+        className={isDisabled ? "opacity-50" : ""}
+      />
+    </div>
+  )
+
   if (!profile) return null
 
   return (
@@ -383,6 +405,9 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
             </TabsTrigger>
             <TabsTrigger value="subscription" className="w-full justify-start">
               Subscription
+            </TabsTrigger>
+            <TabsTrigger value="usage" className="w-full justify-start">
+              Usage
             </TabsTrigger>
           </TabsList>
 
@@ -523,179 +548,93 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
             <TabsContent value="keys">
               <Callout variant={"info"}>
                 <CalloutTitle className="flex items-center space-x-2">
-                  <IconKey className="mr-1 size-4" stroke={1.5} /> API Keys
+                  <IconKey className="mr-1 size-4" stroke={1.5} /> Imogen API
+                  Keys Hub
                 </CalloutTitle>
                 <CalloutDescription>
-                  <p>There are two ways to use API keys in ImogenAI:</p>
+                  <p>How to use API keys? :</p>
                   <ol className="mt-2 list-inside list-decimal">
                     <li className="mb-2">
-                      <strong>Paid ImogenAI accounts:</strong> By default,
-                      ImogenAI provides API keys with usage limits based on your
-                      subscription plan. These keys are managed by ImogenAI and
-                      ensure a seamless experience.
+                      <strong>Paid Imogen accounts:</strong> By default, Imogen
+                      provides usage limits based on your subscription plan.
+                      Imogen ensure a seamless experience for you.
                     </li>
                     <li>
-                      <strong>Your own API keys:</strong> If you provide your
-                      own API keys here, ImogenAI will use them instead. This
+                      <strong>Use your own API keys:</strong> If you provide
+                      your own API keys here, Imogen will use them instead. This
                       option lifts the plan-based limitations but requires you
                       to manage your own API usage and billing with the
                       respective providers.
                     </li>
+
+                    <p className="mt-2">
+                      Choose the option that best suits your needs and usage
+                      patterns. Click on the link below for more details.
+                    </p>
+                    <a href="/tutorial/api-keys" target="_blank">
+                      <IconExternalLink size={18} stroke={1.5} />
+                    </a>
                   </ol>
-                  <p className="mt-2">
-                    Choose the option that best suits your needs and usage
-                    patterns.
-                  </p>
                 </CalloutDescription>
               </Callout>
               <div className="mt-5 space-y-2">
-                <Label className="flex items-center">
-                  {useAzureOpenai ? "Azure OpenAI API Key" : "OpenAI API Key"}
-
+                {renderAPIKeyInput(
+                  "OpenAI API Key",
+                  openaiAPIKey,
+                  setOpenaiAPIKey,
+                  profile?.plan === "free"
+                )}
+                {renderAPIKeyInput(
+                  "Anthropic API Key",
+                  anthropicAPIKey,
+                  setAnthropicAPIKey,
+                  profile?.plan === "free"
+                )}
+                {renderAPIKeyInput(
+                  "Google Gemini API Key",
+                  googleGeminiAPIKey,
+                  setGoogleGeminiAPIKey,
+                  profile?.plan === "free"
+                )}
+                {renderAPIKeyInput(
+                  "Mistral API Key",
+                  mistralAPIKey,
+                  setMistralAPIKey,
+                  profile?.plan === "free"
+                )}
+                {renderAPIKeyInput(
+                  "Groq API Key",
+                  groqAPIKey,
+                  setGroqAPIKey,
+                  profile?.plan === "free"
+                )}
+                {renderAPIKeyInput(
+                  "Perplexity API Key",
+                  perplexityAPIKey,
+                  setPerplexityAPIKey,
+                  profile?.plan === "free"
+                )}
+                {profile?.plan.startsWith("byok") &&
+                  renderAPIKeyInput(
+                    "OpenRouter API Key",
+                    openrouterAPIKey,
+                    setOpenrouterAPIKey,
+                    false
+                  )}
+              </div>
+              {profile?.plan === "free" && (
+                <div className="mt-4 text-center">
+                  <p>
+                    API key management is not available on your current plan.
+                  </p>
                   <Button
-                    className="ml-3 h-[18px] w-[150px] text-[11px]"
-                    onClick={() => setUseAzureOpenai(!useAzureOpenai)}
+                    className="mt-4 bg-violet-600"
+                    onClick={() => setIsPaywallOpen(true)}
                   >
-                    {useAzureOpenai
-                      ? "Switch To Standard OpenAI"
-                      : "Switch To Azure OpenAI"}
+                    Upgrade to use all AI models
                   </Button>
-                </Label>
-
-                {useAzureOpenai ? (
-                  <Input
-                    placeholder="Azure OpenAI API Key"
-                    type="password"
-                    value={azureOpenaiAPIKey}
-                    onChange={e => setAzureOpenaiAPIKey(e.target.value)}
-                  />
-                ) : (
-                  <Input
-                    placeholder="OpenAI API Key"
-                    type="password"
-                    value={openaiAPIKey}
-                    onChange={e => setOpenaiAPIKey(e.target.value)}
-                  />
-                )}
-              </div>
-
-              <div className="ml-8 space-y-3">
-                {useAzureOpenai && (
-                  <>
-                    <div className="space-y-1">
-                      <Label>Azure Endpoint</Label>
-                      <Input
-                        placeholder="https://your-endpoint.openai.azure.com"
-                        value={azureOpenaiEndpoint}
-                        onChange={e => setAzureOpenaiEndpoint(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>Azure GPT-3.5 Turbo Deployment Name</Label>
-                      <Input
-                        placeholder="Azure GPT-3.5 Turbo Deployment Name"
-                        value={azureOpenai35TurboID}
-                        onChange={e => setAzureOpenai35TurboID(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>Azure GPT-4.5 Turbo Deployment Name</Label>
-                      <Input
-                        placeholder="Azure GPT-4.5 Turbo Deployment Name"
-                        value={azureOpenai45TurboID}
-                        onChange={e => setAzureOpenai45TurboID(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>Azure GPT-4.5 Vision Deployment Name</Label>
-                      <Input
-                        placeholder="Azure GPT-4.5 Vision Deployment Name"
-                        value={azureOpenai45VisionID}
-                        onChange={e => setAzureOpenai45VisionID(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>Azure Embeddings Deployment Name</Label>
-                      <Input
-                        placeholder="Azure Embeddings Deployment Name"
-                        value={azureEmbeddingsID}
-                        onChange={e => setAzureEmbeddingsID(e.target.value)}
-                      />
-                    </div>
-                  </>
-                )}
-                {!useAzureOpenai && (
-                  <div className="space-y-1">
-                    <Label>OpenAI Organization ID</Label>
-                    <Input
-                      placeholder="OpenAI Organization ID (optional)"
-                      type="password"
-                      value={openaiOrgID}
-                      onChange={e => setOpenaiOrgID(e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                <Label>Anthropic API Key</Label>
-                <Input
-                  placeholder="Anthropic API Key"
-                  type="password"
-                  value={anthropicAPIKey}
-                  onChange={e => setAnthropicAPIKey(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label>Google Gemini API Key</Label>
-                <Input
-                  placeholder="Google Gemini API Key"
-                  type="password"
-                  value={googleGeminiAPIKey}
-                  onChange={e => setGoogleGeminiAPIKey(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label>Mistral API Key</Label>
-                <Input
-                  placeholder="Mistral API Key"
-                  type="password"
-                  value={mistralAPIKey}
-                  onChange={e => setMistralAPIKey(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label>Groq API Key</Label>
-                <Input
-                  placeholder="Groq API Key"
-                  type="password"
-                  value={groqAPIKey}
-                  onChange={e => setGroqAPIKey(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label>Perplexity API Key</Label>
-                <Input
-                  placeholder="Perplexity API Key"
-                  type="password"
-                  value={perplexityAPIKey}
-                  onChange={e => setPerplexityAPIKey(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label>OpenRouter API Key</Label>
-                <Input
-                  placeholder="OpenRouter API Key"
-                  type="password"
-                  value={openrouterAPIKey}
-                  onChange={e => setOpenrouterAPIKey(e.target.value)}
-                />
-              </div>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="subscription">
@@ -739,6 +678,10 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                 )}
               </div>
             </TabsContent>
+
+            <TabsContent value="usage">
+              <UsageChart />
+            </TabsContent>
           </div>
         </Tabs>
 
@@ -749,7 +692,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
               <WithTooltip
                 display={
                   <div>
-                    Download ImogenAI 1.0 data as JSON. Import coming soon!
+                    Download Imogen 1.0 data as JSON. Import coming soon!
                   </div>
                 }
                 trigger={

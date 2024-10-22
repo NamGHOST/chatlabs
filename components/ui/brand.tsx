@@ -19,7 +19,9 @@ export const Brand: FC<BrandProps> = ({ theme = "dark" }) => {
         {/* Only Brand uses Animated SVG */}
       </div>
 
-      <h1 className="text-4xl font-semibold tracking-wide">ImogenAI</h1>
+      <h3 className="sans-noto font-montserrat text-2xl font-light tracking-[0.2em]">
+        I M O G E N
+      </h3>
       <div className="flex flex-col items-center py-2">
         <h4 className="text-sm">{t("World's best AI models in one place.")}</h4>
         <h4 className="text-sm">

@@ -12,3 +12,5 @@ export type ModelProvider =
   | "meta"
   | "microsoft"
   | "deepseek"
+  | "x-ai"
+  | "nvidia"

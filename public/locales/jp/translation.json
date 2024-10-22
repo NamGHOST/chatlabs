@@ -45,7 +45,7 @@
   "Assistants are special AI characters instructed to provide information, solve specific problems, simulate conversations or offer creative content based on user queries.": "アシスタントは、ユーザーの質問に基づいて情報を提供し、特定の問題を解決し、対話を模擬し、または創造的なコンテンツを提供するように指示された特殊なAIキャラクターです。",
 
   "Let's create your profile": "プロフィールを作成しましょう。",
-  "Welcome to ImogenAI": "ImogenAIへようこそ",
+  "Welcome to Imogen": "Imogenへようこそ",
   "Choose your plan": "プランを選択してください",
   "Pro plan gives unlimited access to over 20 AI models.": "プロプランでは20以上のAIモデルに無制限にアクセスできます。",
   "You are all set up!": "セットアップが完了しました！",
@@ -131,5 +131,47 @@
 
   "Upload": "アップロード",
   "Attach files": "ファイルを添付",
-  "Ask anything...": "使用したいモデルを選択したら、何でも質問できます..."
+  "Ask anything...": "使用したいモデルを選択したら、何でも質問できます...",
+
+  "Lite Plan": "Lite プラン",
+  "Pro Plan": "Pro プラン",
+  "Standard models: 5000 requests": "標準モデル: 5000回のリクエスト",
+  "GPT-4o mini, Claude 3 Haiku and more": "GPT-4o mini、Claude 3 Haiku など",
+  "Pro models: 250 requests": "Pro モデル: 250回のリクエスト",
+  "Limited time offer: Access to OpenAI: O1mini, GPT 4o ,X-AI Grok2": "期間限定オファー: OpenAIへのアクセス: O1mini、GPT 4o、X-AI Grok2",
+  "Powered by Stable Diffusion": "Stable Diffusion搭載",
+  "Connect to OpenAI, Anthropic, Google Gemini, and more": "OpenAI、Anthropic、Google Geminiなどに接続",
+  "Artifact side by side code editor": "Artifact サイドバイサイドコードエディタ",
+  "Share generated app online": "生成されたアプリをオンラインで共有",
+  "AI-powered customizable assistant": "AIパワーのカスタマイズ可能なアシスタント",
+  "AI model Arena": "AI モデルアリーナ",
+  "Translation, email replies, reports, grammar checks": "翻訳、メール返信、レポート、文法チェック",
+  "AI web search": "AI ウェブ検索",
+  "Unlimited AI summaries": "無制限のAI要約",
+  "Scan webpages, YouTube videos, or files": "ウェブページ、YouTube動画、ファイルのスキャンと要約",
+  "File summaries, smart Q&A, file translation, multi-language translation, extended PDF reading, batch translation, etc.": "ファイル要約、スマートQ&A、ファイル翻訳、多言語翻訳、拡張PDFリーディング、一括翻訳など",
+  "Chrome / Edge / Safari, iOS, Mac, Android and Windows": "Chrome / Edge / Safari、iOS、Mac、Android、Windows",
+  "Optimized for all devices": "すべてのデバイスに最適化",
+  "Priority CS support": "優先カスタマーサポート",
+  "VIP group access": "VIPグループアクセス",
+  "Standard models: Unlimited requests": "標準モデル: 無制限のリクエスト",
+  "Pro models: 500 requests": "Pro モデル: 500回のリクエスト",
+  "Ultimate models: Limited access to OpenAI: O1 and Claude Opus": "Ultimate モデル: OpenAIへの限定アクセス: O1とClaude Opus",
+  "Powered by Flux Pro 1.1": "Flux Pro 1.1搭載",
+  "Advanced Features": "高度な機能",
+
+
+  "Thank you for subscribing to our product.": "製品にご登録いただき、ありがとうございます。",
+  "We are dedicated to making this the best possible experience you can have with an LLM. We have one question before you get started.": "私たちは、LLMで最高の体験をしていただけるよう努めています。始める前に、1つ質問があります。",
+  "What outcome do you hope this product will help you achieve?": "この製品を通じて、どのような成果を達成したいとお考えですか？",
+  "Write your response here....": "ここに回答を記入してください...",
+  "We read every response and will make sure we do our best to deliver a better experience.": "すべての回答を確認し、より良い体験を提供できるよう最善を尽くします。",
+  "Submit and start chatting": "送信してチャットを開始"
+    
+  
+
+
+
+
+  
 }

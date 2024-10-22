@@ -33,6 +33,7 @@ import {
   SelectItem,
   SelectTrigger
 } from "@/components/ui/select"
+import { PLAN_BYOK_MONTHLY, PLAN_BYOK_YEARLY, PLANS } from "@/lib/stripe/config" // Add this import
 
 interface ChatUIProps {}
 
@@ -103,6 +104,8 @@ const ChatWrapper = forwardRef(
       x =>
         x.modelId === chatSettings?.model || x.hostedId === chatSettings?.model
     )
+
+    const { profile } = useContext(ChatbotUIContext)
 
     useImperativeHandle(
       ref,
@@ -209,24 +212,27 @@ const ChatWrapper = forwardRef(
               "max-w-[25%] overflow-hidden text-ellipsis text-nowrap px-2 xl:max-w-[15%]"
             }
           >
-            <WithTooltip
-              display={
-                <div className={"flex items-center"}>
-                  {responseTokensTotal} output tokens * ¢
-                  {(
-                    (selectedModel?.pricing?.outputCost ||
-                      selectedModel?.pricing?.inputCost ||
-                      0) / 10000
-                  ).toFixed(6)}{" "}
-                  + {requestTokensTotal} input tokens * ¢
-                  {((selectedModel?.pricing?.inputCost || 0) / 10000).toFixed(
-                    6
-                  )}{" "}
-                  = ¢{cost}
-                </div>
-              }
-              trigger={<>¢{cost}</>}
-            />
+            {PLANS.includes(profile?.plan as string) &&
+            profile?.plan.split("_")[0] === "byok" ? (
+              <WithTooltip
+                display={
+                  <div className={"flex items-center"}>
+                    {responseTokensTotal} output tokens * ¢
+                    {(
+                      (selectedModel?.pricing?.outputCost ||
+                        selectedModel?.pricing?.inputCost ||
+                        0) / 10000
+                    ).toFixed(6)}{" "}
+                    + {requestTokensTotal} input tokens * ¢
+                    {((selectedModel?.pricing?.inputCost || 0) / 10000).toFixed(
+                      6
+                    )}{" "}
+                    = ¢{cost}
+                  </div>
+                }
+                trigger={<>¢{cost}</>}
+              />
+            ) : null}
           </div>
         </div>
       </div>

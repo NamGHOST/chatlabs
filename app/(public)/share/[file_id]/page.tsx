@@ -30,7 +30,7 @@ export async function generateMetadata({
   const file = await getFileByHashId(file_id)
 
   return {
-    title: `${file?.name} - Created with ImogenAI`,
+    title: `${file?.name} - Created with Imogen`,
     description: file?.description
   }
 }
@@ -96,16 +96,16 @@ const SharePage = async ({
             <DialogTrigger asChild>
               <Button variant="ghost" size="sm">
                 <IconInfoCircle size={18} className={"mr-2"} stroke={1.5} />
-                Built with ImogenAI
+                Built with Imogen
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <div className="grid gap-4">
                 <h4 className="text-lg font-medium leading-none">
-                  What is ImogenAI?
+                  What is Imogen?
                 </h4>
                 <p className="text-muted-foreground text-sm">
-                  ImogenAI is a platform for creating, sharing, and exploring
+                  Imogen is a platform for creating, sharing, and exploring
                   groundbreaking AI applications.
                 </p>
                 <div className="grid grid-cols-2 gap-4">

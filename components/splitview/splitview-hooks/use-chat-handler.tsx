@@ -6,7 +6,13 @@ import { updateChat } from "@/db/chats"
 import { getCollectionFilesByCollectionId } from "@/db/collection-files"
 import { deleteMessagesIncludingAndAfter } from "@/db/messages"
 import { Tables } from "@/supabase/types"
-import { ChatMessage, ChatPayload, LLMID, ModelProvider } from "@/types"
+import {
+  ChatMessage,
+  ChatPayload,
+  LLMID,
+  ModelProvider,
+  LLMTier
+} from "@/types"
 import { useRouter } from "next/navigation"
 import React, { useContext, useEffect, useRef } from "react"
 import { LLM_LIST } from "@/lib/models/llm/llm-list"
@@ -26,6 +32,12 @@ import { isMobileScreen } from "@/lib/mobile"
 import { SubscriptionRequiredError } from "@/lib/errors"
 import { ChatbotUIChatContext } from "@/context/chat"
 import { encode } from "gpt-tokenizer"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader
+} from "@/components/ui/dialog"
 
 export const useChatHandler = () => {
   const router = useRouter()
@@ -207,6 +219,11 @@ export const useChatHandler = () => {
     console.log("startingInput", startingInput)
 
     try {
+      // Add this check at the beginning of the function
+      if (profile?.plan.split("_")[0] === "free") {
+        throw new Error("This feature is only available for paid plans.")
+      }
+
       setUserInput("")
       setIsGenerating(true)
       setIsPromptPickerOpen(false)
@@ -386,6 +403,21 @@ export const useChatHandler = () => {
     } catch (error) {
       if (error instanceof SubscriptionRequiredError) {
         setIsPaywallOpen(true)
+      } else if (
+        error instanceof Error &&
+        error.message === "This feature is only available for paid plans."
+      ) {
+        // Show a prominent dialog to the user
+        return (
+          <Dialog open={true}>
+            <DialogContent>
+              <DialogHeader>
+                This feature is only available for paid plans. Please upgrade to
+                continue.
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+        )
       }
       console.error(error)
       setUserInput(startingInput)

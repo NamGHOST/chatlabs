@@ -1,12 +1,17 @@
 import { validateMessageCount } from "../../lib/server/server-chat-helpers"
 import { SubscriptionRequiredError } from "@/lib/errors"
-import { PLAN_FREE, PLAN_PRO, PLAN_ULTIMATE } from "@/lib/stripe/config"
+import { PLAN_FREE, PLAN_LITE, PLAN_PRO, PLAN_ULTIMATE } from "@/lib/stripe/config"
 import {
   FREE_MESSAGE_DAILY_LIMIT,
   PRO_MESSAGE_DAILY_LIMIT,
   PRO_ULTIMATE_MESSAGE_DAILY_LIMIT,
   ULTIMATE_MESSAGE_DAILY_LIMIT,
-  CATCHALL_MESSAGE_DAILY_LIMIT
+  CATCHALL_MESSAGE_DAILY_LIMIT,
+  PRO_MESSAGE_MONTHLY_LIMIT,
+  ULTIMATE_MESSAGE_MONTHLY_LIMIT,
+  PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT,
+  LITE_MESSAGE_MONTHLY_LIMIT,
+  LITE_PRO_MONTHLY_LIMIT
 } from "../../lib/subscription"
 import { LLMID } from "@/types"
 import { Tables } from "@/supabase/types"
@@ -67,7 +72,7 @@ describe("validateMessageCount", () => {
 
   test("Pro user can use pro model up to limit", async () => {
     mockSupabaseClient.gte.mockResolvedValue({
-      count: PRO_MESSAGE_DAILY_LIMIT - 1
+      count: PRO_MESSAGE_MONTHLY_LIMIT - 1
     })
     const profile = { plan: `${PLAN_PRO}_monthly` } as Tables<"profiles">
 
@@ -75,7 +80,7 @@ describe("validateMessageCount", () => {
       validateMessageCount(profile, proModel, date, mockSupabaseClient as any)
     ).resolves.not.toThrow()
 
-    mockSupabaseClient.gte.mockResolvedValue({ count: PRO_MESSAGE_DAILY_LIMIT })
+    mockSupabaseClient.gte.mockResolvedValue({ count: PRO_MESSAGE_MONTHLY_LIMIT })
     await expect(
       validateMessageCount(profile, proModel, date, mockSupabaseClient as any)
     ).rejects.toThrow(
@@ -85,7 +90,7 @@ describe("validateMessageCount", () => {
 
   test("Pro user can use ultimate model with pro limits", async () => {
     mockSupabaseClient.gte.mockResolvedValue({
-      count: PRO_ULTIMATE_MESSAGE_DAILY_LIMIT - 1
+      count: PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT - 1
     })
     const profile = {
       plan: `${PLAN_PRO}_yearly`,
@@ -102,7 +107,7 @@ describe("validateMessageCount", () => {
     ).resolves.not.toThrow()
 
     mockSupabaseClient.gte.mockResolvedValue({
-      count: PRO_ULTIMATE_MESSAGE_DAILY_LIMIT
+      count: PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT
     })
     await expect(
       validateMessageCount(
@@ -118,7 +123,7 @@ describe("validateMessageCount", () => {
 
   test("Ultimate user can use ultimate models with ultimate limits", async () => {
     mockSupabaseClient.gte.mockResolvedValue({
-      count: ULTIMATE_MESSAGE_DAILY_LIMIT - 1
+      count: ULTIMATE_MESSAGE_MONTHLY_LIMIT - 1
     })
     const profile = { plan: `${PLAN_ULTIMATE}_monthly` } as Tables<"profiles">
 
@@ -132,7 +137,7 @@ describe("validateMessageCount", () => {
     ).resolves.not.toThrow()
 
     mockSupabaseClient.gte.mockResolvedValue({
-      count: ULTIMATE_MESSAGE_DAILY_LIMIT
+      count: ULTIMATE_MESSAGE_MONTHLY_LIMIT
     })
     await expect(
       validateMessageCount(
@@ -217,7 +222,7 @@ describe("validateMessageCount", () => {
 
   test("Grandfathered Pro user can use ultimate model with pro limits", async () => {
     mockSupabaseClient.gte.mockResolvedValue({
-      count: PRO_ULTIMATE_MESSAGE_DAILY_LIMIT - 1
+      count: PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT - 1
     })
     const profile = {
       plan: `${PLAN_PRO}_monthly`,
@@ -234,7 +239,7 @@ describe("validateMessageCount", () => {
     ).resolves.not.toThrow()
 
     mockSupabaseClient.gte.mockResolvedValue({
-      count: PRO_ULTIMATE_MESSAGE_DAILY_LIMIT
+      count: PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT
     })
     await expect(
       validateMessageCount(
@@ -246,7 +251,7 @@ describe("validateMessageCount", () => {
     ).resolves.not.toThrow()
 
     mockSupabaseClient.gte.mockResolvedValue({
-      count: ULTIMATE_MESSAGE_DAILY_LIMIT
+      count: ULTIMATE_MESSAGE_MONTHLY_LIMIT
     })
     await expect(
       validateMessageCount(
@@ -256,13 +261,13 @@ describe("validateMessageCount", () => {
         mockSupabaseClient as any
       )
     ).rejects.toThrow(
-      `You have reached daily message limit for Ultimate plan for ${ultimateModelGrandfathered}`
+      `You have reached monthly message limit for Ultimate plan for ${ultimateModelGrandfathered}`
     )
 
     //
 
     mockSupabaseClient.gte.mockResolvedValue({
-      count: PRO_ULTIMATE_MESSAGE_DAILY_LIMIT - 1
+      count: PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT - 1
     })
     await expect(
       validateMessageCount(
@@ -274,7 +279,7 @@ describe("validateMessageCount", () => {
     ).resolves.not.toThrow()
 
     mockSupabaseClient.gte.mockResolvedValue({
-      count: PRO_ULTIMATE_MESSAGE_DAILY_LIMIT
+      count: PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT
     })
     await expect(
       validateMessageCount(
@@ -284,11 +289,11 @@ describe("validateMessageCount", () => {
         mockSupabaseClient as any
       )
     ).rejects.toThrow(
-      `You have reached daily message limit for Pro plan for ${ultimateModel}. Upgrade to Ultimate plan to continue or come back tomorrow.`
+      `You have reached monthly message limit for Pro plan for ${ultimateModel}. Upgrade to Ultimate plan to continue or come back tomorrow.`
     )
 
     mockSupabaseClient.gte.mockResolvedValue({
-      count: ULTIMATE_MESSAGE_DAILY_LIMIT
+      count: ULTIMATE_MESSAGE_MONTHLY_LIMIT
     })
     await expect(
       validateMessageCount(
@@ -298,7 +303,7 @@ describe("validateMessageCount", () => {
         mockSupabaseClient as any
       )
     ).rejects.toThrow(
-      `You have reached daily message limit for Pro plan for ${ultimateModel}. Upgrade to Ultimate plan to continue or come back tomorrow.`
+      `You have reached monthly message limit for Pro plan for ${ultimateModel}. Upgrade to Ultimate plan to continue or come back tomorrow.`
     )
   })
 
@@ -343,26 +348,26 @@ describe("validateMessageCount", () => {
     const profile = { plan: `${PLAN_PRO}_yearly` } as Tables<"profiles">
 
     mockSupabaseClient.gte.mockResolvedValue({
-      count: PRO_MESSAGE_DAILY_LIMIT - 1
+      count: PRO_MESSAGE_MONTHLY_LIMIT - 1
     })
     await expect(
       validateMessageCount(profile, proModel, date, mockSupabaseClient as any)
     ).resolves.not.toThrow()
 
-    mockSupabaseClient.gte.mockResolvedValue({ count: PRO_MESSAGE_DAILY_LIMIT })
+    mockSupabaseClient.gte.mockResolvedValue({ count: PRO_MESSAGE_MONTHLY_LIMIT })
     await expect(
       validateMessageCount(profile, proModel, date, mockSupabaseClient as any)
     ).rejects.toThrow(
-      `You have reached daily message limit for Pro plan for ${proModel}`
+      `You have reached monthly message limit for Pro plan for ${proModel}`
     )
 
     mockSupabaseClient.gte.mockResolvedValue({
-      count: PRO_MESSAGE_DAILY_LIMIT + 1
+      count: PRO_MESSAGE_MONTHLY_LIMIT + 1
     })
     await expect(
       validateMessageCount(profile, proModel, date, mockSupabaseClient as any)
     ).rejects.toThrow(
-      `You have reached daily message limit for Pro plan for ${proModel}`
+      `You have reached monthly message limit for Pro plan for ${proModel}`
     )
   })
 
@@ -374,4 +379,87 @@ describe("validateMessageCount", () => {
       validateMessageCount(profile, freeModel, date, mockSupabaseClient as any)
     ).rejects.toThrow("Supabase error")
   })
+
+  test("Lite user can use free model up to limit", async () => {
+    mockSupabaseClient.gte.mockResolvedValue({
+      count: LITE_MESSAGE_MONTHLY_LIMIT - 1
+    })
+    const profile = { plan: `${PLAN_LITE}_monthly` } as Tables<"profiles">
+
+    await expect(
+      validateMessageCount(profile, freeModel, date, mockSupabaseClient as any)
+    ).resolves.not.toThrow()
+
+    mockSupabaseClient.gte.mockResolvedValue({ count: LITE_MESSAGE_MONTHLY_LIMIT })
+    await expect(
+      validateMessageCount(profile, freeModel, date, mockSupabaseClient as any)
+    ).rejects.toThrow(
+      `You have reached monthly message limit for Lite plan for ${freeModel}`
+    )
+  })
+
+  test("Lite user can use pro model with pro limits", async () => {
+    mockSupabaseClient.gte.mockResolvedValue({
+      count: LITE_PRO_MONTHLY_LIMIT - 1
+    })
+    const profile = {
+      plan: `${PLAN_LITE}_monthly`
+    } as Tables<"profiles">
+
+    await expect(
+      validateMessageCount(
+        profile,
+        proModel,
+        date,
+        mockSupabaseClient as any
+      )
+    ).resolves.not.toThrow()
+
+    mockSupabaseClient.gte.mockResolvedValue({
+      count: LITE_PRO_MONTHLY_LIMIT
+    })
+    await expect(
+      validateMessageCount(
+        profile,
+        proModel,
+        date,
+        mockSupabaseClient as any
+      )
+    ).rejects.toThrow(
+      `You have reached monthly message limit for Lite plan for ${proModel}. Upgrade to Pro plan to continue or come back tomorrow.`
+    )
+  })
+
+  test("Edge cases for message counts", async () => {
+    const profile = { plan: `${PLAN_LITE}_yearly` } as Tables<"profiles">
+
+    mockSupabaseClient.gte.mockResolvedValue({
+      count: LITE_PRO_MONTHLY_LIMIT - 1
+    })
+    await expect(
+      validateMessageCount(profile, proModel, date, mockSupabaseClient as any)
+    ).resolves.not.toThrow()
+
+    mockSupabaseClient.gte.mockResolvedValue({ count: PRO_MESSAGE_MONTHLY_LIMIT })
+    await expect(
+      validateMessageCount(profile, proModel, date, mockSupabaseClient as any)
+    ).rejects.toThrow(
+      `You have reached monthly message limit for Pro plan for ${proModel}`
+    )
+
+    mockSupabaseClient.gte.mockResolvedValue({
+      count: LITE_PRO_MONTHLY_LIMIT + 1
+    })
+    await expect(
+      validateMessageCount(profile, proModel, date, mockSupabaseClient as any)
+    ).rejects.toThrow(
+      `You have reached monthly message limit for Pro plan for ${proModel}`
+    )
+  }) 
+
+
+
+
+
+
 })

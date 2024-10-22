@@ -27,13 +27,13 @@ const O1_PREVIEW: LLM = {
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "pro" as LLMTier,
+  tier: "ultimate" as LLMTier,
   new: true
 }
 
 const GPT_4O: LLM = {
   modelId: "openai/gpt-4o-2024-08-06",
-  modelName: "GPT-4o 2024-08-06",
+  modelName: "GPT-4o",
   provider: "openrouter",
   hostedId: "gpt-4o",
   platformLink: OPENROUTER_PLATFORM_LINK,
@@ -228,7 +228,7 @@ const LLAMA_32_90B_VISION: LLM = {
   imageInput: true,
   tools: false,
   supportsStreaming: true,
-  tier: "pro" as LLMTier
+  tier: "free" as LLMTier
 }
 
 const LLAMA_32_11B_VISION: LLM = {
@@ -252,7 +252,7 @@ const QWEN_25_72B: LLM = {
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "pro" as LLMTier
+  tier: "free" as LLMTier
 }
 
 const QWEN_2_VL_72B: LLM = {
@@ -264,7 +264,7 @@ const QWEN_2_VL_72B: LLM = {
   imageInput: true,
   tools: false,
   supportsStreaming: true,
-  tier: "pro" as LLMTier
+  tier: "free" as LLMTier
 }
 
 const COHERE_COMMAND_R_PLUS: LLM = {
@@ -297,7 +297,7 @@ const GEMINI_FLASH_15_8B: LLM = {
   provider: "openrouter",
   hostedId: "gemini-flash-1.5-8b",
   platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: false,
+  imageInput: true,
   tools: false,
   supportsStreaming: true,
   tier: "free" as LLMTier
@@ -315,6 +315,56 @@ const MYTHOMAX_13B: LLM = {
   tier: "free" as LLMTier
 }
 
+const LLAMA_31_SONAR_LARGE_128K_ONLINE: LLM = {
+  modelId: "perplexity/llama-3.1-sonar-large-128k-online",
+  modelName: "Llama 3.1 Sonar Large 70B Online",
+  provider: "openrouter",
+  hostedId: "llama-3.1-sonar-large-70B-online",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier
+}
+
+const GROK_2: LLM = {
+  modelId: "x-ai/grok-2",
+  modelName: "Grok 2",
+  provider: "openrouter",
+  hostedId: "grok-2",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "pro" as LLMTier,
+  new: true
+}
+
+const LIQUID_LFM_40B: LLM = {
+  modelId: "liquid/lfm-40b",
+  modelName: "Liquid 40B",
+  provider: "openrouter",
+  hostedId: "liquid-40b",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true
+}
+
+const NVIDIA_LLAMA_31_NEMOTRON_70B: LLM = {
+  modelId: "nvidia/llama-3.1-nemotron-70b-instruct",
+  modelName: "Nvidia Llama 3.1 Nemotron 70B",
+  provider: "openrouter",
+  hostedId: "nvidia-llama-3.1-nemotron-70b-instruct",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true
+}
 export const OPENROUTER_LLM_LIST: LLM[] = [
   O1_MINI,
   O1_PREVIEW,
@@ -339,7 +389,11 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   DBRX_INSTRUCT,
   MIXTRAL_8X22B,
   WIZARDLM_2_8X22B,
-  MYTHOMAX_13B
+  MYTHOMAX_13B,
+  LLAMA_31_SONAR_LARGE_128K_ONLINE,
+  GROK_2,
+  LIQUID_LFM_40B,
+  NVIDIA_LLAMA_31_NEMOTRON_70B
 ]
 
 //- openai/gpt-4o-2024-08-06

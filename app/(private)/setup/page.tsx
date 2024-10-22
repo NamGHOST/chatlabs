@@ -199,7 +199,7 @@ export default function SetupPage() {
           totalSteps={totalSteps}
           stepDescription="Let's create your profile."
           stepNum={currentStep}
-          stepTitle="Welcome to ImogenAI"
+          stepTitle="Welcome to Imogen"
           onShouldProceed={handleOnProfileShouldProceed}
           showNextButton={!!(username && usernameAvailable)}
           showBackButton={false}

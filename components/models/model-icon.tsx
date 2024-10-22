@@ -4,6 +4,7 @@ import groq from "@/public/providers/groq.png"
 import meta from "@/public/providers/meta.png"
 import perplexity from "@/public/providers/perplexity.png"
 import databricks from "@/public/providers/databricks.png"
+import { XaiSVG } from "@/components/icons/xai-svg"
 import { ModelProvider } from "@/types"
 import { IconSparkles } from "@tabler/icons-react"
 import { useTheme } from "next-themes"
@@ -16,6 +17,7 @@ import { parseOpenRouterModelName } from "@/lib/models/fetch-models"
 import { MicrosoftSVG } from "@/components/icons/microsoft-svg"
 import { Chat } from "openai/resources/index.mjs"
 import { ChatbotUISVG } from "../icons/chatbotui-svg"
+import { NvidiaSVG } from "../icons/nividia-svg"
 
 interface ModelIconProps extends HTMLAttributes<HTMLDivElement> {
   provider: ModelProvider
@@ -163,6 +165,32 @@ export const ModelIcon: FC<ModelIconProps> = ({
           width={width}
         />
       )
+    case "x-ai":
+      return (
+        <XaiSVG
+          className={cn(
+            "rounded-sm p-1 text-black",
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
+          )}
+          size={60}
+          width={width}
+          height={height}
+        />
+      )
+    case "nvidia":
+      return (
+        <NvidiaSVG
+          className={cn(
+            "rounded-sm p-1 text-black",
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
+          )}
+          width={width}
+          height={height}
+        />
+      )
+
     default:
       return (
         <ChatbotUISVG
