@@ -26,7 +26,8 @@ import {
   IconMessage2Plus,
   IconLayoutColumns,
   IconPuzzle2,
-  IconBulb
+  IconBulb,
+  IconArrowLeft
 } from "@tabler/icons-react"
 import { ChatbotUIContext } from "@/context/context"
 import { Button } from "../ui/button"
@@ -39,9 +40,12 @@ import { useChatHandler } from "../chat/chat-hooks/use-chat-handler"
 import { SidebarDataList } from "./sidebar-data-list"
 import { ContentType } from "@/types"
 import Link from "next/link"
+import { useAuth } from "@/context/auth"
+import { generateToken } from "@/actions/token"
 
 export const Sidebar: FC = () => {
   const {
+    profile,
     chats,
     prompts,
     files,
@@ -57,6 +61,9 @@ export const Sidebar: FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
   const sidebarRef = useRef<HTMLDivElement>(null)
 
+  const { user } = useAuth()
+  const router = useRouter()
+
   const [searchQueries, setSearchQueries] = useState({
     chats: "",
     prompts: "",
@@ -71,6 +78,13 @@ export const Sidebar: FC = () => {
     setIsCollapsed(storedCollapsedState === "true")
     setIsLoaded(true)
   }, [])
+
+  const isProPlan = useMemo(() => {
+    if (!profile?.plan || profile?.plan === "free") {
+      return false
+    }
+    return true
+  }, [profile])
 
   const handleSubmenuOpen = (menuName: ContentType) => {
     if (isCollapsed) {
@@ -158,6 +172,12 @@ export const Sidebar: FC = () => {
     setShowSidebar(!showSidebar)
   }
 
+  const linkMorphic = async () => {
+    if (!isProPlan) return
+    const token = await generateToken({ id: user?.id })
+    router.push(`${process.env.NEXT_PUBLIC_MORPHIC_URL}?token=${token}`)
+  }
+
   return useMemo(
     () => (
       <>
@@ -211,6 +231,16 @@ export const Sidebar: FC = () => {
             >
               <IconMessagePlus {...iconProps} />
             </Button>
+            {isProPlan && (
+              <Button
+                variant="ghost"
+                size={"icon"}
+                onClick={linkMorphic}
+                title="Link Morphic"
+              >
+                <IconArrowLeft {...iconProps} />
+              </Button>
+            )}
             <div className="flex items-center justify-between">
               {activeSubmenu && getSubmenuTitle(activeSubmenu)}
             </div>
