@@ -44,9 +44,9 @@
   "Upload files to enrich conversations and assistants with context, data analysis, feedback, or customization. Uploaded files will be displayed here.": "파일을 업로드하여 대화와 어시스턴트를 컨텍스트, 데이터 분석, 피드백 또는 맞춤화와 풍부하게 하세요. 업로드된 파일은 여기 표시됩니다.",
   "Plugins are special add-ons that allow you to do extra things beyond just chatting, such as using up-to-date information from the web or checking the weather by connecting to external services or databases.": "플러그인은 채팅 외에 추가적인 일을 할 수 있는 특별한 확장 기능입니다. 예를 들어, 최신 웹 정보를 사용하거나 외부 서비스 또는 데이터베이스와 연결하여 날씨를 확인하는 등.",
   "Assistants are special AI characters instructed to provide information, solve specific problems, simulate conversations or offer creative content based on user queries.": "어시스턴트는 사용자 질의에 따라 정보를 제공하거나 특정 문제를 해결하거나 대화를 시뮬레이션하거나 창의적인 콘텐츠를 제공하는 특별한 AI 캐릭터입니다.",
-  
+
   "Let's create your profile": "프로필을 만들어 봅시다.",
-  "Welcome to ImogenAI": "ImogenAI에 오신 것을 환영합니다",
+  "Welcome to Imogen": "Imogen에 오신 것을 환영합니다",
   "Choose your plan": "플랜을 선택하세요",
   "Pro plan gives unlimited access to over 20 AI models.": "프로 플랜은 20개 이상의 AI 모델에 무제한 접근을 제공합니다.",
   "You are all set up!": "모든 설정이 완료되었습니다!",
@@ -132,5 +132,43 @@
 
   "Upload": "업로드",
   "Attach files": "파일 첨부",
-  "Ask anything...": "사용하고 싶은 모델을 선택한 후 어떤 질문이든 할 수 있습니다..."
+  "Ask anything...": "사용하고 싶은 모델을 선택한 후 어떤 질문이든 할 수 있습니다...",
+
+  "Lite Plan": "Lite 플랜",
+  "Pro Plan": "Pro 플랜",
+  "Standard models: 5000 requests": "표준 모델: 5000회 요청",
+  "GPT-4o mini, Claude 3 Haiku and more": "GPT-4o mini, Claude 3 Haiku 등",
+  "Pro models: 250 requests": "Pro 모델: 250회 요청",
+  "Limited time offer: Access to OpenAI: O1mini, GPT 4o ,X-AI Grok2": "한정 시간 제공: OpenAI 접근: O1mini, GPT 4o, X-AI Grok2",
+  "Powered by Stable Diffusion": "Stable Diffusion 기반",
+  "Connect to OpenAI, Anthropic, Google Gemini, and more": "OpenAI, Anthropic, Google Gemini 등에 연결",
+  "Artifact side by side code editor": "Artifact 나란히 코드 편집기",
+  "Share generated app online": "생성된 앱 온라인 공유",
+  "AI-powered customizable assistant": "AI 기반 맞춤형 어시스턴트",
+  "AI model Arena": "AI 모델 아레나",
+  "Translation, email replies, reports, grammar checks": "번역, 이메일 답장, 보고서, 문법 검사",
+  "AI web search": "AI 웹 검색",
+  "Unlimited AI summaries": "무제한 AI 요약",
+  "Scan webpages, YouTube videos, or files": "웹페이지, YouTube 동영상 또는 파일 스캔",
+  "File summaries, smart Q&A, file translation, multi-language translation, extended PDF reading, batch translation, etc.": "파일 요약, 스마트 Q&A, 파일 번역, 다국어 번역, 확장 PDF 읽기, 일괄 번역 등",
+  "Chrome / Edge / Safari, iOS, Mac, Android and Windows": "Chrome / Edge / Safari, iOS, Mac, Android 및 Windows",
+  "Optimized for all devices": "모든 기기에 최적화",
+  "Priority CS support": "우선 고객 지원",
+  "VIP group access": "VIP 그룹 접근",
+  "Standard models: Unlimited requests": "표준 모델: 무제한 요청",
+  "Pro models: 500 requests": "Pro 모델: 500회 요청",
+  "Ultimate models: Limited access to OpenAI: O1 and Claude Opus": "Ultimate 모델: OpenAI 제한적 접근: O1 및 Claude Opus",
+  "Powered by Flux Pro 1.1": "Flux Pro 1.1 기반",
+  "Advanced Features": "고급 기능",
+
+
+
+  "Thank you for subscribing to our product.": "저희 제품을 구독해 주셔서 감사합니다.",
+  "We are dedicated to making this the best possible experience you can have with an LLM. We have one question before you get started.": "저희는 LLM을 통해 최고의 경험을 제공하기 위해 노력하고 있습니다. 시작하기 전에 한 가지 질문이 있습니다.",
+  "What outcome do you hope this product will help you achieve?": "이 제품을 통해 어떤 결과를 얻고 싶으신가요?",
+  "Write your response here....": "여기에 응답을 작성해 주세요....",
+  "We read every response and will make sure we do our best to deliver a better experience.": "모든 응답을 읽고 더 나은 경험을 제공하기 위해 최선을 다하겠습니다.",
+  "Submit and start chatting": "제출하고 채팅 시작하기"
+    
+  
 }

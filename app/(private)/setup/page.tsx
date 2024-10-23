@@ -2,27 +2,20 @@
 
 import { ChatbotUIContext } from "@/context/context"
 import { getProfileByUserId, updateProfile } from "@/db/profile"
-import {
-  getHomeWorkspaceByUserId,
-  getWorkspacesByUserId
-} from "@/db/workspaces"
-import {
-  fetchHostedModels,
-  fetchOpenRouterModels
-} from "@/lib/models/fetch-models"
+import { getWorkspacesByUserId } from "@/db/workspaces"
 import { supabase } from "@/lib/supabase/browser-client"
 import { Tables, TablesInsert, TablesUpdate } from "@/supabase/types"
 import { useRouter } from "next/navigation"
-import { useContext, useEffect, useState } from "react"
+import { ReactNode, useContext, useEffect, useState } from "react"
 import { FinishStep } from "@/components/setup/finish-step"
 import { ProfileStep } from "@/components/setup/profile-step"
-import {
-  SETUP_STEP_COUNT,
-  StepContainer
-} from "@/components/setup/step-container"
+import { StepContainer } from "@/components/setup/step-container"
 import Plans from "@/components/upgrade/plans"
 import { useAuth } from "@/context/auth"
 import { upsertUserQuestion } from "@/db/user_questions"
+import { motion, AnimatePresence } from "framer-motion"
+import { useFeatureFlag } from "@/lib/amplitude" // Add this import
+import { toast } from "sonner"
 import { useTranslation } from "react-i18next"
 
 export default function SetupPage() {
@@ -42,6 +35,16 @@ export default function SetupPage() {
   const { user } = useAuth()
 
   const [loading, setLoading] = useState(true)
+
+  // Use the Amplitude feature flags
+  const { flagValue: enableProfileStep } = useFeatureFlag(
+    "enable_profile_step",
+    false
+  )
+  const {
+    flagValue: bypassOnboardingRedirect,
+    loading: bypassOnboardingRedirectLoading
+  } = useFeatureFlag("bypass_onboarding_redirect", false)
 
   const [currentStep, setCurrentStep] = useState(1)
 
@@ -66,49 +69,74 @@ export default function SetupPage() {
   const [groqAPIKey, setGroqAPIKey] = useState("")
   const [perplexityAPIKey, setPerplexityAPIKey] = useState("")
   const [openrouterAPIKey, setOpenrouterAPIKey] = useState("")
-  const [isPaywallOpen, setIsPaywallOpen] = useState(true)
   const [question, setQuestion] = useState<TablesInsert<"user_questions">>({
     user_id: profile?.user_id || ""
   })
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false) // Added state for isPaywallOpen
 
   useEffect(() => {
     ;(async () => {
+      if (bypassOnboardingRedirectLoading) {
+        return
+      }
       if (!user) {
         return router.push("/login")
       } else {
-        const profile = await getProfileByUserId(user.id)
+        try {
+          const profile = await getProfileByUserId(user.id)
 
-        setProfile(profile)
-        setDisplayName(
-          profile.display_name || user?.user_metadata?.display_name || ""
-        )
-        setUsername(profile.username)
+          setProfile(profile)
+          setDisplayName(
+            profile.display_name || user?.user_metadata?.display_name || ""
+          )
+          setUsername(profile.username)
 
-        if (!profile.has_onboarded) {
+          if (!profile.has_onboarded || bypassOnboardingRedirect) {
+            setLoading(false)
+          } else {
+            redirectToHome()
+          }
+        } catch (error) {
+          console.error(error)
           setLoading(false)
-        } else {
-          redirectToHome()
+          toast.error("Something went wrong. Please try again.")
+          return router.push("/login")
         }
       }
     })()
-  }, [])
+  }, [bypassOnboardingRedirectLoading])
 
   function redirectToHome() {
     // TODO: this should be a redirect
     window.location.href = "/"
   }
 
-  const handleShouldProceed = (proceed: boolean) => {
+  const handleOnPlanShouldProceed = (proceed: boolean) => {
     if (proceed) {
-      if (currentStep === SETUP_STEP_COUNT) {
-        redirectToHome()
-      }
-      if (currentStep === 1) {
-        handleSaveSetupSetting()
-        setCurrentStep(currentStep + 1)
-      } else {
-        setCurrentStep(currentStep + 1)
-      }
+      setCurrentStep(currentStep + 1)
+    } else {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const handleOnFinishShouldProceed = (proceed: boolean) => {
+    if (proceed) {
+      handleSaveSetupSetting()
+        .then(() => {
+          redirectToHome()
+        })
+        .catch(error => {
+          console.error(error)
+          toast.error("Failed to save setup settings")
+        })
+    } else {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const handleOnProfileShouldProceed = (proceed: boolean) => {
+    if (proceed) {
+      setCurrentStep(currentStep + 1)
     } else {
       setCurrentStep(currentStep - 1)
     }
@@ -161,116 +189,80 @@ export default function SetupPage() {
     setWorkspaces(workspaces)
   }
 
-  const renderStep = (stepNum: number) => {
-    switch (stepNum) {
-      // Profile Step
-      case 1:
-        return (
-          <StepContainer
-            stepDescription={t("Let's create your profile.")}
-            stepNum={currentStep}
-            stepTitle={t("Welcome to ImogenAI")}
-            onShouldProceed={handleShouldProceed}
-            showNextButton={!!(username && usernameAvailable)}
-            showBackButton={false}
-          >
-            <ProfileStep
-              displayName={displayName}
-              onDisplayNameChange={setDisplayName}
-              onUserQuestionChange={setQuestion}
-              userQuestion={question}
-            />
-          </StepContainer>
-        )
+  const totalSteps = enableProfileStep ? 3 : 2
 
-      case 2:
-        return (
-          <StepContainer
-            stepDescription={t(
-              "Pro plan gives unlimited access to over 20 AI models."
-            )}
-            stepNum={currentStep}
-            stepTitle={t("Choose your plan")}
-            onShouldProceed={handleShouldProceed}
-            showNextButton={true}
-            showBackButton={true}
-          >
-            <Plans
-              onClose={() => setIsPaywallOpen(false)}
-              showCloseIcon={false}
-            />
-          </StepContainer>
-        )
+  function getStepComponents() {
+    const stepComponents = [
+      enableProfileStep ? (
+        <StepContainer
+          key={1}
+          totalSteps={totalSteps}
+          stepDescription="Let's create your profile."
+          stepNum={currentStep}
+          stepTitle="Welcome to Imogen"
+          onShouldProceed={handleOnProfileShouldProceed}
+          showNextButton={!!(username && usernameAvailable)}
+          showBackButton={false}
+        >
+          <ProfileStep
+            displayName={displayName}
+            onDisplayNameChange={setDisplayName}
+            onUserQuestionChange={setQuestion}
+            userQuestion={question}
+          />
+        </StepContainer>
+      ) : null,
+      <StepContainer
+        key={2}
+        totalSteps={totalSteps}
+        stepDescription="Pro plan gives unlimited access to over 20 AI models."
+        stepNum={currentStep}
+        stepTitle="Choose your plan"
+        onShouldProceed={handleOnPlanShouldProceed}
+        showNextButton={true}
+        showBackButton={enableProfileStep}
+      >
+        <Plans onClose={() => {}} showCloseIcon={false} />
+      </StepContainer>,
+      <StepContainer
+        key={3}
+        totalSteps={totalSteps}
+        stepDescription="You are all set up!"
+        stepNum={currentStep}
+        stepTitle="Setup Complete"
+        onShouldProceed={handleOnFinishShouldProceed}
+        showNextButton={true}
+        showBackButton={true}
+      >
+        <FinishStep displayName={displayName} />
+      </StepContainer>
+    ].filter(Boolean) as ReactNode[]
 
-      // API Step
-      // case 2:
-      //   return (
-      //     <StepContainer
-      //       stepDescription="Enter API keys for each service you'd like to use."
-      //       stepNum={currentStep}
-      //       stepTitle="Set API Keys (optional)"
-      //       onShouldProceed={handleShouldProceed}
-      //       showNextButton={true}
-      //       showBackButton={true}
-      //     >
-      //       <APIStep
-      //         openaiAPIKey={openaiAPIKey}
-      //         openaiOrgID={openaiOrgID}
-      //         azureOpenaiAPIKey={azureOpenaiAPIKey}
-      //         azureOpenaiEndpoint={azureOpenaiEndpoint}
-      //         azureOpenai35TurboID={azureOpenai35TurboID}
-      //         azureOpenai45TurboID={azureOpenai45TurboID}
-      //         azureOpenai45VisionID={azureOpenai45VisionID}
-      //         azureOpenaiEmbeddingsID={azureOpenaiEmbeddingsID}
-      //         anthropicAPIKey={anthropicAPIKey}
-      //         googleGeminiAPIKey={googleGeminiAPIKey}
-      //         mistralAPIKey={mistralAPIKey}
-      //         perplexityAPIKey={perplexityAPIKey}
-      //         useAzureOpenai={useAzureOpenai}
-      //         onOpenaiAPIKeyChange={setOpenaiAPIKey}
-      //         onOpenaiOrgIDChange={setOpenaiOrgID}
-      //         onAzureOpenaiAPIKeyChange={setAzureOpenaiAPIKey}
-      //         onAzureOpenaiEndpointChange={setAzureOpenaiEndpoint}
-      //         onAzureOpenai35TurboIDChange={setAzureOpenai35TurboID}
-      //         onAzureOpenai45TurboIDChange={setAzureOpenai45TurboID}
-      //         onAzureOpenai45VisionIDChange={setAzureOpenai45VisionID}
-      //         onAzureOpenaiEmbeddingsIDChange={setAzureOpenaiEmbeddingsID}
-      //         onAnthropicAPIKeyChange={setAnthropicAPIKey}
-      //         onGoogleGeminiAPIKeyChange={setGoogleGeminiAPIKey}
-      //         onMistralAPIKeyChange={setMistralAPIKey}
-      //         onPerplexityAPIKeyChange={setPerplexityAPIKey}
-      //         onUseAzureOpenaiChange={setUseAzureOpenai}
-      //         openrouterAPIKey={openrouterAPIKey}
-      //         onOpenrouterAPIKeyChange={setOpenrouterAPIKey}
-      //       />
-      //     </StepContainer>
-      //   )
-
-      // Finish Step
-      case 3:
-        return (
-          <StepContainer
-            stepDescription={t("You are all set up!")}
-            stepNum={currentStep}
-            stepTitle={t("Setup Complete")}
-            onShouldProceed={handleShouldProceed}
-            showNextButton={true}
-            showBackButton={true}
-          >
-            <FinishStep displayName={displayName} />
-          </StepContainer>
-        )
-      default:
-        return null
-    }
+    return stepComponents
   }
 
-  if (loading) {
+  const renderStep = (stepNum: number) => {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={stepNum}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          {getStepComponents()[stepNum - 1]}
+        </motion.div>
+      </AnimatePresence>
+    )
+  }
+
+  if (bypassOnboardingRedirectLoading || loading) {
     return null
   }
 
   return (
-    <div className="flex size-full items-center justify-center sm:w-auto">
+    <div className="flex w-full grow items-center justify-center sm:my-6 sm:w-auto">
       {renderStep(currentStep)}
     </div>
   )

@@ -4,7 +4,7 @@ import { Sidebar } from "@/components/sidebar/sidebar"
 import useHotkey from "@/lib/hooks/use-hotkey"
 import { ContentType } from "@/types"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { FC, useState, useContext, useMemo } from "react"
+import { FC, useState, useContext, useMemo, useEffect } from "react"
 import { useSelectFileHandler } from "../chat/chat-hooks/use-select-file-handler"
 import { CommandK } from "../utility/command-k"
 import { PlanPicker } from "@/components/upgrade/plan-picker"
@@ -39,17 +39,20 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
   const onFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
 
-    const files = event.dataTransfer.files
-    const file = files[0]
-
-    handleSelectDeviceFile(file)
-
-    setIsDragging(false)
+    if (event.dataTransfer.types.includes("Files")) {
+      const files = Array.from(event.dataTransfer.files)
+      files.forEach(file => {
+        handleSelectDeviceFile(file)
+      })
+      setIsDragging(false)
+    }
   }
 
   const handleDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
-    setIsDragging(true)
+    if (event.dataTransfer.types.includes("Files")) {
+      setIsDragging(true)
+    }
   }
 
   const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
@@ -59,6 +62,9 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
 
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
+    if (event.dataTransfer.types.includes("Files")) {
+      event.dataTransfer.dropEffect = "copy"
+    }
   }
 
   const handleToggleSidebar = () => {
@@ -122,16 +128,15 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
             onDragLeave={handleDragLeave}
           >
             {isDragging ? (
-              <div className="flex h-full items-center justify-center bg-black/50 text-2xl text-white">
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/50 text-2xl text-white">
                 drop file here
               </div>
-            ) : (
-              children
-            )}
+            ) : null}
+            {children}
           </div>
         </div>
       </div>
     ),
-    [showSidebar, contentType]
+    [showSidebar, contentType, isDragging, children]
   )
 }

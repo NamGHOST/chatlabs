@@ -7,14 +7,27 @@ import { LLMID } from "@/types"
 import { SupabaseClient } from "@supabase/supabase-js"
 import { SubscriptionRequiredError } from "@/lib/errors"
 import {
-  ALLOWED_MODELS,
   CATCHALL_MESSAGE_DAILY_LIMIT,
   FREE_MESSAGE_DAILY_LIMIT,
+  LITE_MESSAGE_DAILY_LIMIT,
+  LITE_MESSAGE_MONTHLY_LIMIT,
+  LITE_PRO_MONTHLY_LIMIT,
   PRO_MESSAGE_DAILY_LIMIT,
-  validatePlanForModel,
-  validateProPlan
+  PRO_MESSAGE_MONTHLY_LIMIT,
+  PRO_ULTIMATE_MESSAGE_DAILY_LIMIT,
+  PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT,
+  ULTIMATE_MESSAGE_DAILY_LIMIT,
+  ULTIMATE_MESSAGE_MONTHLY_LIMIT,
+  validatePlanForModel
 } from "@/lib/subscription"
-import { PLAN_FREE } from "@/lib/stripe/config"
+import {
+  PLAN_FREE,
+  PLAN_LITE,
+  PLAN_PREMIUM,
+  PLAN_PRO,
+  PLAN_ULTIMATE
+} from "@/lib/stripe/config"
+import { ApiError } from "next/dist/server/api-utils"
 
 function createClient() {
   return createServerClient<Database>(
@@ -36,7 +49,7 @@ export async function getServerProfile() {
 
   const user = (await supabase.auth.getUser()).data.user
   if (!user) {
-    throw new Error("User not found")
+    throw new ApiError(401, "User not found")
   }
 
   const { data: profile } = await supabase
@@ -46,7 +59,7 @@ export async function getServerProfile() {
     .single()
 
   if (!profile) {
-    throw new Error("Profile not found")
+    throw new ApiError(401, "Profile not found")
   }
 
   const profileWithKeys = addApiKeysToProfile(profile)
@@ -86,27 +99,69 @@ function addApiKeysToProfile(profile: Tables<"profiles">) {
   return profile
 }
 
-export function checkApiKey(apiKey: string | null, keyName: string) {
-  if (apiKey === null || apiKey === "") {
+export function checkApiKey(
+  apiKey: string | null | undefined,
+  keyName: string
+) {
+  if (!!!apiKey) {
     throw new Error(`${keyName} API Key not found`)
   }
 }
 
-function isPaidModel(model: LLMID) {
-  const paidLLMS = LLM_LIST.filter(x => x.paid).map(x => x.modelId)
-  return paidLLMS.includes(model)
+const TIER_MODELS = {
+  [PLAN_ULTIMATE]: LLM_LIST.filter(x => x.tier === PLAN_ULTIMATE).map(
+    x => x.modelId
+  ),
+  [PLAN_PRO]: LLM_LIST.filter(x => x.tier === PLAN_PRO).map(x => x.modelId),
+  [PLAN_FREE]: LLM_LIST.filter(
+    x => x.tier === PLAN_FREE || typeof x.tier === "undefined"
+  ).map(x => x.modelId)
+}
+
+function isTierModel(model: LLMID, tier: keyof typeof TIER_MODELS) {
+  if (tier == PLAN_FREE && TIER_MODELS[tier]) {
+    return TIER_MODELS[PLAN_FREE].includes(model)
+  }
+
+  if (tier == PLAN_PRO && TIER_MODELS[tier]) {
+    return TIER_MODELS[PLAN_PRO].includes(model)
+  }
+
+  if (tier == PLAN_ULTIMATE) {
+    return TIER_MODELS[PLAN_ULTIMATE].includes(model)
+  }
+
+  return false
 }
 
 export async function validateModel(profile: Tables<"profiles">, model: LLMID) {
-  const { plan } = profile
-
-  if (validateProPlan(profile)) {
-    return
-  }
-
   if (!validatePlanForModel(profile, model)) {
-    throw new SubscriptionRequiredError("Pro plan required to use this model")
+    const modelData = LLM_LIST.find(
+      x => x.modelId === model || x.hostedId === model
+    )
+    const requiredPlan = modelData?.tier === "ultimate" ? "Ultimate" : "Pro"
+    throw new SubscriptionRequiredError(
+      `${requiredPlan} plan required to use this model`
+    )
   }
+}
+
+export async function getMessageCountForTier(
+  userId: string,
+  tier: string
+): Promise<number> {
+  const supabase = createClient()
+  const { count } = await supabase
+    .from("messages")
+    .select("*", { count: "exact" })
+    .eq("role", "user")
+    .eq("user_id", userId)
+    .in(
+      "model",
+      LLM_LIST.filter(model => model.tier === tier).map(model => model.modelId)
+    )
+
+  return count || 0
 }
 
 export async function validateMessageCount(
@@ -115,51 +170,148 @@ export async function validateMessageCount(
   date: Date,
   supabase: SupabaseClient
 ) {
-  const { plan } = profile
+  const userPlan = profile.plan.split("_")[0]
 
-  if (plan.startsWith("byok_")) {
+  if (userPlan.startsWith("byok")) {
     return
   }
 
-  // subtract 24 hours
+  // Check if free or premium user is trying to use a non-free model
+  if (
+    (userPlan === PLAN_FREE || userPlan === PLAN_PREMIUM) &&
+    !isTierModel(model, PLAN_FREE)
+  ) {
+    throw new SubscriptionRequiredError(
+      `${isTierModel(model, PLAN_PRO) ? "Pro" : "Ultimate"} plan required to use this model`
+    )
+  }
 
-  let previousDate = new Date(date.getTime() - 24 * 60 * 60 * 1000)
+  let startDate: Date
+  if (userPlan === PLAN_FREE || userPlan === PLAN_PREMIUM) {
+    // For free and premium plans, reset daily
+    startDate = new Date(date)
+    startDate.setUTCHours(0, 0, 0, 0)
+  } else if (profile.subscription_start_date) {
+    // For paid plans, use the subscription start date
+    startDate = new Date(profile.subscription_start_date)
+    // If the subscription start date is more than a month ago, use the most recent monthly anniversary
+    if (date.getTime() - startDate.getTime() > 30 * 24 * 60 * 60 * 1000) {
+      startDate.setUTCMonth(date.getUTCMonth())
+      startDate.setUTCFullYear(date.getUTCFullYear())
+      if (startDate > date) {
+        startDate.setUTCMonth(startDate.getUTCMonth() - 1)
+      }
+    }
+  } else {
+    // Fallback to first of the month if no subscription start date is set
+    startDate = new Date(date.getFullYear(), date.getMonth(), 1)
+  }
 
-  const { count, data, error } = await supabase
+  const modelData = LLM_LIST.find(
+    x => x.modelId === model || x.hostedId === model
+  )
+  const modelTier = modelData?.tier
+
+  const { count } = await supabase
     .from("messages")
     .select("*", {
       count: "exact"
     })
     .eq("role", "user")
-    .eq("model", model)
-    .gte("created_at", previousDate.toISOString())
+    .in(
+      "model",
+      LLM_LIST.filter(m => m.tier === modelTier).map(m => m.modelId)
+    )
+    .gte("created_at", startDate.toISOString())
 
   if (count === null) {
     throw new Error("Could not fetch message count")
   }
 
-  if (
-    (plan === PLAN_FREE || plan.startsWith("premium_")) &&
-    count > FREE_MESSAGE_DAILY_LIMIT
-  ) {
-    throw new SubscriptionRequiredError(
-      `You have reached daily message limit for ${model}. Upgrade NOW or come back tomorrow.`
-    )
-  }
-
-  if (
-    isPaidModel(model) &&
-    plan.startsWith("pro_") &&
-    count > PRO_MESSAGE_DAILY_LIMIT
-  ) {
-    throw new SubscriptionRequiredError(
-      `You have reached daily message limit for Pro plan for ${model}`
-    )
-  }
-
-  if (count > CATCHALL_MESSAGE_DAILY_LIMIT) {
+  // Check catch-all limit first
+  if (count >= CATCHALL_MESSAGE_DAILY_LIMIT) {
     throw new SubscriptionRequiredError(
       `You have reached hard daily message limit for model ${model}`
+    )
+  }
+
+  if (
+    (userPlan === PLAN_FREE || userPlan.startsWith("premium")) &&
+    count >= FREE_MESSAGE_DAILY_LIMIT
+  ) {
+    throw new SubscriptionRequiredError(
+      `You have reached daily message limit for ${model}. Upgrade to Pro/Ultimate plan to continue or come back tomorrow.`
+    )
+  }
+
+  if (
+    isTierModel(model, PLAN_FREE) &&
+    userPlan === PLAN_LITE &&
+    count >= LITE_MESSAGE_MONTHLY_LIMIT
+  ) {
+    throw new SubscriptionRequiredError(
+      `You have reached monthly message limit for Lite plan for ${model}. Upgrade to Pro/Ultimate plan to continue or come back tomorrow.`
+    )
+  }
+
+  if (
+    isTierModel(model, PLAN_PRO) &&
+    userPlan === PLAN_LITE &&
+    count >= LITE_PRO_MONTHLY_LIMIT
+  ) {
+    throw new SubscriptionRequiredError(
+      `You have reached monthly message limit for Lite plan for ${model}`
+    )
+  }
+
+  if (
+    isTierModel(model, PLAN_PRO) &&
+    userPlan === PLAN_PRO &&
+    count >= PRO_MESSAGE_MONTHLY_LIMIT
+  ) {
+    throw new SubscriptionRequiredError(
+      `You have reached monthly message limit for Pro plan for ${model}`
+    )
+  }
+
+  const ULTIMATE_GRANDFATHERED_DATE =
+    process.env.ULTIMATE_GRANDFATHERED_DATE || "2024-09-16"
+
+  // grandfathered pro users created before 2024-09-16 and using opus models
+  const isGrandfathered =
+    profile.created_at < ULTIMATE_GRANDFATHERED_DATE &&
+    userPlan === PLAN_PRO &&
+    model.includes("opus")
+
+  if (
+    isTierModel(model, PLAN_ULTIMATE) &&
+    userPlan === PLAN_PRO &&
+    !isGrandfathered
+  ) {
+    if (count >= PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT) {
+      throw new SubscriptionRequiredError(
+        `You have reached monthly message limit for Pro plan for ${model}. Upgrade to Ultimate plan to continue or come back tomorrow.`
+      )
+    }
+  } else if (
+    isTierModel(model, PLAN_ULTIMATE) &&
+    userPlan === PLAN_PRO &&
+    isGrandfathered
+  ) {
+    if (count >= ULTIMATE_MESSAGE_MONTHLY_LIMIT) {
+      throw new SubscriptionRequiredError(
+        `You have reached monthly message limit for Ultimate plan for ${model}`
+      )
+    }
+  }
+
+  if (
+    isTierModel(model, PLAN_ULTIMATE) &&
+    userPlan === PLAN_ULTIMATE &&
+    count >= ULTIMATE_MESSAGE_MONTHLY_LIMIT
+  ) {
+    throw new SubscriptionRequiredError(
+      `You have reached monthly message limit for Ultimate plan for ${model}`
     )
   }
 }

@@ -6,9 +6,9 @@ import { exaResearcherTool } from "./library/exaSearch"
 import { webSearchTool } from "./library/TavilySearch"
 // Add your tool to the list
 export const platformToolList = [
-  exaResearcherTool,
+  //exaResearcherTool,
   webScraperTool,
-  webSearchTool,
+  ///webSearchTool,
   imageGeneratorTool,
   stableDiffusionTools,
   flux1ProTools

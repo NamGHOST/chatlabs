@@ -27,14 +27,13 @@ import {
 import { WithTooltip } from "@/components/ui/with-tooltip"
 import { ModelDetails } from "@/components/models/model-details"
 import { ResizableSplitView } from "./chat-resizable-split-view"
-import { Button } from "@/components/ui/button"
-import { IconPlus, IconMinus } from "@tabler/icons-react"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger
 } from "@/components/ui/select"
+import { PLAN_BYOK_MONTHLY, PLAN_BYOK_YEARLY, PLANS } from "@/lib/stripe/config" // Add this import
 
 interface ChatUIProps {}
 
@@ -101,7 +100,12 @@ const ChatWrapper = forwardRef(
       chatMessages[chatMessages.length - 1]?.message.annotation
     )
 
-    const selectedModel = allModels.find(x => x.modelId === chatSettings?.model)
+    const selectedModel = allModels.find(
+      x =>
+        x.modelId === chatSettings?.model || x.hostedId === chatSettings?.model
+    )
+
+    const { profile } = useContext(ChatbotUIContext)
 
     useImperativeHandle(
       ref,
@@ -208,24 +212,27 @@ const ChatWrapper = forwardRef(
               "max-w-[25%] overflow-hidden text-ellipsis text-nowrap px-2 xl:max-w-[15%]"
             }
           >
-            <WithTooltip
-              display={
-                <div className={"flex items-center"}>
-                  {responseTokensTotal} output tokens * ¢
-                  {(
-                    (selectedModel?.pricing?.outputCost ||
-                      selectedModel?.pricing?.inputCost ||
-                      0) / 10000
-                  ).toFixed(6)}{" "}
-                  + {requestTokensTotal} input tokens * ¢
-                  {((selectedModel?.pricing?.inputCost || 0) / 10000).toFixed(
-                    6
-                  )}{" "}
-                  = ¢{cost}
-                </div>
-              }
-              trigger={<>¢{cost}</>}
-            />
+            {PLANS.includes(profile?.plan as string) &&
+            profile?.plan.split("_")[0] === "byok" ? (
+              <WithTooltip
+                display={
+                  <div className={"flex items-center"}>
+                    {responseTokensTotal} output tokens * ¢
+                    {(
+                      (selectedModel?.pricing?.outputCost ||
+                        selectedModel?.pricing?.inputCost ||
+                        0) / 10000
+                    ).toFixed(6)}{" "}
+                    + {requestTokensTotal} input tokens * ¢
+                    {((selectedModel?.pricing?.inputCost || 0) / 10000).toFixed(
+                      6
+                    )}{" "}
+                    = ¢{cost}
+                  </div>
+                }
+                trigger={<>¢{cost}</>}
+              />
+            ) : null}
           </div>
         </div>
       </div>
@@ -262,7 +269,7 @@ export const ChatUI: FC<ChatUIProps> = () => {
 
   const handleSendMessage = (input: string, isRegeneration: boolean) => {
     chatMessagesRef.current.forEach(ref => {
-      if (ref) {
+      if (ref?.handleSendMessage) {
         ref.handleSendMessage(input, isRegeneration)
       }
     })
@@ -270,7 +277,7 @@ export const ChatUI: FC<ChatUIProps> = () => {
 
   const handleReset = () => {
     chatMessagesRef.current.forEach(ref => {
-      if (ref) {
+      if (ref?.handleReset) {
         ref.handleReset()
       }
     })
@@ -278,26 +285,14 @@ export const ChatUI: FC<ChatUIProps> = () => {
 
   const handleStopMessage = () => {
     chatMessagesRef.current.forEach(ref => {
-      if (ref) {
-        try {
+      try {
+        if (ref?.handleStopMessage) {
           ref.handleStopMessage()
-        } catch (e) {
-          console.error(e)
         }
+      } catch (e) {
+        console.error(e)
       }
     })
-  }
-
-  const handleAddChat = () => {
-    if (chatsSize < 6) {
-      setChatsSize(prevSize => prevSize + 1)
-    }
-  }
-
-  const handleRemoveChat = () => {
-    if (chatsSize > 2) {
-      setChatsSize(prevSize => prevSize - 1)
-    }
   }
 
   const renderChatWrappers = () => {

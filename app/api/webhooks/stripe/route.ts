@@ -38,6 +38,7 @@ export async function POST(req: Request) {
   console.log(`[${event.id}][${event.type}]: Event received`)
 
   const permittedEvents = [
+    "customer.subscription.created",
     "customer.subscription.deleted",
     "customer.subscription.updated"
   ]
@@ -65,6 +66,8 @@ export async function POST(req: Request) {
     }
 
     let plan = PLAN_FREE
+    let subscriptionStartDate: string | null = null
+
     if (event.type !== "customer.subscription.deleted") {
       const status = subscription.status
       const planFromSubscription = subscription.items.data[0].price.lookup_key!
@@ -73,16 +76,20 @@ export async function POST(req: Request) {
         PLANS.includes(planFromSubscription)
       ) {
         plan = planFromSubscription
+        subscriptionStartDate = new Date(
+          subscription.current_period_start * 1000
+        ).toISOString()
       }
     }
 
     await updateProfileByUserId(supabaseAdmin, profile.user_id, {
       stripe_customer_id: stripeCustomerId,
-      plan
+      plan,
+      subscription_start_date: subscriptionStartDate
     })
 
     console.log(
-      `[${event.id}][${event.type}]: Profile updated with plan ${plan}`
+      `[${event.id}][${event.type}]: Profile updated with plan ${plan} and start date ${subscriptionStartDate}`
     )
   } catch (error) {
     console.error(

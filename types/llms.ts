@@ -21,6 +21,8 @@ export type OpenAILLMID =
   | "gpt-4o" // GPT-4o
   | "gpt-4o-mini" // GPT-4 Vision
   | "gpt-4o-2024-08-06" // GPT-4o (updated 8/6/24)
+  | "o1-mini" // O1 Mini
+  | "o1-preview" // O1 Mini Latest
 
 // Google Models
 export type GoogleLLMID =
@@ -70,6 +72,15 @@ export type PerplexityLLMID =
   | "llama-3-sonar-large-32k-chat" // Sonar Medium Chat
   | "llama-3-sonar-large-32k-online" // Sonar Medium Online
 
+// Add this new type definition
+export type Category = {
+  category: string
+  description?: string
+  color?: string
+}
+
+export type LLMTier = "free" | "pro" | "ultimate"
+// Update the LLM interface to include categories
 export type OpenRouterLLMID =
   | "openai/o1-mini"
   | "openai/o1-preview"
@@ -80,17 +91,26 @@ export type OpenRouterLLMID =
   | "google/gemini-pro-vision"
   | "google/gemini-flash-1.5-exp"
   | "google/gemini-pro-1.5-exp"
+  | "google/gemini-flash-1.5-8b"
   | "anthropic/claude-3-haiku"
   | "anthropic/claude-3.5-sonnet"
   | "databricks/dbrx-instruct"
   | "mistralai/mixtral-8x22b-instruct"
   | "microsoft/wizardlm-2-8x22b"
   | "meta-llama/llama-3.1-405b-instruct"
-  | "liuhaotian/llava-yi-34b"
-  | "fireworks/firellava-13b"
+  | "meta-llama/llama-3.2-90b-vision-instruct"
+  | "meta-llama/llama-3.2-11b-vision-instruct"
   | "perplexity/llama-3.1-sonar-huge-128k-online"
-  | "mattshumer/reflection-70b"
   | "deepseek/deepseek-chat"
+  | "qwen/qwen-2.5-72b-instruct"
+  | "qwen/qwen-2-vl-72b-instruct"
+  | "cohere/command-r-plus-08-2024"
+  | "cohere/command-r-08-2024"
+  | "mythic/mythomax-13b"
+  | "perplexity/llama-3.1-sonar-large-128k-online"
+  | "x-ai/grok-2"
+  | "liquid/lfm-40b"
+  | "nvidia/llama-3.1-nemotron-70b-instruct"
 
 export interface LLM {
   modelId: LLMID
@@ -99,10 +119,10 @@ export interface LLM {
   hostedId: string
   platformLink: string
   imageInput: boolean
-  paid?: boolean
   tools?: boolean
   supportsStreaming?: boolean
   description?: string
+  tags?: string[]
   pricing?: {
     currency: string
     unit: string
@@ -110,6 +130,8 @@ export interface LLM {
     outputCost?: number
   }
   new?: boolean
+  tier?: "free" | "pro" | "ultimate" | undefined
+  categories?: Category[]
 }
 
 export interface OpenRouterLLM extends LLM {
@@ -119,5 +141,9 @@ export interface OpenRouterLLM extends LLM {
   tools: boolean
   supportsStreaming: boolean
   imageInput: boolean
+  description?: string
+  tags?: string[]
   new?: boolean
+  tier?: "free" | "pro" | "ultimate" | undefined
+  categories?: Category[]
 }

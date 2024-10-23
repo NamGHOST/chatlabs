@@ -4,6 +4,7 @@ import groq from "@/public/providers/groq.png"
 import meta from "@/public/providers/meta.png"
 import perplexity from "@/public/providers/perplexity.png"
 import databricks from "@/public/providers/databricks.png"
+import { XaiSVG } from "@/components/icons/xai-svg"
 import { ModelProvider } from "@/types"
 import { IconSparkles } from "@tabler/icons-react"
 import { useTheme } from "next-themes"
@@ -14,6 +15,9 @@ import { GoogleSVG } from "../icons/google-svg"
 import { OpenAISVG } from "../icons/openai-svg"
 import { parseOpenRouterModelName } from "@/lib/models/fetch-models"
 import { MicrosoftSVG } from "@/components/icons/microsoft-svg"
+import { Chat } from "openai/resources/index.mjs"
+import { ChatbotUISVG } from "../icons/chatbotui-svg"
+import { NvidiaSVG } from "../icons/nividia-svg"
 
 interface ModelIconProps extends HTMLAttributes<HTMLDivElement> {
   provider: ModelProvider
@@ -27,6 +31,7 @@ export const ModelIcon: FC<ModelIconProps> = ({
   height,
   width,
   modelId,
+  className,
   ...props
 }) => {
   const { theme } = useTheme()
@@ -37,7 +42,7 @@ export const ModelIcon: FC<ModelIconProps> = ({
         <OpenAISVG
           className={cn(
             "rounded-sm bg-white p-1 text-black",
-            props.className,
+            className,
             theme === "dark" ? "bg-white" : "border-foreground/10 border"
           )}
           width={width}
@@ -49,7 +54,8 @@ export const ModelIcon: FC<ModelIconProps> = ({
         <Image
           className={cn(
             "rounded-sm p-1",
-            theme === "dark" ? "bg-white" : "border-foreground/10 border"
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
           )}
           src={mistral.src}
           alt="Mistral"
@@ -62,7 +68,8 @@ export const ModelIcon: FC<ModelIconProps> = ({
         <Image
           className={cn(
             "rounded-sm p-0",
-            theme === "dark" ? "bg-white" : "border-foreground/10 border"
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
           )}
           src={groq.src}
           alt="Groq"
@@ -75,7 +82,7 @@ export const ModelIcon: FC<ModelIconProps> = ({
         <AnthropicSVG
           className={cn(
             "rounded-sm bg-white p-1 text-black",
-            props.className,
+            className,
             theme === "dark" ? "bg-white" : "border-foreground/10 border"
           )}
           width={width}
@@ -87,7 +94,7 @@ export const ModelIcon: FC<ModelIconProps> = ({
         <GoogleSVG
           className={cn(
             "rounded-sm bg-white p-1 text-black",
-            props.className,
+            className,
             theme === "dark" ? "bg-white" : "border-foreground/10 border"
           )}
           width={width}
@@ -99,7 +106,8 @@ export const ModelIcon: FC<ModelIconProps> = ({
         <Image
           className={cn(
             "rounded-sm p-1",
-            theme === "dark" ? "bg-white" : "border-foreground/10 border"
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
           )}
           src={perplexity.src}
           alt="Mistral"
@@ -112,7 +120,8 @@ export const ModelIcon: FC<ModelIconProps> = ({
         <Image
           className={cn(
             "rounded-sm p-1",
-            theme === "dark" ? "bg-white" : "border-foreground/10 border"
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
           )}
           src={databricks.src}
           alt="Databricks"
@@ -125,7 +134,7 @@ export const ModelIcon: FC<ModelIconProps> = ({
         <MicrosoftSVG
           className={cn(
             "rounded-sm bg-white p-1 text-black",
-            props.className,
+            className,
             theme === "dark" ? "bg-white" : "border-foreground/10 border"
           )}
           width={width}
@@ -137,7 +146,8 @@ export const ModelIcon: FC<ModelIconProps> = ({
         <Image
           className={cn(
             "rounded-sm p-1",
-            theme === "dark" ? "bg-white" : "border-foreground/10 border"
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
           )}
           src={meta.src}
           alt="Meta Llama"
@@ -149,12 +159,48 @@ export const ModelIcon: FC<ModelIconProps> = ({
       const { provider } = parseOpenRouterModelName(modelId!)
       return (
         <ModelIcon
+          className={className}
           provider={provider as ModelProvider}
           height={height}
           width={width}
         />
       )
+    case "x-ai":
+      return (
+        <XaiSVG
+          className={cn(
+            "rounded-sm p-1 text-black",
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
+          )}
+          size={60}
+          width={width}
+          height={height}
+        />
+      )
+    case "nvidia":
+      return (
+        <NvidiaSVG
+          className={cn(
+            "rounded-sm p-1 text-black",
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
+          )}
+          width={width}
+          height={height}
+        />
+      )
+
     default:
-      return <IconSparkles size={width} />
+      return (
+        <ChatbotUISVG
+          className={cn(
+            "dark:border-foreground/10 rounded-sm dark:border",
+            className
+          )}
+          theme={theme === "dark" ? "light" : "dark"}
+          size={width}
+        />
+      )
   }
 }
