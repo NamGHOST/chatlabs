@@ -30,7 +30,6 @@ import {
   IconArrowLeft,
   IconLayoutSidebar,
   IconSparkles
-
 } from "@tabler/icons-react"
 import { ChatbotUIContext } from "@/context/context"
 import { Button } from "../ui/button"
@@ -48,7 +47,7 @@ import { WithTooltip } from "../ui/with-tooltip"
 import { searchChatsAndMessages } from "@/db/chats"
 import { debounce } from "@/lib/debounce"
 import { Tables } from "@/supabase/types"
-
+import { useRouter } from "next/router" // Add this line
 
 export const Sidebar: FC = () => {
   const {
@@ -59,7 +58,6 @@ export const Sidebar: FC = () => {
     tools,
     assistants,
     folders,
-    profile,
     selectedWorkspace,
     showSidebar,
     setShowSidebar,
@@ -76,7 +74,6 @@ export const Sidebar: FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
   const sidebarRef = useRef<HTMLDivElement>(null)
 
-
   const { user } = useAuth()
   const router = useRouter()
 
@@ -86,9 +83,13 @@ export const Sidebar: FC = () => {
     assistants: string
     files: string
     tools: string
-  }>
-
-
+  }>({
+    chats: "",
+    prompts: "",
+    assistants: "",
+    files: "",
+    tools: ""
+  })
 
   const [chatSearchResults, setChatSearchResults] = useState<Tables<"chats">[]>(
     []
@@ -266,7 +267,6 @@ export const Sidebar: FC = () => {
               isCollapsed ? "flex-col" : "justify-between"
             )}
           >
-
             <Button
               variant="ghost"
               size={"icon"}
@@ -341,7 +341,6 @@ export const Sidebar: FC = () => {
               }
               side="right"
             />
-
           </div>
 
           <div className="flex grow flex-col overflow-y-auto">
