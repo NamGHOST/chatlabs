@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase/browser-client"
 import { TablesInsert, TablesUpdate } from "@/supabase/types"
-
+import { LLM_LIST } from "@/lib/models/llm/llm-list"
+import { PLAN_FREE } from "@/lib/subscription"
 export const getMessageById = async (messageId: string) => {
   const { data: message } = await supabase
     .from("messages")
@@ -41,6 +42,7 @@ export const getMessageCountForModel = async (
 
   return count
 }
+
 export const getMessageCount = async (since?: Date) => {
   if (!since) {
     // one day ago
@@ -152,4 +154,53 @@ export async function deleteMessagesIncludingAndAfter(
   }
 
   return true
+}
+
+export const getMessageCountForTier = async (
+  userId: string,
+  tier: string,
+  userPlan: string,
+  subscriptionStartDate?: string
+) => {
+  let since: Date
+  if (userPlan === PLAN_FREE) {
+    // For free and premium plans, reset daily
+    since = new Date()
+    since.setUTCHours(0, 0, 0, 0)
+  } else if (subscriptionStartDate) {
+    // For paid plans, use the subscription start date
+    since = new Date(subscriptionStartDate)
+    const now = new Date()
+    // If the subscription start date is more than a month ago, use the most recent monthly anniversary
+    if (now.getTime() - since.getTime() > 30 * 24 * 60 * 60 * 1000) {
+      since.setUTCMonth(now.getUTCMonth())
+      since.setUTCFullYear(now.getUTCFullYear())
+      if (since > now) {
+        since.setUTCMonth(since.getUTCMonth() - 1)
+      }
+    }
+  } else {
+    // Fallback to first of the month if no subscription start date is set
+    since = new Date()
+    since.setUTCDate(1)
+    since.setUTCHours(0, 0, 0, 0)
+  }
+
+  const modelsInTier = LLM_LIST.filter(model => model.tier === tier).map(
+    model => model.modelId
+  )
+
+  const { count, error } = await supabase
+    .from("messages")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", since.toISOString())
+    .eq("role", "user")
+    .in("model", modelsInTier)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return count
 }

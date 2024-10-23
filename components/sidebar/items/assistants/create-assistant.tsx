@@ -53,17 +53,8 @@ export const CreateAssistant: FC<CreateAssistantProps> = ({
   >([])
 
   useEffect(() => {
-    setAssistantChatSettings(prevSettings => {
-      const previousPrompt = prevSettings.prompt || ""
-      const previousPromptParts = previousPrompt.split(". ")
-
-      previousPromptParts[0] = name ? `You are ${name}` : ""
-
-      return {
-        ...prevSettings,
-        prompt: previousPromptParts.join(". ")
-      }
-    })
+    // Remove the prompt modification logic
+    // You can add any other side effects you want to keep here
   }, [name])
 
   const handleRetrievalItemsSelect = (

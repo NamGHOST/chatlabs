@@ -43,7 +43,7 @@
   "Plugins are special add-ons that allow you to do extra things beyond just chatting, such as using up-to-date information from the web or checking the weather by connecting to external services or databases.": "插件是特殊的附加組件，允許你超出聊天之外做更多事情，例如使用最新的網絡信息或通過連接到外部服務或數據庫來檢查天氣。",
   "Assistants are special AI characters instructed to provide information, solve specific problems, simulate conversations or offer creative content based on user queries.": "助手是特殊的 AI 角色，被指示提供信息、解決特定問題、模擬對話或基於用戶查詢提供創意內容。",
   "Let's create your profile.": "讓我們來建立你的個人資料。",
-  "Welcome to ImogenAI": "歡迎來到 ImogenAI",
+  "Welcome to Imogen": "歡迎來到 Imogen",
   "Choose your plan": "選擇你的計劃",
   "Pro plan gives unlimited access to over 20 AI models.": "專業計劃提供無限訪問超過 20 個 AI 模型。",
   "You are all set up!": "你已經設置好了！",
@@ -140,5 +140,43 @@
 
   "Upload": "上傳",
   "Attach files": "附加文件",
-  "Ask anything...": "選擇好你想用的模型後，就可以開始問任何問題喇..."
+  "Ask anything...": "選擇好你想用的模型後，就可以開始使用。",
+
+  "Lite Plan": "Lite Plan",
+  "Pro Plan": "Pro Plan",
+  "Standard models: 5000 requests": "Standard模型: 5000次存取",
+  "GPT-4o mini, Claude 3 Haiku and more": "GPT-4o mini, Claude 3 Haiku and more",
+  "Pro models: 250 requests": "Pro模型: 250次存取",
+  "Limited time offer: Access to OpenAI: O1mini, GPT 4o ,X-AI Grok2": "限時優惠: 使用OpenAI: O1mini, GPT 4o ,X-AI Grok2",
+  "Powered by Stable Diffusion": "Powered by Stable Diffusion",
+  "Connect to OpenAI, Anthropic, Google Gemini, and more": "Connect to OpenAI, Anthropic, Google Gemini, and more",
+  "Artifact side by side code editor": "Artifact side by side code editor",
+  "Share generated app online": "分享AI生成應用程式",
+  "AI-powered customizable assistant": "自訂助手",
+  "AI model Arena": "大型語言模型競技場",
+  "Translation, email replies, reports, grammar checks": "翻譯, 電郵回覆, 報告, 文法檢查",
+  "AI web search": "AI網絡搜索",
+  "Unlimited AI summaries": "無限AI摘要",
+  "Scan webpages, YouTube videos, or files": "掃描網頁, YouTube, 或文件總結",
+  "File summaries, smart Q&A, file translation, multi-language translation, extended PDF reading, batch translation, etc.": "文件總結, 智能Q&A, 文件翻譯, 多語言翻譯, 擴展PDF閱讀, 批量翻譯, 等等",
+  "Chrome / Edge / Safari, iOS, Mac, Android and Windows": "Chrome / Edge / Safari, iOS, Mac, Android and Windows",
+  "Optimized for all devices": "支援平板, 手機, 電腦",
+  "Priority CS support": "客服支援",
+  "VIP group access": "VIP群組訪問",
+  "Standard models: Unlimited requests": "Standard模型: 無限次存取",
+  "Pro models: 500 requests": "Pro模型: 500次存取",
+  "Ultimate models: Limited access to OpenAI: O1 and Claude Opus": "Ultimate models: Limited access to OpenAI: O1 and Claude Opus",
+  "Powered by Flux Pro 1.1": "Powered by Flux Pro 1.1",
+  "Advanced Features": "進階功能",
+
+
+  "Thank you for subscribing to our product.": "感謝您的訂閱。",
+  "We are dedicated to making this the best possible experience you can have with an LLM. We have one question before you get started.": "我們致力於為您提供最佳的體驗。在您開始之前，我們有一個問題想請教。",
+  "What outcome do you hope this product will help you achieve?": "您希望這個產品能幫助您達成什麼目標？",
+  "Write your response here....": "請在此處填寫您的回答...",
+  "We read every response and will make sure we do our best to deliver a better experience.": "我們會閱讀每一份回應，並盡最大努力提供更好的體驗。",
+  "Submit and start chatting": "提交並開始聊天"
+    
+  
+  
 }

@@ -76,8 +76,8 @@ export const ProfileStep: FC<ProfileStepProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="Google">Google</SelectItem>
-              <SelectItem value="Twitter">Twitter</SelectItem>
-              <SelectItem value="Github">Github</SelectItem>
+              <SelectItem value="Threads">Threads</SelectItem>
+              <SelectItem value="Youtube">Youtube</SelectItem>
               <SelectItem value="Linkedin">Linked in</SelectItem>
               <SelectItem value="Instagram/Facebook">
                 Instagram/Facebook
@@ -90,7 +90,7 @@ export const ProfileStep: FC<ProfileStepProps> = ({
 
         {/* "Please specify" field hidden */}
 
-        {/* "What do you want to use ImogenAI for?" field and description hidden */}
+        {/* "What do you want to use Imogen for?" field and description hidden */}
       </div>
     </>
   )

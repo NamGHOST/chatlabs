@@ -1,17 +1,34 @@
 import { Tables } from "@/supabase/types"
 import { LLMID } from "@/types/llms"
 import { LLM_LIST } from "@/lib/models/llm/llm-list"
-import { PLAN_FREE, PLAN_PRO, PLAN_ULTIMATE } from "@/lib/stripe/config"
+import {
+  PLAN_FREE,
+  PLAN_LITE,
+  PLAN_PRO,
+  PLAN_ULTIMATE
+} from "@/lib/stripe/config"
 import { getEnvInt } from "@/lib/env"
 
 export const FREE_MESSAGE_DAILY_LIMIT = getEnvInt(
   "FREE_MESSAGE_DAILY_LIMIT",
-  30
+  10
 )
+
+export const LITE_MESSAGE_DAILY_LIMIT = getEnvInt(
+  "LITE_MESSAGE_DAILY_LIMIT",
+  50
+)
+
 export const PRO_MESSAGE_DAILY_LIMIT = getEnvInt("PRO_MESSAGE_DAILY_LIMIT", 50)
+
+export const LITE_PRO_WHITELIST_DAILY_LIMIT = getEnvInt(
+  "LITE_PRO_WHITELIST_DAILY_LIMIT",
+  10
+)
+
 export const CATCHALL_MESSAGE_DAILY_LIMIT = getEnvInt(
   "CATCHALL_MESSAGE_DAILY_LIMIT",
-  300
+  250
 )
 
 export const PRO_ULTIMATE_MESSAGE_DAILY_LIMIT = getEnvInt(
@@ -22,6 +39,29 @@ export const PRO_ULTIMATE_MESSAGE_DAILY_LIMIT = getEnvInt(
 export const ULTIMATE_MESSAGE_DAILY_LIMIT = getEnvInt(
   "ULTIMATE_MESSAGE_DAILY_LIMIT",
   50
+)
+
+// **New Monthly Limits for Paid Plans**
+export const LITE_MESSAGE_MONTHLY_LIMIT = getEnvInt(
+  "LITE_MESSAGE_MONTHLY_LIMIT",
+  5000 // Default value, adjust as needed
+)
+
+export const PRO_MESSAGE_MONTHLY_LIMIT = getEnvInt(
+  "PRO_MESSAGE_MONTHLY_LIMIT",
+  500 // Default value, adjust as needed
+)
+
+export const ULTIMATE_MESSAGE_MONTHLY_LIMIT = getEnvInt(
+  "ULTIMATE_MESSAGE_MONTHLY_LIMIT",
+  500 // Default value, adjust as needed
+)
+
+export const LITE_PRO_MONTHLY_LIMIT = getEnvInt("LITE_PRO_MONTHLY_LIMIT", 250)
+
+export const PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT = getEnvInt(
+  "PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT",
+  30
 )
 
 export const ALLOWED_USERS =
@@ -39,7 +79,7 @@ export function validatePlanForModel(
 
   // openrouter models are always allowed
   ///if (model.includes("/")) {
-  ///return false
+  ///  return false
   ///}
 
   if (profile?.plan.startsWith("byok")) {
@@ -54,11 +94,13 @@ export function validatePlanForModel(
     return false
   }
 
+  // Allow explicitly allowed models
   if (ALLOWED_MODELS.includes(model)) {
     console.log("ALLOWED MODELS. Skipping plan check.", model)
     return true
   }
 
+  // Free tier models
   if (modelData.tier === "free" || modelData.tier === undefined) {
     return true
   }
@@ -69,7 +111,12 @@ export function validatePlanForModel(
 
   const userPlan = profile.plan.split("_")[0]
 
-  if (userPlan === PLAN_ULTIMATE || userPlan === PLAN_PRO) return true
+  if (
+    userPlan === PLAN_ULTIMATE ||
+    userPlan === PLAN_PRO ||
+    userPlan === PLAN_LITE
+  )
+    return true
 
   return false
 }
@@ -91,3 +138,10 @@ export function validatePlanForTools(
   }
   return false
 }
+
+export {
+  PLAN_FREE,
+  PLAN_LITE,
+  PLAN_PRO,
+  PLAN_ULTIMATE
+} from "@/lib/stripe/config"

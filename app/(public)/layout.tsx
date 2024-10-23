@@ -4,8 +4,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google"
 
 export const metadata = {
-  title: "ImogenAI",
-  description: "Created with ImogenAI App Builder"
+  title: "Imogen",
+  description: "Created with Imogen App Builder"
 }
 
 export default function RootLayout({

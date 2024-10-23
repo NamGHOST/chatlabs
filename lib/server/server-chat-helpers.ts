@@ -9,13 +9,20 @@ import { SubscriptionRequiredError } from "@/lib/errors"
 import {
   CATCHALL_MESSAGE_DAILY_LIMIT,
   FREE_MESSAGE_DAILY_LIMIT,
+  LITE_MESSAGE_DAILY_LIMIT,
+  LITE_MESSAGE_MONTHLY_LIMIT,
+  LITE_PRO_MONTHLY_LIMIT,
   PRO_MESSAGE_DAILY_LIMIT,
+  PRO_MESSAGE_MONTHLY_LIMIT,
   PRO_ULTIMATE_MESSAGE_DAILY_LIMIT,
+  PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT,
   ULTIMATE_MESSAGE_DAILY_LIMIT,
+  ULTIMATE_MESSAGE_MONTHLY_LIMIT,
   validatePlanForModel
 } from "@/lib/subscription"
 import {
   PLAN_FREE,
+  PLAN_LITE,
   PLAN_PREMIUM,
   PLAN_PRO,
   PLAN_ULTIMATE
@@ -139,6 +146,24 @@ export async function validateModel(profile: Tables<"profiles">, model: LLMID) {
   }
 }
 
+export async function getMessageCountForTier(
+  userId: string,
+  tier: string
+): Promise<number> {
+  const supabase = createClient()
+  const { count } = await supabase
+    .from("messages")
+    .select("*", { count: "exact" })
+    .eq("role", "user")
+    .eq("user_id", userId)
+    .in(
+      "model",
+      LLM_LIST.filter(model => model.tier === tier).map(model => model.modelId)
+    )
+
+  return count || 0
+}
+
 export async function validateMessageCount(
   profile: Tables<"profiles">,
   model: LLMID,
@@ -161,19 +186,43 @@ export async function validateMessageCount(
     )
   }
 
-  // clone date and set it to midnight
-  let previousDate = new Date(date)
-  previousDate.setUTCHours(0, 0, 0, 0)
+  let startDate: Date
+  if (userPlan === PLAN_FREE || userPlan === PLAN_PREMIUM) {
+    // For free and premium plans, reset daily
+    startDate = new Date(date)
+    startDate.setUTCHours(0, 0, 0, 0)
+  } else if (profile.subscription_start_date) {
+    // For paid plans, use the subscription start date
+    startDate = new Date(profile.subscription_start_date)
+    // If the subscription start date is more than a month ago, use the most recent monthly anniversary
+    if (date.getTime() - startDate.getTime() > 30 * 24 * 60 * 60 * 1000) {
+      startDate.setUTCMonth(date.getUTCMonth())
+      startDate.setUTCFullYear(date.getUTCFullYear())
+      if (startDate > date) {
+        startDate.setUTCMonth(startDate.getUTCMonth() - 1)
+      }
+    }
+  } else {
+    // Fallback to first of the month if no subscription start date is set
+    startDate = new Date(date.getFullYear(), date.getMonth(), 1)
+  }
 
-  // count messages sent today starting from midnight
+  const modelData = LLM_LIST.find(
+    x => x.modelId === model || x.hostedId === model
+  )
+  const modelTier = modelData?.tier
+
   const { count } = await supabase
     .from("messages")
     .select("*", {
       count: "exact"
     })
     .eq("role", "user")
-    .eq("model", model)
-    .gte("created_at", previousDate.toISOString())
+    .in(
+      "model",
+      LLM_LIST.filter(m => m.tier === modelTier).map(m => m.modelId)
+    )
+    .gte("created_at", startDate.toISOString())
 
   if (count === null) {
     throw new Error("Could not fetch message count")
@@ -196,12 +245,32 @@ export async function validateMessageCount(
   }
 
   if (
-    isTierModel(model, PLAN_PRO) &&
-    userPlan === PLAN_PRO &&
-    count >= PRO_MESSAGE_DAILY_LIMIT
+    isTierModel(model, PLAN_FREE) &&
+    userPlan === PLAN_LITE &&
+    count >= LITE_MESSAGE_MONTHLY_LIMIT
   ) {
     throw new SubscriptionRequiredError(
-      `You have reached daily message limit for Pro plan for ${model}`
+      `You have reached monthly message limit for Lite plan for ${model}. Upgrade to Pro/Ultimate plan to continue or come back tomorrow.`
+    )
+  }
+
+  if (
+    isTierModel(model, PLAN_PRO) &&
+    userPlan === PLAN_LITE &&
+    count >= LITE_PRO_MONTHLY_LIMIT
+  ) {
+    throw new SubscriptionRequiredError(
+      `You have reached monthly message limit for Lite plan for ${model}`
+    )
+  }
+
+  if (
+    isTierModel(model, PLAN_PRO) &&
+    userPlan === PLAN_PRO &&
+    count >= PRO_MESSAGE_MONTHLY_LIMIT
+  ) {
+    throw new SubscriptionRequiredError(
+      `You have reached monthly message limit for Pro plan for ${model}`
     )
   }
 
@@ -219,9 +288,9 @@ export async function validateMessageCount(
     userPlan === PLAN_PRO &&
     !isGrandfathered
   ) {
-    if (count >= PRO_ULTIMATE_MESSAGE_DAILY_LIMIT) {
+    if (count >= PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT) {
       throw new SubscriptionRequiredError(
-        `You have reached daily message limit for Pro plan for ${model}. Upgrade to Ultimate plan to continue or come back tomorrow.`
+        `You have reached monthly message limit for Pro plan for ${model}. Upgrade to Ultimate plan to continue or come back tomorrow.`
       )
     }
   } else if (
@@ -229,9 +298,9 @@ export async function validateMessageCount(
     userPlan === PLAN_PRO &&
     isGrandfathered
   ) {
-    if (count >= ULTIMATE_MESSAGE_DAILY_LIMIT) {
+    if (count >= ULTIMATE_MESSAGE_MONTHLY_LIMIT) {
       throw new SubscriptionRequiredError(
-        `You have reached daily message limit for Ultimate plan for ${model}`
+        `You have reached monthly message limit for Ultimate plan for ${model}`
       )
     }
   }
@@ -239,10 +308,10 @@ export async function validateMessageCount(
   if (
     isTierModel(model, PLAN_ULTIMATE) &&
     userPlan === PLAN_ULTIMATE &&
-    count >= ULTIMATE_MESSAGE_DAILY_LIMIT
+    count >= ULTIMATE_MESSAGE_MONTHLY_LIMIT
   ) {
     throw new SubscriptionRequiredError(
-      `You have reached daily message limit for Ultimate plan for ${model}`
+      `You have reached monthly message limit for Ultimate plan for ${model}`
     )
   }
 }

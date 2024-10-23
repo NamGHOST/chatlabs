@@ -42,9 +42,28 @@ export async function POST(request: Request) {
       }
     })
 
+    const isAnthropicModel = chatSettings.model.startsWith("anthropic/")
+
+    const processedMessages = isAnthropicModel
+      ? messages.map(message => ({
+          ...message,
+          content: Array.isArray(message.content)
+            ? message.content.map((part: any) => {
+                if (part.type === "text" && part.text.length > 1000) {
+                  return {
+                    ...part,
+                    cache_control: { type: "ephemeral" }
+                  }
+                }
+                return part
+              })
+            : message.content
+        }))
+      : messages
+
     const response = await openai.chat.completions.create({
       model: chatSettings.model as ChatCompletionCreateParamsBase["model"],
-      messages: messages as ChatCompletionCreateParamsBase["messages"],
+      messages: processedMessages as ChatCompletionCreateParamsBase["messages"],
       temperature: chatSettings.temperature,
       max_tokens: undefined,
       stream: true

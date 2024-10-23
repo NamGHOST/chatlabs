@@ -2,10 +2,17 @@ import { ChatbotUIContext } from "@/context/context"
 import { useContext, useEffect, useState } from "react"
 import {
   FREE_MESSAGE_DAILY_LIMIT,
+  LITE_MESSAGE_DAILY_LIMIT,
+  LITE_PRO_WHITELIST_DAILY_LIMIT,
+  LITE_MESSAGE_MONTHLY_LIMIT,
+  LITE_PRO_MONTHLY_LIMIT,
+  PRO_MESSAGE_MONTHLY_LIMIT,
   PRO_ULTIMATE_MESSAGE_DAILY_LIMIT,
-  ULTIMATE_MESSAGE_DAILY_LIMIT
+  PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT,
+  ULTIMATE_MESSAGE_DAILY_LIMIT,
+  ULTIMATE_MESSAGE_MONTHLY_LIMIT
 } from "@/lib/subscription"
-import { getMessageCountForModel } from "@/db/messages"
+import { getMessageCountForTier } from "@/db/messages"
 import { Button } from "@/components/ui/button"
 import { ChatbotUIChatContext } from "@/context/chat"
 import { LLM_LIST } from "@/lib/models/llm/llm-list"
@@ -19,20 +26,25 @@ const ChatMessageCounter: React.FC<ChatMessageCounterProps> = () => {
   const { profile, setIsPaywallOpen } = useContext(ChatbotUIContext)
   const { isGenerating, chatSettings } = useContext(ChatbotUIChatContext)
   const [messageCount, setMessageCount] = useState(0)
-  const { t } = useTranslation() // Moved this to the top level
+  const { t } = useTranslation()
 
   useEffect(() => {
-    if (!profile) {
+    if (!profile || !chatSettings?.model) {
       return
     }
     const fetchMessageCount = async () => {
-      if (!chatSettings?.model) {
-        return
-      }
       try {
-        const count = await getMessageCountForModel(
+        const modelData = LLM_LIST.find(
+          x =>
+            x.modelId === chatSettings.model ||
+            x.hostedId === chatSettings.model
+        )
+        const tier = modelData?.tier || "free"
+        const count = await getMessageCountForTier(
           profile.user_id,
-          chatSettings?.model
+          tier,
+          userPlan,
+          profile.subscription_start_date || undefined
         )
         setMessageCount(count || 0)
       } catch (error) {
@@ -66,15 +78,36 @@ const ChatMessageCounter: React.FC<ChatMessageCounterProps> = () => {
 
   if (userPlan === "ultimate") {
     if (modelTier === "ultimate") {
-      limit = ULTIMATE_MESSAGE_DAILY_LIMIT
-    } else {
-      showCounter = false
+      limit = ULTIMATE_MESSAGE_MONTHLY_LIMIT
     }
   } else if (userPlan === "pro") {
-    if (modelTier === "ultimate" && !isProGrandfathered) {
-      limit = PRO_ULTIMATE_MESSAGE_DAILY_LIMIT
+    if (modelTier === "ultimate") {
+      limit = PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT
+    }
+  }
+
+  if (userPlan === "pro") {
+    if (modelTier === "pro") {
+      limit = PRO_MESSAGE_MONTHLY_LIMIT
+    }
+    showCounter = true
+  }
+  if (modelTier === "free") {
+    showCounter = true
+  }
+  if (modelTier === "ultimate") {
+    showCounter = true
+  }
+
+  if (userPlan === "lite") {
+    if (modelTier === "pro") {
+      limit = LITE_PRO_MONTHLY_LIMIT
     } else {
-      showCounter = false
+      showCounter = true
+    }
+    if (modelTier === "free") {
+      limit = LITE_MESSAGE_MONTHLY_LIMIT
+      showCounter = true
     }
   }
 

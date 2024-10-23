@@ -27,15 +27,6 @@ import { updateWorkspace } from "@/db/workspaces"
 import { useTranslation } from "react-i18next"
 import { OPENROUTER_LLM_LIST } from "@/lib/models/llm/openrouter-llm-list"
 
-// Update the type to include both OpenRouter and regular LLM IDs
-type HiddenModelID = OpenRouterLLMID | LLMID
-
-// Update the constant to include both types of model IDs
-const PRO_PLAN_HIDDEN_MODELS: HiddenModelID[] = [
-  "openai/o1-preview",
-  "gpt-4-turbo-preview" // Example of a non-OpenRouter model
-]
-
 export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "gpt-3.5-turbo-0125": false,
   "gpt-4-vision-preview": false,
@@ -111,16 +102,20 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "cohere/command-r-08-2024": false,
   "google/gemini-flash-1.5-8b": false,
   "meta-llama/llama-3.2-90b-vision-instruct": false,
-  "meta-llama/llama-3.2-11b-vision-instruct": false
+  "meta-llama/llama-3.2-11b-vision-instruct": false,
+  "perplexity/llama-3.1-sonar-large-128k-online": false,
+  "x-ai/grok-2": false,
+  "liquid/lfm-40b": false,
+  "nvidia/llama-3.1-nemotron-70b-instruct": false
 }
 
 const SYSTEM_PROMPT_DESCRIPTION = `
 The system prompt is a message that the AI will use to start the conversation. 
-It should contain the following dynamic variables for ImogenAI functioning properly: {profile_context}, {local_date}, and {assistant}. {profile_context} is the user's profile context, {local_date} is the current date, and {assistant} is the name of the assistant and it's instructions.
+It should contain the following dynamic variables for Imogen functioning properly: {profile_context}, {local_date}, and {assistant}. {profile_context} is the user's profile context, {local_date} is the current date, and {assistant} is the name of the assistant and it's instructions.
 `
 
 const SYSTEM_PROMPT_WARNING = `
-The system prompt should contain the following dynamic variables for ImogenAI functioning properly: {profile_context}, {local_date}, and {assistant}. {profile_context} is the user's profile context, {local_date} is the current date, and {assistant} is the name of the assistant and it's instructions.`
+The system prompt should contain the following dynamic variables for Imogen functioning properly: {profile_context}, {local_date}, and {assistant}. {profile_context} is the user's profile context, {local_date} is the current date, and {assistant} is the name of the assistant and it's instructions.`
 
 // Helper function to group models by provider
 const groupModelsByProvider = (models: LLM[]) => {
@@ -198,11 +193,6 @@ function ModelSettings({ models }: { models?: LLM[] }) {
         {modelIds.map(modelId => {
           const model = models?.find(m => m.modelId === modelId)
           if (!model) return null
-
-          // Update this check to work for both OpenRouter and regular models
-          if (PRO_PLAN_HIDDEN_MODELS.includes(modelId as HiddenModelID)) {
-            return null
-          }
 
           let displayName = model.modelName
           if (model.provider === "openrouter") {
