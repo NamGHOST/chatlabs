@@ -27,8 +27,10 @@ import {
   IconLayoutColumns,
   IconPuzzle2,
   IconBulb,
+  IconArrowLeft,
   IconLayoutSidebar,
   IconSparkles
+
 } from "@tabler/icons-react"
 import { ChatbotUIContext } from "@/context/context"
 import { Button } from "../ui/button"
@@ -40,13 +42,17 @@ import { useChatHandler } from "../chat/chat-hooks/use-chat-handler"
 import { SidebarDataList } from "./sidebar-data-list"
 import { ContentType } from "@/types"
 import Link from "next/link"
+import { useAuth } from "@/context/auth"
+import { generateToken } from "@/actions/token"
 import { WithTooltip } from "../ui/with-tooltip"
 import { searchChatsAndMessages } from "@/db/chats"
 import { debounce } from "@/lib/debounce"
 import { Tables } from "@/supabase/types"
 
+
 export const Sidebar: FC = () => {
   const {
+    profile,
     chats,
     prompts,
     files,
@@ -70,19 +76,19 @@ export const Sidebar: FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
   const sidebarRef = useRef<HTMLDivElement>(null)
 
+
+  const { user } = useAuth()
+  const router = useRouter()
+
   const [searchQueries, setSearchQueries] = useState<{
     chats: string
     prompts: string
     assistants: string
     files: string
     tools: string
-  }>({
-    chats: "",
-    prompts: "",
-    assistants: "",
-    files: "",
-    tools: ""
-  })
+  }>
+
+
 
   const [chatSearchResults, setChatSearchResults] = useState<Tables<"chats">[]>(
     []
@@ -93,6 +99,13 @@ export const Sidebar: FC = () => {
   useEffect(() => {
     setIsLoaded(true)
   }, [])
+
+  const isProPlan = useMemo(() => {
+    if (!profile?.plan || profile?.plan === "free") {
+      return false
+    }
+    return true
+  }, [profile])
 
   const handleSubmenuOpen = (menuName: ContentType) => {
     if (isCollapsed) {
@@ -185,6 +198,12 @@ export const Sidebar: FC = () => {
     setIsPaywallOpen(true)
   }
 
+  const linkMorphic = async () => {
+    if (!isProPlan) return
+    const token = await generateToken({ id: user?.id })
+    router.push(`${process.env.NEXT_PUBLIC_MORPHIC_URL}?token=${token}`)
+  }
+
   return useMemo(
     () => (
       <>
@@ -247,6 +266,41 @@ export const Sidebar: FC = () => {
               isCollapsed ? "flex-col" : "justify-between"
             )}
           >
+
+            <Button
+              variant="ghost"
+              size={"icon"}
+              onClick={handleCreateChat}
+              title="New Chat"
+            >
+              <IconMessagePlus {...iconProps} />
+            </Button>
+            {isProPlan && (
+              <Button
+                variant="ghost"
+                size={"icon"}
+                onClick={linkMorphic}
+                title="Link Morphic"
+              >
+                <IconArrowLeft {...iconProps} />
+              </Button>
+            )}
+            <div className="flex items-center justify-between">
+              {activeSubmenu && getSubmenuTitle(activeSubmenu)}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleCollapseOrSubmenu}
+              className="hidden md:flex"
+            >
+              {isCollapsed ? (
+                <IconChevronRight {...iconProps} />
+              ) : (
+                <IconChevronLeft {...iconProps} />
+              )}
+            </Button>
+
             <WithTooltip
               asChild
               display={<div>New Chat</div>}
@@ -287,6 +341,7 @@ export const Sidebar: FC = () => {
               }
               side="right"
             />
+
           </div>
 
           <div className="flex grow flex-col overflow-y-auto">
