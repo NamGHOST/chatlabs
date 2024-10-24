@@ -29,7 +29,7 @@ import {
   IconBulb,
   IconLayoutSidebar,
   IconSparkles,
-  IconArrowLeft
+  IconWorldSearch
 } from "@tabler/icons-react"
 import { ChatbotUIContext } from "@/context/context"
 import { Button } from "../ui/button"
@@ -98,7 +98,7 @@ export const Sidebar: FC = () => {
     setIsLoaded(true)
   }, [])
 
-  const isProPlan = useMemo(() => {
+  const isPaidPlan = useMemo(() => {
     if (!profile?.plan || profile?.plan === "free") {
       return false
     }
@@ -175,7 +175,7 @@ export const Sidebar: FC = () => {
   )
 
   const linkMorphic = async () => {
-    if (!isProPlan) return
+    if (!isPaidPlan) return
     const token = await generateToken({ id: user?.id })
     router.push(`${process.env.NEXT_PUBLIC_MORPHIC_URL}?token=${token}`)
   }
@@ -380,15 +380,20 @@ export const Sidebar: FC = () => {
 
           {/* Upgrade message for free plan users */}
 
-          {isProPlan && (
-            <Button
-              variant="ghost"
-              size={"icon"}
-              onClick={linkMorphic}
-              title="Link Morphic"
-            >
-              <IconApps {...iconProps} />
-            </Button>
+          {isPaidPlan && (
+            <div className="flex flex-col items-center">
+              <Button
+                variant="ghost"
+                size={"icon"}
+                onClick={linkMorphic}
+                title="AI search BETA"
+              >
+                <IconWorldSearch {...iconProps} />
+              </Button>
+              <span className="text-muted-foreground mt-1 text-xs">
+                AI search BETA
+              </span>
+            </div>
           )}
 
           {profile?.plan === "free" && (
