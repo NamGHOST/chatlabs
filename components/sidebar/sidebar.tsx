@@ -29,7 +29,8 @@ import {
   IconBulb,
   IconArrowLeft,
   IconLayoutSidebar,
-  IconSparkles
+  IconSparkles,
+  IconWorldSearch
 } from "@tabler/icons-react"
 import { ChatbotUIContext } from "@/context/context"
 import { Button } from "../ui/button"
@@ -47,8 +48,8 @@ import { WithTooltip } from "../ui/with-tooltip"
 import { searchChatsAndMessages } from "@/db/chats"
 import { debounce } from "@/lib/debounce"
 import { Tables } from "@/supabase/types"
-import { useRouter } from "next/router" // Add this line
 
+import { useRouter } from "next/navigation"
 export const Sidebar: FC = () => {
   const {
     profile,
@@ -101,7 +102,7 @@ export const Sidebar: FC = () => {
     setIsLoaded(true)
   }, [])
 
-  const isProPlan = useMemo(() => {
+  const isPaidPlan = useMemo(() => {
     if (!profile?.plan || profile?.plan === "free") {
       return false
     }
@@ -177,6 +178,12 @@ export const Sidebar: FC = () => {
     [folders, chatSearchResults]
   )
 
+  const linkMorphic = async () => {
+    if (!isPaidPlan) return
+    const token = await generateToken({ id: user?.id })
+    router.push(`${process.env.NEXT_PUBLIC_MORPHIC_URL}?token=${token}`)
+  }
+
   function getSubmenuTitle(contentType: ContentType) {
     switch (contentType) {
       case "prompts":
@@ -197,12 +204,6 @@ export const Sidebar: FC = () => {
 
   const handleUpgrade = () => {
     setIsPaywallOpen(true)
-  }
-
-  const linkMorphic = async () => {
-    if (!isProPlan) return
-    const token = await generateToken({ id: user?.id })
-    router.push(`${process.env.NEXT_PUBLIC_MORPHIC_URL}?token=${token}`)
   }
 
   return useMemo(
@@ -275,16 +276,7 @@ export const Sidebar: FC = () => {
             >
               <IconMessagePlus {...iconProps} />
             </Button>
-            {isProPlan && (
-              <Button
-                variant="ghost"
-                size={"icon"}
-                onClick={linkMorphic}
-                title="Link Morphic"
-              >
-                <IconArrowLeft {...iconProps} />
-              </Button>
-            )}
+
             <div className="flex items-center justify-between">
               {activeSubmenu && getSubmenuTitle(activeSubmenu)}
             </div>
@@ -416,6 +408,23 @@ export const Sidebar: FC = () => {
           </div>
 
           {/* Upgrade message for free plan users */}
+
+          {isPaidPlan && (
+            <div className="flex flex-col items-center">
+              <Button
+                variant="ghost"
+                size={"icon"}
+                onClick={linkMorphic}
+                title="AI search BETA"
+              >
+                <IconWorldSearch {...iconProps} />
+              </Button>
+              <span className="text-muted-foreground mt-1 text-xs">
+                AI search BETA
+              </span>
+            </div>
+          )}
+
           {profile?.plan === "free" && (
             <div className="border-t p-2">
               <div className="flex flex-col items-center justify-between space-y-2 text-sm">
