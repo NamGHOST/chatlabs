@@ -28,7 +28,8 @@ import {
   IconPuzzle2,
   IconBulb,
   IconLayoutSidebar,
-  IconSparkles
+  IconSparkles,
+  IconArrowLeft
 } from "@tabler/icons-react"
 import { ChatbotUIContext } from "@/context/context"
 import { Button } from "../ui/button"
@@ -44,7 +45,9 @@ import { WithTooltip } from "../ui/with-tooltip"
 import { searchChatsAndMessages } from "@/db/chats"
 import { debounce } from "@/lib/debounce"
 import { Tables } from "@/supabase/types"
-
+import { useAuth } from "@/context/auth"
+import { generateToken } from "@/actions/token"
+import { useRouter } from "next/navigation"
 export const Sidebar: FC = () => {
   const {
     chats,
@@ -69,7 +72,8 @@ export const Sidebar: FC = () => {
   })
   const [isLoaded, setIsLoaded] = useState(false)
   const sidebarRef = useRef<HTMLDivElement>(null)
-
+  const { user } = useAuth()
+  const router = useRouter()
   const [searchQueries, setSearchQueries] = useState<{
     chats: string
     prompts: string
@@ -93,6 +97,13 @@ export const Sidebar: FC = () => {
   useEffect(() => {
     setIsLoaded(true)
   }, [])
+
+  const isProPlan = useMemo(() => {
+    if (!profile?.plan || profile?.plan === "free") {
+      return false
+    }
+    return true
+  }, [profile])
 
   const handleSubmenuOpen = (menuName: ContentType) => {
     if (isCollapsed) {
@@ -162,6 +173,12 @@ export const Sidebar: FC = () => {
     }),
     [folders, chatSearchResults]
   )
+
+  const linkMorphic = async () => {
+    if (!isProPlan) return
+    const token = await generateToken({ id: user?.id })
+    router.push(`${process.env.NEXT_PUBLIC_MORPHIC_URL}?token=${token}`)
+  }
 
   function getSubmenuTitle(contentType: ContentType) {
     switch (contentType) {
@@ -362,6 +379,18 @@ export const Sidebar: FC = () => {
           </div>
 
           {/* Upgrade message for free plan users */}
+
+          {isProPlan && (
+            <Button
+              variant="ghost"
+              size={"icon"}
+              onClick={linkMorphic}
+              title="Link Morphic"
+            >
+              <IconApps {...iconProps} />
+            </Button>
+          )}
+
           {profile?.plan === "free" && (
             <div className="border-t p-2">
               <div className="flex flex-col items-center justify-between space-y-2 text-sm">
