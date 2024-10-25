@@ -25,7 +25,8 @@
     "db-push": "supabase db push",
     "test": "jest",
     "postinstall": "patch-package",
-    "knip": "knip"
+    "knip": "knip",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.51",

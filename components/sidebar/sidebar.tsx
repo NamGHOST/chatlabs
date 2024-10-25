@@ -268,31 +268,6 @@ export const Sidebar: FC = () => {
               isCollapsed ? "flex-col" : "justify-between"
             )}
           >
-            <Button
-              variant="ghost"
-              size={"icon"}
-              onClick={handleCreateChat}
-              title="New Chat"
-            >
-              <IconMessagePlus {...iconProps} />
-            </Button>
-
-            <div className="flex items-center justify-between">
-              {activeSubmenu && getSubmenuTitle(activeSubmenu)}
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleCollapseOrSubmenu}
-              className="hidden md:flex"
-            >
-              {isCollapsed ? (
-                <IconChevronRight {...iconProps} />
-              ) : (
-                <IconChevronLeft {...iconProps} />
-              )}
-            </Button>
-
             <WithTooltip
               asChild
               display={<div>New Chat</div>}
