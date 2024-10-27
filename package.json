@@ -26,7 +26,10 @@
     "test": "jest",
     "postinstall": "patch-package",
     "knip": "knip",
-    "deploy": "npm run build && wrangler deploy"
+    "build:worker": "cloudflare",
+    "dev:worker": "wrangler dev --port 8771",
+    "preview:worker": "npm run build:worker && npm run dev:worker",
+    "deploy:worker": "npm run build:worker && wrangler deploy"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.51",
@@ -157,6 +160,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^14.0.2",
+    "@opennextjs/cloudflare": "^0.2.1",
     "@tailwindcss/typography": "^0.5.10",
     "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.1.2",
