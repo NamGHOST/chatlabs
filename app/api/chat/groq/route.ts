@@ -22,6 +22,7 @@ export async function POST(request: Request) {
       apiKey: profile.groq_api_key || "",
       baseURL: "https://api.groq.com/openai/v1"
     })
+    //https://demo4.albinsebastian.com/v1
 
     const response = await groq.chat.completions.create({
       model: chatSettings.model,

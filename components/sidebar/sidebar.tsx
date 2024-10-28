@@ -42,6 +42,8 @@ import { debounce } from "@/lib/debounce"
 import { Tables } from "@/supabase/types"
 
 import { useRouter } from "next/navigation"
+import { SidebarMeetingItem } from "./items/all/sidebar-meeting-item"
+
 export const Sidebar: FC = () => {
   const {
     prompts,
@@ -76,12 +78,14 @@ export const Sidebar: FC = () => {
     assistants: string
     files: string
     tools: string
+    meeting: string
   }>({
     chats: "",
     prompts: "",
     assistants: "",
     files: "",
-    tools: ""
+    tools: "",
+    meeting: ""
   })
 
   const [expandDelay, setExpandDelay] = useState(false)
@@ -373,6 +377,7 @@ export const Sidebar: FC = () => {
                   isCollapsed={isCollapsed}
                 />
               </Link>
+              <SidebarMeetingItem />
               {/*<Link href="/applications" passHref>*/}
               {/*  <SidebarItem*/}
               {/*    icon={<IconApps {...iconProps} />}*/}
