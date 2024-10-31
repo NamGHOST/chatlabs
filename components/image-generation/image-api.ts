@@ -1,30 +1,36 @@
 export interface GenerateImageParams {
+  prompt: string
   aspectRatio: string
-  resolution: string
   style: string
-  numberOfImages: number // New Parameter
-  guidanceScale: number // New Parameter
+  guidanceScale?: number
+  negativePrompt?: string
+  steps?: number
+  seed?: number
+  samplerName?: string
+  batchSize?: number
+  batchCount?: number
+  clipSkip?: number
+  tiling?: boolean
 }
 
 export const generateImage = async (
-  prompt: string,
   params: GenerateImageParams
 ): Promise<string> => {
   try {
     const response = await fetch("/api/generate-image", {
-      // Ensure this API route exists and is correctly configured
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, ...params })
+      body: JSON.stringify(params)
     })
 
     if (!response.ok) {
-      throw new Error("Image generation failed")
+      const error = await response.json()
+      throw new Error(error.error || "Image generation failed")
     }
 
-    const data = await response.json()
-    return data.imageUrl // Ensure your API returns an `imageUrl` field
-  } catch (error) {
+    const { imageUrl } = await response.json()
+    return imageUrl
+  } catch (error: any) {
     console.error("Error in generateImage:", error)
     throw error
   }

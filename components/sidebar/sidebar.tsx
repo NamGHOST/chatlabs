@@ -22,7 +22,9 @@ import {
   IconBulb,
   IconLayoutSidebar,
   IconSparkles,
-  IconWorldSearch
+  IconWorldSearch,
+  IconPhoto,
+  IconPhotoAi
 } from "@tabler/icons-react"
 import { ChatbotUIContext } from "@/context/context"
 import { Button } from "../ui/button"
@@ -58,7 +60,8 @@ export const Sidebar: FC = () => {
     isPaywallOpen,
     chats,
     setChats,
-    setIsPaywallOpen // Use context's state
+    setIsPaywallOpen,
+    setShowAdvancedSettings
   } = useContext(ChatbotUIContext)
   const { handleNewChat } = useChatHandler()
   const [activeSubmenu, setActiveSubmenu] = useState<ContentType | null>(null)
@@ -378,14 +381,14 @@ export const Sidebar: FC = () => {
                 />
               </Link>
               <SidebarMeetingItem />
-              {/*<Link href="/applications" passHref>*/}
-              {/*  <SidebarItem*/}
-              {/*    icon={<IconApps {...iconProps} />}*/}
-              {/*    label="Applications"*/}
-              {/*    onClick={() => {}} // This onClick is now optional*/}
-              {/*    isCollapsed={isCollapsed}*/}
-              {/*  />*/}
-              {/*</Link>*/}
+              <Link href="/image-generation" target="_blank" passHref>
+                <SidebarItem
+                  icon={<IconPhotoAi {...iconProps} />}
+                  label="Text to Image"
+                  onClick={() => {}}
+                  isCollapsed={isCollapsed}
+                />
+              </Link>
             </div>
 
             <div
