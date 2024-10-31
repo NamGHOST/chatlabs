@@ -2047,6 +2047,47 @@ export type Database = {
           }
         ]
       }
+      image_history: {
+        Row: {
+          id: string
+          user_id: string
+          url: string
+          timestamp: number
+          prompt: string
+          params: Json
+          storage_path: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          url: string
+          timestamp: number
+          prompt: string
+          params: Json
+          storage_path?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          url?: string
+          timestamp?: number
+          prompt?: string
+          params?: Json
+          storage_path?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "image_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       recent_models: {

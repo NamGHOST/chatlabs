@@ -1,5 +1,6 @@
 import { getGeneratedImageFromStorage } from "@/db/storage/generated-images"
 import { supabase } from "@/lib/supabase/browser-client"
+import { Json, Tables } from "@/supabase/types"
 
 export interface GeneratedImage {
   url: string
@@ -19,88 +20,6 @@ export const saveImageToHistory = async (
   userId: string
 ) => {
   try {
-    if (!newImage.url) {
-      throw new Error("Image URL is required")
-    }
-
-    // Special handling for Replicate URLs
-    if (newImage.url.includes("replicate.delivery")) {
-      const urlParts = newImage.url.split("replicate.delivery/")
-      if (urlParts.length === 2) {
-        const deliveryPath = urlParts[1]
-        const directUrl = `https://pbxt.replicate.delivery/${deliveryPath}`
-
-        // Get the image data from the direct URL
-        const response = await fetch(directUrl)
-        if (!response.ok)
-          throw new Error("Failed to fetch image from Replicate")
-        const blob = await response.blob()
-
-        // Continue with storage upload...
-        const fileExtension = blob.type.includes("webp") ? "webp" : "png"
-        const filename = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`
-
-        // Upload to Supabase storage with retries
-        let uploadAttempts = 0
-        const maxAttempts = 3
-
-        while (uploadAttempts < maxAttempts) {
-          try {
-            const { data: uploadData, error: uploadError } =
-              await supabase.storage
-                .from("generated_images")
-                .upload(filename, blob, {
-                  cacheControl: "3600",
-                  upsert: false
-                })
-
-            if (uploadError) throw uploadError
-
-            // Get a signed URL for the uploaded image
-            const { data: urlData, error: urlError } = await supabase.storage
-              .from("generated_images")
-              .createSignedUrl(filename, 60 * 60 * 24) // 24 hour expiry
-
-            if (urlError) throw urlError
-
-            // Update the image URL to use the Supabase URL
-            const imageWithStorageUrl = {
-              ...newImage,
-              url: urlData.signedUrl,
-              storagePath: filename
-            }
-
-            // Insert into database
-            const { data, error } = await supabase
-              .from("image_history")
-              .insert([
-                {
-                  user_id: userId,
-                  url: imageWithStorageUrl.url,
-                  timestamp: imageWithStorageUrl.timestamp,
-                  prompt: imageWithStorageUrl.prompt,
-                  params: imageWithStorageUrl.params,
-                  storage_path: imageWithStorageUrl.storagePath
-                }
-              ])
-              .select("*")
-              .single()
-
-            if (error) {
-              console.error("Error inserting image:", error)
-              throw error
-            }
-            return data
-          } catch (error) {
-            uploadAttempts++
-            if (uploadAttempts === maxAttempts) throw error
-            await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second before retry
-          }
-        }
-      }
-    }
-
-    // If we get here, save the original image directly to database
     const { data, error } = await supabase
       .from("image_history")
       .insert([
@@ -109,37 +28,19 @@ export const saveImageToHistory = async (
           url: newImage.url,
           timestamp: newImage.timestamp,
           prompt: newImage.prompt,
-          params: newImage.params,
+          params: newImage.params as Json,
           storage_path: newImage.storagePath
         }
       ])
-      .select("*")
+      .select()
       .single()
 
-    if (error) {
-      console.error("Error inserting image:", error)
-      throw error
-    }
+    if (error) throw error
     return data
   } catch (error) {
     console.error("Error saving image to history:", error)
-    return newImage
+    return null
   }
-}
-
-interface ImageHistoryRecord {
-  id: string
-  user_id: string
-  url: string
-  timestamp: number
-  prompt: string
-  params: {
-    aspectRatio: string
-    style: string
-    guidanceScale: number
-    steps: number
-  }
-  storage_path?: string
 }
 
 export const getImageHistory = async (
@@ -148,19 +49,19 @@ export const getImageHistory = async (
   try {
     const { data, error } = await supabase
       .from("image_history")
-      .select("*")
+      .select("url, timestamp, prompt, params, storage_path")
       .eq("user_id", userId)
       .order("timestamp", { ascending: false })
       .limit(50)
 
     if (error) throw error
 
-    return (data as ImageHistoryRecord[]).map(record => ({
+    return (data || []).map(record => ({
       url: record.url,
       timestamp: record.timestamp,
       prompt: record.prompt,
-      params: record.params,
-      storagePath: record.storage_path
+      params: record.params as GeneratedImage["params"],
+      storagePath: record.storage_path || undefined
     }))
   } catch (error) {
     console.error("Error getting image history:", error)
