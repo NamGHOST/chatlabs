@@ -322,7 +322,7 @@ export const ChatbotUIContext = createContext<ChatbotUIContext>({
   showSidebar: false,
   setShowSidebar: () => {},
 
-  // SYSTEM PROMPTS
+  // ADVANCED SETTINGS
   showAdvancedSettings: false,
   setShowAdvancedSettings: () => {}
 })
