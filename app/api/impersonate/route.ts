@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   const adminEmail = userData?.user?.email
 
   const allowedDomain =
-    process.env.ALLOWED_IMPERSONATION_DOMAIN || "writingmate.ai"
+    process.env.ALLOWED_IMPERSONATION_DOMAIN || "imogenai.app"
 
   if (!adminEmail?.endsWith(`@${allowedDomain}`)) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 403 })

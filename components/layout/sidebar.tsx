@@ -1,6 +1,6 @@
 import { useState } from "react"
 import TextToImageGenerator from "../image-generation/text-to-image-generator"
-import { useRouter } from "next/router" // Import useRouter for navigation
+import { useRouter } from "next/navigation" // Import useRouter for navigation
 
 const Sidebar = () => {
   const router = useRouter() // Initialize useRouter

@@ -20,8 +20,9 @@ export async function POST(request: Request) {
     // Groq is compatible with the OpenAI SDK
     const groq = new OpenAI({
       apiKey: profile.groq_api_key || "",
-      baseURL: "https://api.groq.com/openai/v1"
+      baseURL: process.env.GROQ_BASE_URL || undefined
     })
+    //this is the url for the groq proxy oringinally https://api.groq.com/openai/v1
 
     const response = await groq.chat.completions.create({
       model: chatSettings.model,

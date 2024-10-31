@@ -12,25 +12,19 @@ import { SidebarItem } from "./sidebar-item"
 import { SlidingSubmenu } from "./sliding-submenu"
 import { SidebarCreateButtons } from "./sidebar-create-buttons"
 import {
-  IconMessage,
   IconPuzzle,
   IconFolder,
-  IconTool,
-  IconApps,
   IconChevronRight,
   IconChevronLeft,
   IconMessagePlus,
   IconRobot,
-  IconX,
-  IconMenu2,
-  IconMessage2Plus,
   IconLayoutColumns,
-  IconPuzzle2,
   IconBulb,
-  IconArrowLeft,
   IconLayoutSidebar,
   IconSparkles,
-  IconWorldSearch
+  IconWorldSearch,
+  IconPhoto,
+  IconPhotoAi
 } from "@tabler/icons-react"
 import { ChatbotUIContext } from "@/context/context"
 import { Button } from "../ui/button"
@@ -45,26 +39,29 @@ import Link from "next/link"
 import { useAuth } from "@/context/auth"
 import { generateToken } from "@/actions/token"
 import { WithTooltip } from "../ui/with-tooltip"
-import { searchChatsAndMessages } from "@/db/chats"
+import { searchChatsByName } from "@/db/chats"
 import { debounce } from "@/lib/debounce"
 import { Tables } from "@/supabase/types"
 
 import { useRouter } from "next/navigation"
+import { SidebarMeetingItem } from "./items/all/sidebar-meeting-item"
+
 export const Sidebar: FC = () => {
   const {
-    profile,
-    chats,
     prompts,
     files,
     tools,
     assistants,
     folders,
+    profile,
     selectedWorkspace,
     showSidebar,
     setShowSidebar,
     isPaywallOpen,
+    chats,
+    setChats,
     setIsPaywallOpen,
-    setSelectedAssistant // Use context's state
+    setShowAdvancedSettings
   } = useContext(ChatbotUIContext)
   const { handleNewChat } = useChatHandler()
   const [activeSubmenu, setActiveSubmenu] = useState<ContentType | null>(null)
@@ -84,19 +81,57 @@ export const Sidebar: FC = () => {
     assistants: string
     files: string
     tools: string
+    meeting: string
   }>({
     chats: "",
     prompts: "",
     assistants: "",
     files: "",
-    tools: ""
+    tools: "",
+    meeting: ""
   })
 
-  const [chatSearchResults, setChatSearchResults] = useState<Tables<"chats">[]>(
-    []
-  )
   const [expandDelay, setExpandDelay] = useState(false)
   const [searchLoading, setSearchLoading] = useState(false)
+
+  const [chatOffset, setChatOffset] = useState(0)
+
+  const [reachedEnd, setReachedEnd] = useState(false)
+
+  const loadMoreChats = useCallback(async () => {
+    console.log("loadMoreChats")
+    if (searchLoading) return
+    if (reachedEnd) return
+    const lastChatCreatedAt = chats?.[chats.length - 1]?.created_at
+    handleSearchChange(searchQueries.chats, chatOffset + 40, lastChatCreatedAt)
+  }, [searchQueries.chats, chatOffset, chats, reachedEnd, searchLoading])
+
+  const handleSearchChange = useCallback(
+    debounce(async (query: string, offset: number, lastCreatedAt?: string) => {
+      if (!selectedWorkspace) return
+      setSearchLoading(true)
+      const newChats = await searchChatsByName(
+        selectedWorkspace.id,
+        query,
+        lastCreatedAt,
+        offset,
+        40
+      )
+      if (offset === 0) {
+        setChats(newChats)
+      } else {
+        setChats(prevChats => [...prevChats, ...newChats])
+      }
+      setChatOffset(offset) // Update offset for pagination
+      setSearchLoading(false)
+      setReachedEnd(newChats.length < 40)
+    }, 300), // Debounce delay of 300ms
+    [selectedWorkspace, reachedEnd]
+  )
+
+  useEffect(() => {
+    handleSearchChange(searchQueries.chats, 0)
+  }, [searchQueries.chats])
 
   useEffect(() => {
     setIsLoaded(true)
@@ -134,7 +169,6 @@ export const Sidebar: FC = () => {
   }
 
   const handleCreateChat = () => {
-    setSelectedAssistant(null) // Clear the selected assistant
     handleNewChat()
   }
 
@@ -146,9 +180,7 @@ export const Sidebar: FC = () => {
 
   const dataMap = useMemo(
     () => ({
-      chats: chats.filter(chat =>
-        chat.name.toLowerCase().includes(searchQueries.chats.toLowerCase())
-      ),
+      chats,
       prompts: prompts.filter(prompt =>
         prompt.name.toLowerCase().includes(searchQueries.prompts.toLowerCase())
       ),
@@ -164,7 +196,7 @@ export const Sidebar: FC = () => {
         tool.name.toLowerCase().includes(searchQueries.tools.toLowerCase())
       )
     }),
-    [chatSearchResults, prompts, assistants, files, tools, searchQueries]
+    [prompts, assistants, files, tools, searchQueries, chats]
   )
 
   const foldersMap = useMemo(
@@ -175,7 +207,7 @@ export const Sidebar: FC = () => {
       files: folders.filter(folder => folder.type === "files"),
       tools: folders.filter(folder => folder.type === "tools")
     }),
-    [folders, chatSearchResults]
+    [folders]
   )
 
   const linkMorphic = async () => {
@@ -238,7 +270,7 @@ export const Sidebar: FC = () => {
           />
         )}
 
-        <>{/* Sidebar */}</>
+        {/* Sidebar */}
         <motion.div
           ref={sidebarRef}
           className={cn(
@@ -348,14 +380,15 @@ export const Sidebar: FC = () => {
                   isCollapsed={isCollapsed}
                 />
               </Link>
-              {/*<Link href="/applications" passHref>*/}
-              {/*  <SidebarItem*/}
-              {/*    icon={<IconApps {...iconProps} />}*/}
-              {/*    label="Applications"*/}
-              {/*    onClick={() => {}} // This onClick is now optional*/}
-              {/*    isCollapsed={isCollapsed}*/}
-              {/*  />*/}
-              {/*</Link>*/}
+              <SidebarMeetingItem />
+              <Link href="/image-generation" target="_blank" passHref>
+                <SidebarItem
+                  icon={<IconPhotoAi {...iconProps} />}
+                  label="Text to Image"
+                  onClick={() => {}}
+                  isCollapsed={isCollapsed}
+                />
+              </Link>
             </div>
 
             <div
@@ -377,6 +410,7 @@ export const Sidebar: FC = () => {
                   contentType="chats"
                   data={dataMap.chats}
                   folders={foldersMap.chats}
+                  onLoadMore={loadMoreChats} // Pass loadMoreChats only for chats
                 />
               </div>
             </div>
@@ -487,7 +521,9 @@ export const Sidebar: FC = () => {
       showSidebar,
       searchQueries,
       profile,
-      isPaywallOpen // Use context's state
+      isPaywallOpen, // Use context's state
+      loadMoreChats, // Add loadMoreChats to dependencies
+      searchLoading // Add searchLoading to dependencies
     ]
   )
 }

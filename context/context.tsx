@@ -172,8 +172,9 @@ interface ChatbotUIContext {
   setShowSidebar: Dispatch<SetStateAction<boolean>>
 
   // SYSTEM PROMPTS
+  showAdvancedSettings: boolean
+  setShowAdvancedSettings: Dispatch<SetStateAction<boolean>>
 }
-
 export const ChatbotUIContext = createContext<ChatbotUIContext>({
   // PROFILE STORE
   profile: null,
@@ -319,5 +320,9 @@ export const ChatbotUIContext = createContext<ChatbotUIContext>({
 
   // SIDEBAR
   showSidebar: false,
-  setShowSidebar: () => {}
+  setShowSidebar: () => {},
+
+  // ADVANCED SETTINGS
+  showAdvancedSettings: false,
+  setShowAdvancedSettings: () => {}
 })

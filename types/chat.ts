@@ -28,3 +28,10 @@ export interface ChatAPIPayload {
   chatSettings: ChatSettings
   messages: Tables<"messages">[]
 }
+
+export interface Message {
+  role: "user" | "assistant"
+  content: string
+  participantIndex?: number
+  senderName?: string
+}

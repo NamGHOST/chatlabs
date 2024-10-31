@@ -69,7 +69,7 @@ function getClient(model: string, profile: Tables<"profiles">) {
     logger.debug("Creating Groq client")
     return new OpenAI({
       apiKey: profile.groq_api_key || "",
-      baseURL: "https://api.groq.com/openai/v1"
+      baseURL: process.env.GROQ_BASE_URL || undefined
     })
   }
 
