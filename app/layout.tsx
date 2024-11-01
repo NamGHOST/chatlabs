@@ -18,7 +18,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="bg-background min-h-screen">{children}</main>
+          {children}
         </ThemeProvider>
       </body>
     </html>
