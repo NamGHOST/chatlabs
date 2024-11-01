@@ -4,14 +4,14 @@ import { User } from '@supabase/supabase-js'
 import { Tables } from '@/supabase/types'
 
 interface UserData extends User {
-  plan?: string;
-  profile?: Tables<"profiles">;
+  plan?: string
+  profile?: Tables<"profiles">
   app_metadata: {
-    [key: string]: any;
-  };
+    [key: string]: any
+  }
   user_metadata: {
-    [key: string]: any;
-  };
+    [key: string]: any
+  }
 }
 
 export function useUser() {

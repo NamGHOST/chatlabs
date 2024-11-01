@@ -47,7 +47,7 @@ export async function generateImage(params: ImageGenerationParams) {
       // Clamp guidance scale between 1 and 5 for Flux
       const guidanceScale = Math.min(Math.max(params.guidanceScale || 3, 1), 5)
 
-      const result = await replicate.run("black-forest-labs/flux-schnell", {
+      const output = await replicate.run("black-forest-labs/flux-schnell", {
         input: {
           prompt,
           steps: params.steps || 25,
@@ -58,9 +58,37 @@ export async function generateImage(params: ImageGenerationParams) {
         }
       })
 
-      return result as unknown as string
+      // Handle the output properly as an array
+      if (Array.isArray(output) && output.length > 0) {
+        return output[0]
+      }
+
+      throw new Error("Invalid response from Replicate API")
 
     default:
       throw new Error(`Unsupported model: ${style}`)
+  }
+}
+
+type ReplicateOutput = string[]
+
+export const generateReplicateImage = async (params: ImageGenerationParams) => {
+  const replicate = new Replicate({
+    auth: process.env.REPLICATE_API_TOKEN
+  })
+
+  try {
+    const output = (await replicate.run("black-forest-labs/flux-schnell", {
+      input: params
+    })) as ReplicateOutput
+
+    // Handle the output directly as a URL
+    const imageUrl = output[0]
+
+    // Clean the URL if needed
+    return imageUrl.replace(/[\[\]"]/g, "").trim()
+  } catch (error) {
+    console.error("Error generating image:", error)
+    throw error
   }
 }

@@ -54,6 +54,7 @@ import { createClient } from "@supabase/supabase-js"
 import { getGeneratedImageFromStorage } from "@/db/storage/generated-images"
 import { getImageWithFallback } from "@/lib/storage/image-history"
 import { PLAN_FREE } from "@/lib/subscription"
+import Image from "next/image"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -210,13 +211,17 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
 
       const { enhancedPrompt } = await response.json()
 
-      setParams(prev => ({
-        ...prev,
-        prompt: prev.prompt
+      setParams(prev => {
+        const newPrompt = prev.prompt
           ? `${prev.prompt}\n${enhancedPrompt}`
-          : enhancedPrompt,
-        magicPrompt: "" // Clear the magic prompt input
-      }))
+          : enhancedPrompt
+
+        return {
+          ...prev,
+          prompt: newPrompt,
+          magicPrompt: ""
+        }
+      })
 
       toast.success("Prompt enhanced and added!")
     } catch (error) {
@@ -227,27 +232,29 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
     }
   }
 
-  const downloadImage = async (imageUrl: string, timestamp: number) => {
-    if (isDownloading) return
-    setIsDownloading(true)
-
+  const handleDownload = async (url: string, timestamp: string) => {
     try {
-      const response = await fetch(imageUrl)
+      setIsDownloading(true)
+
+      const response = await fetch(
+        `/api/image/download?url=${encodeURIComponent(url)}`
+      )
+      if (!response.ok) throw new Error("Failed to fetch image")
+
       const blob = await response.blob()
       const blobUrl = window.URL.createObjectURL(blob)
 
+      // Create link element but don't append it to document
       const link = document.createElement("a")
       link.href = blobUrl
-      link.download = `generated-image-${timestamp}.png`
-      document.body.appendChild(link)
+      link.download = `image_${timestamp}.png`
       link.click()
-      document.body.removeChild(link)
 
+      // Clean up
       window.URL.revokeObjectURL(blobUrl)
-      toast.success("Image downloaded successfully")
     } catch (error) {
-      console.error("Error downloading image:", error)
-      toast.error("Failed to download image")
+      console.error("Download failed:", error)
+      // Handle error (maybe show a toast notification)
     } finally {
       setIsDownloading(false)
     }
@@ -289,7 +296,7 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
   }
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="min-h-screen">
       {/* Brand Header */}
       <div className="py-8">
         <Brand />
@@ -297,9 +304,9 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
 
       {/* Existing Content */}
       <div className="p-4 md:p-6 lg:p-8">
-        <div className="mx-auto grid max-w-[2000px] grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:gap-8 xl:grid-cols-[minmax(400px,600px)_1fr]">
-          {/* Form Section - Adaptive width */}
-          <div className="w-full md:col-span-1">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {/* Form Section */}
+          <div className="w-full">
             <form
               onSubmit={handleSubmit}
               className="space-y-4 md:sticky md:top-6 md:space-y-6"
@@ -539,7 +546,7 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
           </div>
 
           {/* Generated Images Section */}
-          <div className="space-y-4 md:col-span-1 md:space-y-6 xl:col-span-1">
+          <div className="space-y-4 md:space-y-6">
             <h2 className="text-xl font-bold md:text-2xl">Generated Images</h2>
 
             <div className="grid gap-4 md:gap-6">
@@ -561,11 +568,15 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                   <Card key={image.timestamp} className="overflow-hidden">
                     {/* Image Container with proper aspect ratio handling */}
                     <div className="relative w-full">
-                      <div className="relative aspect-[3/4] overflow-hidden md:aspect-[4/3] lg:aspect-[16/9]">
-                        <img
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <Image
                           src={image.url}
                           alt={`Generated image: ${image.prompt.slice(0, 30)}...`}
                           className="absolute inset-0 size-full bg-black/5 object-contain"
+                          width={1024}
+                          height={768}
+                          unoptimized={false}
+                          loader={({ src }) => src}
                         />
                       </div>
 
@@ -610,7 +621,10 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                           className="flex-1"
                           disabled={isDownloading}
                           onClick={() =>
-                            downloadImage(image.url, image.timestamp)
+                            handleDownload(
+                              image.url,
+                              image.timestamp.toString()
+                            )
                           }
                         >
                           {isDownloading ? (
@@ -654,53 +668,14 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                     </DialogDescription>
                   </DialogHeader>
                   <div className="relative size-full">
-                    <img
+                    <Image
                       src={selectedImage.url}
                       alt={selectedImage.prompt}
                       className="size-full object-contain"
-                      onError={async e => {
-                        const imgElement = e.currentTarget
-                        if (!imgElement) return
-
-                        try {
-                          // For Replicate URLs, try to use the URL directly without modifications
-                          if (
-                            selectedImage.url.includes("replicate.delivery")
-                          ) {
-                            // Try fetching the image directly first
-                            const response = await fetch(selectedImage.url)
-                            if (response.ok) {
-                              // If direct fetch works, keep using the original URL
-                              imgElement.src = selectedImage.url
-                              return
-                            }
-                          }
-
-                          // If direct fetch fails or it's not a Replicate URL, try storage path
-                          if (selectedImage.storagePath) {
-                            const newUrl = await getGeneratedImageFromStorage(
-                              selectedImage.storagePath
-                            )
-                            if (newUrl) {
-                              imgElement.src = newUrl
-                              return
-                            }
-                          }
-
-                          // Show placeholder if all attempts fail
-                          const parent = imgElement.parentElement
-                          if (parent) {
-                            const fallbackDiv = document.createElement("div")
-                            fallbackDiv.className =
-                              "w-full h-full bg-muted rounded-md flex items-center justify-center"
-                            fallbackDiv.innerHTML =
-                              '<span class="text-sm text-muted-foreground">Image unavailable</span>'
-                            parent.replaceChild(fallbackDiv, imgElement)
-                          }
-                        } catch (error) {
-                          console.error("Error handling image:", error)
-                        }
-                      }}
+                      width={600}
+                      height={800}
+                      unoptimized={false}
+                      loader={({ src }) => src}
                     />
                     <DialogClose className="absolute right-2 top-2">
                       <Button variant="ghost" size="icon">
@@ -715,9 +690,9 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                         variant="secondary"
                         size="sm"
                         onClick={() =>
-                          downloadImage(
+                          handleDownload(
                             selectedImage.url,
-                            selectedImage.timestamp
+                            selectedImage.timestamp.toString()
                           )
                         }
                       >
@@ -782,41 +757,14 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                       }}
                     >
                       <div className="relative size-full">
-                        <img
+                        <Image
                           src={image.url}
                           alt={image.prompt}
                           className="size-full rounded-md object-cover"
-                          onError={async e => {
-                            const imgElement = e.currentTarget
-                            if (!imgElement) return
-
-                            try {
-                              const newUrl = await getImageWithFallback(image)
-                              if (newUrl !== image.url) {
-                                console.log("Switching to new URL:", newUrl)
-                                imgElement.src = newUrl
-                                return
-                              }
-
-                              // Only show placeholder if we've tried both URLs
-                              const parent = imgElement.parentElement
-                              if (parent) {
-                                console.log(
-                                  "Showing placeholder for:",
-                                  image.url
-                                )
-                                const fallbackDiv =
-                                  document.createElement("div")
-                                fallbackDiv.className =
-                                  "w-full h-full bg-muted rounded-md flex items-center justify-center"
-                                fallbackDiv.innerHTML =
-                                  '<span class="text-xs text-muted-foreground">Preview unavailable</span>'
-                                parent.replaceChild(fallbackDiv, imgElement)
-                              }
-                            } catch (error) {
-                              console.error("Error handling image:", error)
-                            }
-                          }}
+                          width={24}
+                          height={32}
+                          unoptimized={false}
+                          loader={({ src }) => src}
                         />
 
                         {/* Loading state overlay */}

@@ -20,12 +20,13 @@ export const saveImageToHistory = async (
   userId: string
 ) => {
   try {
+    const cleanUrl = newImage.url.replace(/[\[\]"]/g, "").trim()
     const { data, error } = await supabase
       .from("image_history")
       .insert([
         {
           user_id: userId,
-          url: newImage.url,
+          url: cleanUrl,
           timestamp: newImage.timestamp,
           prompt: newImage.prompt,
           params: newImage.params as Json,
@@ -114,29 +115,13 @@ export const getImageWithFallback = async (image: GeneratedImage) => {
     }
   }
 
-  // If storage fails and it's a Replicate URL, try the pbxt domain
+  // For Replicate URLs, just clean and return
   if (image.url.includes("replicate.delivery")) {
-    try {
-      const urlParts = image.url.split("replicate.delivery/")
-      if (urlParts.length === 2) {
-        const deliveryPath = urlParts[1]
-        const directUrl = `https://pbxt.replicate.delivery/${deliveryPath}`
-
-        const response = await fetch(directUrl, {
-          method: "HEAD",
-          cache: "no-store"
-        })
-
-        if (response.ok) {
-          console.log("Using direct Replicate URL:", directUrl)
-          return directUrl
-        }
-      }
-    } catch (error) {
-      console.error("Error accessing direct Replicate URL:", error)
-    }
+    const cleanUrl = image.url.replace(/[\[\]"]/g, "").trim()
+    console.log("Using Replicate URL:", cleanUrl)
+    return cleanUrl
   }
 
-  // Return original URL as last resort
-  return image.url
+  // Return cleaned original URL as last resort
+  return image.url.replace(/[\[\]"]/g, "").trim()
 }

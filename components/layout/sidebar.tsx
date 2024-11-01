@@ -1,26 +1,18 @@
 import { useState } from "react"
-import TextToImageGenerator from "../image-generation/text-to-image-generator"
-import { useRouter } from "next/navigation" // Import useRouter for navigation
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 const Sidebar = () => {
-  const router = useRouter() // Initialize useRouter
+  const router = useRouter()
 
   return (
     <div className="sidebar">
       {/* ... existing sidebar buttons ... */}
 
       {/* Text to Image Button */}
-      <button
-        onClick={() => router.push("/image-generation")}
-        className="btn-sidebar"
-      >
-        Text to Image
-      </button>
-
-      {/* Remove the following block if not needed */}
-      {/* {showImageGenerator && (
-        <TextToImageGenerator onClose={() => setShowImageGenerator(false)} />
-      )} */}
+      <Link href="/image-generation" className="block w-full">
+        <button className="btn-sidebar w-full">Text to Image</button>
+      </Link>
     </div>
   )
 }
