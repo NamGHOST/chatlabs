@@ -1,6 +1,8 @@
 import { getGeneratedImageFromStorage } from "@/db/storage/generated-images"
 import { supabase } from "@/lib/supabase/browser-client"
 import { Json, Tables } from "@/supabase/types"
+import { handleReplicateImage } from "@/lib/storage/image-processing"
+import { uploadGeneratedImage } from "@/db/storage/generated-images"
 
 export interface GeneratedImage {
   url: string
@@ -20,6 +22,19 @@ export const saveImageToHistory = async (
   userId: string
 ) => {
   try {
+    // Download and process the Replicate image
+    const { blob } = await handleReplicateImage(newImage.url)
+
+    // Create a unique storage path
+    const storagePath = `${userId}/${Date.now()}.webp`
+
+    // Convert blob to File
+    const imageFile = new File([blob], "image.webp", { type: "image/webp" })
+
+    // Upload to Supabase storage
+    const path = await uploadGeneratedImage(storagePath, imageFile)
+
+    // Save record to database with storage path
     const cleanUrl = newImage.url.replace(/[\[\]"]/g, "").trim()
     const { data, error } = await supabase
       .from("image_history")
@@ -30,7 +45,7 @@ export const saveImageToHistory = async (
           timestamp: newImage.timestamp,
           prompt: newImage.prompt,
           params: newImage.params as Json,
-          storage_path: newImage.storagePath
+          storage_path: path
         }
       ])
       .select()
