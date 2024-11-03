@@ -106,7 +106,20 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "perplexity/llama-3.1-sonar-large-128k-online": false,
   "x-ai/grok-2": false,
   "liquid/lfm-40b": false,
-  "nvidia/llama-3.1-nemotron-70b-instruct": false
+  "nvidia/llama-3.1-nemotron-70b-instruct": false,
+
+  "gemma-7b-it": false,
+  "gemma2-9b-it": false,
+  "llama-3.1-8b-instant": false,
+  "llama-3.2-11b-text-preview": false,
+  "llama-3.2-11b-vision-preview": false,
+  "llama-3.2-1b-preview": false,
+  "llama-3.2-3b-preview": false,
+  "llama-3.2-90b-text-preview": false,
+  "llama-3.2-90b-vision-preview": false,
+  "llama-guard-3-8b": false,
+  "llama3-groq-8b-8192-tool-use-preview": false,
+  "llava-v1.5-7b-4096-preview": false
 }
 
 const SYSTEM_PROMPT_DESCRIPTION = `
