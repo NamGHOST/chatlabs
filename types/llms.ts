@@ -48,12 +48,23 @@ export type MistralLLMID =
   | "mistral-large-latest" // Mistral Large
 
 export type GroqLLMID =
-  // | "llama2-70b-4096" // LLaMA2-70b
   | "mixtral-8x7b-32768" // Mixtral-8x7b
   | "llama3-70b-8192" // LLaMA3-70b
   | "llama-3.1-70b-versatile" // LLaMA3.1-70b
   | "llama3-8b-8192" // LLaMA3-8b
-  | "llama3-groq-70b-8192-tool-use-preview" // LLaMA3-13b
+  | "llama3-groq-70b-8192-tool-use-preview" // LLaMA3-70b Tool Use
+  | "gemma-7b-it" // Gemma 7B
+  | "gemma2-9b-it" // Gemma 2 9B
+  | "llama-3.1-8b-instant" // Llama 3.1 8B Instant
+  | "llama-3.2-11b-text-preview" // Llama 3.2 11B Text
+  | "llama-3.2-11b-vision-preview" // Llama 3.2 11B Vision
+  | "llama-3.2-1b-preview" // Llama 3.2 1B
+  | "llama-3.2-3b-preview" // Llama 3.2 3B
+  | "llama-3.2-90b-text-preview" // Llama 3.2 90B Text
+  | "llama-3.2-90b-vision-preview" // Llama 3.2 90B Vision
+  | "llama-guard-3-8b" // Llama Guard 3 8B
+  | "llama3-groq-8b-8192-tool-use-preview" // Llama 3 8B Tool Use
+  | "llava-v1.5-7b-4096-preview" // Llava v1.5 7B
 
 // Perplexity Models (UPDATED 1/31/24)
 

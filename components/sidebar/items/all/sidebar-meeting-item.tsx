@@ -8,10 +8,19 @@ import { SIDEBAR_ITEM_ICON_SIZE } from "./sidebar-display-item"
 
 export const SidebarMeetingItem = () => {
   const { t } = useTranslation()
-  const { selectedWorkspace } = useContext(ChatbotUIContext)
+  const { selectedWorkspace, profile, setIsPaywallOpen } =
+    useContext(ChatbotUIContext)
   const router = useRouter()
 
   if (!selectedWorkspace) return null
+
+  const handleMeetingClick = () => {
+    if (!profile?.plan || profile.plan === "free") {
+      setIsPaywallOpen(true)
+      return
+    }
+    router.push("/meeting")
+  }
 
   return (
     <SidebarItem
@@ -23,7 +32,7 @@ export const SidebarMeetingItem = () => {
           className="text-muted-foreground"
         />
       }
-      onClick={() => router.push("/meeting")}
+      onClick={handleMeetingClick}
       hasSubmenu={false}
       isCollapsed={false}
     />

@@ -175,8 +175,24 @@
   "What outcome do you hope this product will help you achieve?": "您希望這個產品能幫助您達成什麼目標？",
   "Write your response here....": "請在此處填寫您的回答...",
   "We read every response and will make sure we do our best to deliver a better experience.": "我們會閱讀每一份回應，並盡最大努力提供更好的體驗。",
-  "Submit and start chatting": "提交並開始聊天"
-    
-  
-  
+  "Submit and start chatting": "提交並開始聊天",
+
+  "Profile Settings": "個人設定",
+  "Imogen API Keys Hub": "Imogen API Keys Hub",
+  "How to use API keys?": "如何使用 API Keys?",
+  "Paid Imogen accounts:": "付費 Imogen 帳戶：",
+  "By default, Imogen provides usage limits based on your subscription plan. Imogen ensure a seamless experience for you.": "默認情況下，Imogen 根據您的訂閱計劃提供服務。Imogen確保為您提供無縫的體驗就算你沒有使用API Keys，訂閱後會解鎖全部欄位。",
+  "Use your own API keys:": "使用您自己的 API Keys：",
+  "If you provide your own API keys here, Imogen will use them instead. This option lifts the plan-based limitations but requires you to manage your own API usage and billing with the respective providers.": "如果您在此提供自己的 API Keys，你可以在本平台使用它們。此選項解除了基於計劃的限制，但需要您自行管理與相應提供商的 API 使用和計費。(受限地區也可安全使用)",
+  "Choose the option that best suits your needs and usage patterns. Click on the link below for more details.": "選擇最適合您需求和使用模式的選項。點擊下面的連結了解更多詳情。",
+  "Subscribe to unlock all API keys storage.": "訂閱以解鎖其他 API Keys 寄存功能。",
+  "Upgrade to use all AI models": "升級以使用所有 AI 模型",
+  "Current Subscription Plan": "當前訂閱計劃",
+  "Upgrade to paid plan to unlock all models, plugins and image generation.": "升級到付費計劃以解鎖所有模型、插件和圖像生成功能。",
+  "Upgrade to Ultimate to get access to OpenAI o1-preview and Claude 3 Opus": "升級到 Ultimate 以獲取 OpenAI o1-preview 和 Claude 3 Opus 的訪問權限",
+  "You're on the Ultimate plan! Enjoy your access to all models, plugins and image generation.": "您正在使用 Ultimate 計劃！享受所有模型、插件和圖像生成功能。",
+  "Manage Subscription": "管理訂閱",
+  "Download Imogen 1.0 data as JSON. Import coming soon!": "下載 Imogen 1.0 數據為 JSON。導入功能即將推出！",
+  "Files command": "文件指令",
+  "Prompts command": "提示詞指令"
 }

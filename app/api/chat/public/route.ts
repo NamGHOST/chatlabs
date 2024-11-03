@@ -17,8 +17,8 @@ export async function POST(request: Request) {
 
   try {
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || "",
-      baseURL: process.env.OPENAI_BASE_URL || undefined
+      apiKey: process.env.OPENROUTER_API_KEY || "",
+      baseURL: "https://openrouter.ai/api/v1" || undefined
     })
 
     const supportsStreaming = LLM_LIST.find(model =>
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     )?.supportsStreaming
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "openai/gpt-4o-mini",
       messages: messages as ChatCompletionCreateParamsBase["messages"],
       // temperature: chatSettings.temperature,
       // max_tokens: 16384, // 16k tokens,

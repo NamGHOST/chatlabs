@@ -59,7 +59,7 @@ import { ButtonWithTooltip } from "../ui/button-with-tooltip"
 import useTranslate from "@/lib/hooks/use-translate"
 import LanguageSwitcher from "../languageswitcher/LanguageSwitcher"
 import { UsageChart } from "./UsageChart"
-
+import { useTranslation } from "react-i18next"
 interface ProfileSettingsProps {
   isCollapsed: boolean
 }
@@ -331,6 +331,8 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
     </div>
   )
 
+  const { t } = useTranslation()
+
   if (!profile) return null
 
   return (
@@ -427,9 +429,9 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                 </div>
 
                 <div className="space-y-1">
-                  <Label>Chat Display Name</Label>
+                  <Label>{t("Chat Display Name")}</Label>
                   <Input
-                    placeholder={translate("Chat display name...")}
+                    placeholder={t("Chat display name...")}
                     value={displayName}
                     onChange={e => setDisplayName(e.target.value)}
                     maxLength={PROFILE_DISPLAY_NAME_MAX}
@@ -438,14 +440,14 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
 
                 <div className="space-y-1">
                   <Label className="text-sm">
-                    {translate(
+                    {t(
                       "What would you like the AI to know about you to provide better responses?"
                     )}
                   </Label>
                   <TextareaAutosize
                     value={profileInstructions}
                     onValueChange={setProfileInstructions}
-                    placeholder="Profile context... (optional)"
+                    placeholder={t("Profile context... (optional)")}
                     minRows={6}
                     maxRows={10}
                   />
@@ -468,7 +470,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                       }
                       display={
                         <div className={"text-xs"}>
-                          {translate(
+                          {t(
                             "If enabled, code will be displayed in a side-by-side editor on the right from the message thread. This feature is currently in beta."
                           )}
                         </div>
@@ -488,7 +490,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
               <div className="space-y-5">
                 <div className={"flex items-center justify-between"}>
                   <Label>
-                    Send message on{" "}
+                    {t("Send message on")}{" "}
                     {navigator.platform.toUpperCase().indexOf("MAC") > -1
                       ? "⌘"
                       : "Ctrl"}
@@ -505,28 +507,28 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                 <Separator />
                 <div>
                   <div className={"grid grid-cols-2 items-center gap-1"}>
-                    <Label>Assistant command</Label>
+                    <Label>{t("Assistant command")}</Label>
                     <Input
                       minLength={1}
                       maxLength={1}
                       value={assistantCommand}
                       onChange={e => setAssistantCommand(e.target.value)}
                     />
-                    <Label>Plugins command</Label>
+                    <Label>{t("Plugins command")}</Label>
                     <Input
                       minLength={1}
                       maxLength={1}
                       value={toolsCommand}
                       onChange={e => setToolsCommand(e.target.value)}
                     />
-                    <Label>Prompt command</Label>
+                    <Label>{t("Prompt command")}</Label>
                     <Input
                       minLength={1}
                       maxLength={1}
                       value={promptCommand}
                       onChange={e => setPromptCommand(e.target.value)}
                     />
-                    <Label>Files command</Label>
+                    <Label>{t("Files command")}</Label>
                     <Input
                       minLength={1}
                       maxLength={1}
@@ -540,7 +542,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                   variant={"secondary"}
                   onClick={resetToDefaults}
                 >
-                  Reset to defaults
+                  {t("Reset to defaults")}
                 </Button>
               </div>
             </TabsContent>
@@ -548,30 +550,34 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
             <TabsContent value="keys">
               <Callout variant={"info"}>
                 <CalloutTitle className="flex items-center space-x-2">
-                  <IconKey className="mr-1 size-4" stroke={1.5} /> Imogen API
-                  Keys Hub
+                  <IconKey className="mr-1 size-4" stroke={1.5} />{" "}
+                  {t("Imogen API Keys Hub")}
                 </CalloutTitle>
                 <CalloutDescription>
-                  <p>How to use API keys? :</p>
+                  <p>{t("How to use API keys?")}</p>
                   <ol className="mt-2 list-inside list-decimal">
                     <li className="mb-2">
-                      <strong>Paid Imogen accounts:</strong> By default, Imogen
-                      provides usage limits based on your subscription plan.
-                      Imogen ensure a seamless experience for you.
+                      <strong>{t("Paid Imogen accounts:")}</strong>{" "}
+                      {t(
+                        "By default, Imogen provides usage limits based on your subscription plan. Imogen ensure a seamless experience for you."
+                      )}
                     </li>
                     <li>
-                      <strong>Use your own API keys:</strong> If you provide
-                      your own API keys here, Imogen will use them instead. This
-                      option lifts the plan-based limitations but requires you
-                      to manage your own API usage and billing with the
-                      respective providers.
+                      <strong>{t("Use your own API keys:")}</strong>{" "}
+                      {t(
+                        "If you provide your own API keys here, Imogen will use them instead. This option lifts the plan-based limitations but requires you to manage your own API usage and billing with the respective providers."
+                      )}
                     </li>
 
                     <p className="mt-2">
-                      Choose the option that best suits your needs and usage
-                      patterns. Click on the link below for more details.
+                      {t(
+                        "Choose the option that best suits your needs and usage patterns. Click on the link below for more details."
+                      )}
                     </p>
-                    <a href="/tutorial/api-keys" target="_blank">
+                    <a
+                      href="https://start.imogenai.app/pricing"
+                      target="_blank"
+                    >
                       <IconExternalLink size={18} stroke={1.5} />
                     </a>
                   </ol>
@@ -606,13 +612,13 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                   "Groq API Key",
                   groqAPIKey,
                   setGroqAPIKey,
-                  profile?.plan === "free"
+                  false
                 )}
                 {renderAPIKeyInput(
                   "Perplexity API Key",
                   perplexityAPIKey,
                   setPerplexityAPIKey,
-                  profile?.plan === "free"
+                  false
                 )}
                 {profile?.plan.startsWith("byok") &&
                   renderAPIKeyInput(
@@ -624,14 +630,12 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
               </div>
               {profile?.plan === "free" && (
                 <div className="mt-4 text-center">
-                  <p>
-                    API key management is not available on your current plan.
-                  </p>
+                  <p>{t("Subscribe to unlock all API keys storage.")}</p>
                   <Button
                     className="mt-4 bg-violet-600"
                     onClick={() => setIsPaywallOpen(true)}
                   >
-                    Upgrade to use all AI models
+                    {t("Upgrade to use all AI models")}
                   </Button>
                 </div>
               )}
@@ -661,7 +665,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                     loading={loadingBillingPortal}
                     onClick={handleRedirectToBillingPortal}
                   >
-                    Manage Subscription
+                    {t("Manage Subscription")}
                     {loadingBillingPortal ? (
                       <Loader className="ml-1 size-4 animate-spin" />
                     ) : (
@@ -673,7 +677,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                     className="bg-violet-600"
                     onClick={() => setIsPaywallOpen(true)}
                   >
-                    Upgrade
+                    {t("Upgrade")}
                   </Button>
                 )}
               </div>
@@ -692,7 +696,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
               <WithTooltip
                 display={
                   <div>
-                    Download Imogen 1.0 data as JSON. Import coming soon!
+                    {t("Download Imogen 1.0 data as JSON. Import coming soon!")}
                   </div>
                 }
                 trigger={
@@ -711,9 +715,9 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                 variant="ghost"
                 onClick={() => setIsProfileSettingsOpen("")}
               >
-                Cancel
+                {t("Cancel")}
               </Button>
-              <Button onClick={handleSave}>Save</Button>
+              <Button onClick={handleSave}>{t("Save")}</Button>
             </div>
           </div>
         </DialogFooter>
