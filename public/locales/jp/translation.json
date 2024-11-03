@@ -166,9 +166,26 @@
   "What outcome do you hope this product will help you achieve?": "この製品を通じて、どのような成果を達成したいとお考えですか？",
   "Write your response here....": "ここに回答を記入してください...",
   "We read every response and will make sure we do our best to deliver a better experience.": "すべての回答を確認し、より良い体験を提供できるよう最善を尽くします。",
-  "Submit and start chatting": "送信してチャットを開始"
+  "Submit and start chatting": "送信してチャットを開始",
     
-  
+  "Profile Settings": "個人設定",
+  "Imogen API Keys Hub": "Imogen API Keys ハブ",
+  "How to use API keys?": "API Keysの使い方",
+  "Paid Imogen accounts:": "有料Imogenアカウント：",
+  "By default, Imogen provides usage limits based on your subscription plan. Imogen ensure a seamless experience for you.": "デフォルトでは、Imogenはサブスクリプションプランに基づいて使用制限を提供します。API Keysを使用しなくても、Imogenはシームレスな体験を保証し、サブスクリプション後にすべての機能が解除されます。",
+  "Use your own API keys:": "独自のAPI Keysを使用：",
+  "If you provide your own API keys here, Imogen will use them instead. This option lifts the plan-based limitations but requires you to manage your own API usage and billing with the respective providers.": "ここで独自のAPI Keysを提供すると、Imogenはそれらを使用します。このオプションはプランベースの制限を解除しますが、各プロバイダーとのAPI使用量と請求を自己管理する必要があります。",
+  "Choose the option that best suits your needs and usage patterns. Click on the link below for more details.": "ニーズと使用パターンに最適なオプションを選択してください。詳細は以下のリンクをクリックしてください。",
+  "Subscribe to unlock all API keys storage.": "すべてのAPI Keys保存機能のロックを解除するにはサブスクリプションが必要です。",
+  "Upgrade to use all AI models": "すべてのAIモデルを使用するにはアップグレードしてください",
+  "Current Subscription Plan": "現在のサブスクリプションプラン",
+  "Upgrade to paid plan to unlock all models, plugins and image generation.": "すべてのモデル、プラグイン、画像生成機能のロックを解除するには有料プランにアップグレードしてください。",
+  "Upgrade to Ultimate to get access to OpenAI o1-preview and Claude 3 Opus": "OpenAI o1-previewとClaude 3 OpusにアクセスするにはUltimateにアップグレードしてください",
+  "You're on the Ultimate plan! Enjoy your access to all models, plugins and image generation.": "Ultimateプランをご利用中です！すべてのモデル、プラグイン、画像生成機能をお楽しみください。",
+  "Manage Subscription": "サブスクリプション管理",
+  "Download Imogen 1.0 data as JSON. Import coming soon!": "Imogen 1.0のデータをJSONとしてダウンロード。インポート機能は近日公開予定！",
+  "Files command": "ファイルコマンド",
+  "Prompts command": "プロンプトコマンド"
 
 
 

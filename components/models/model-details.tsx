@@ -69,7 +69,7 @@ export function ModelDetails({
           <WithTooltip
             side="top"
             key={category.category}
-            display={category.description}
+            display={category?.description || category?.category || ""}
             trigger={
               <Badge
                 variant="outline"
