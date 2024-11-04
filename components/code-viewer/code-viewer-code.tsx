@@ -1,31 +1,36 @@
-import React, { FC, useState, useEffect, useCallback, useRef } from "react"
+import React, { FC, useCallback, useEffect, useRef, useState } from "react"
+import { CodeBlock } from "@/types"
+import { cpp } from "@codemirror/lang-cpp"
+import { css } from "@codemirror/lang-css"
+import { html } from "@codemirror/lang-html"
+import { java } from "@codemirror/lang-java"
+import { javascript } from "@codemirror/lang-javascript"
+import { php } from "@codemirror/lang-php"
+import { python } from "@codemirror/lang-python"
+import { sql } from "@codemirror/lang-sql"
+import { oneDark } from "@codemirror/theme-one-dark"
+import { csharp } from "@replit/codemirror-lang-csharp"
+import { vscodeDark } from "@uiw/codemirror-theme-vscode"
 import CodeMirror, {
   EditorView,
   ReactCodeMirrorRef
 } from "@uiw/react-codemirror"
-import { oneDark } from "@codemirror/theme-one-dark"
-import { javascript } from "@codemirror/lang-javascript"
-import { html } from "@codemirror/lang-html"
-import { css } from "@codemirror/lang-css"
-import { python } from "@codemirror/lang-python"
-import { java } from "@codemirror/lang-java"
-import { sql } from "@codemirror/lang-sql"
-import { cpp } from "@codemirror/lang-cpp"
-import { csharp } from "@replit/codemirror-lang-csharp"
-import { php } from "@codemirror/lang-php"
-import { CodeBlock } from "@/types"
+
 import { debounce } from "@/lib/debounce"
-import { vscodeDark } from "@uiw/codemirror-theme-vscode"
 
 interface CodeViewerProps {
   codeBlock: CodeBlock
   autoScroll?: boolean
-  onCodeChange: (updatedCode: string) => void
+  onCodeChange: (
+    updatedCode: string,
+    messageId: string,
+    sequenceNo: number
+  ) => void
   isEditable: boolean
 }
 
 export const CodeViewerCode: FC<CodeViewerProps> = ({
-  codeBlock: { language, code: initialValue },
+  codeBlock: { language, code: initialValue, messageId, sequenceNo },
   autoScroll,
   onCodeChange,
   isEditable = false
@@ -38,7 +43,6 @@ export const CodeViewerCode: FC<CodeViewerProps> = ({
   }, [initialValue])
 
   const getLanguageExtension = (lang: string) => {
-    console.log("lang", lang)
     switch (lang.toLowerCase()) {
       case "javascript":
       case "typescript":
@@ -65,15 +69,15 @@ export const CodeViewerCode: FC<CodeViewerProps> = ({
   }
 
   const debouncedOnCodeChange = useCallback(
-    debounce((value: string) => {
-      onCodeChange(value)
+    debounce((value: string, messageId: string, sequenceNo: number) => {
+      onCodeChange(value, messageId, sequenceNo)
     }, 1000),
     [onCodeChange]
   )
 
   const handleChange = (value: string) => {
     setCode(value)
-    debouncedOnCodeChange(value)
+    debouncedOnCodeChange(value, messageId, sequenceNo)
   }
 
   useEffect(() => {

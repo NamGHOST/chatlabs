@@ -1,8 +1,48 @@
-import { supabase } from "@/lib/supabase/browser-client"
 import { Database, Tables, TablesInsert, TablesUpdate } from "@/supabase/types"
 import { LLM, LLMID } from "@/types"
 import { SupabaseClient } from "@supabase/supabase-js"
+
+import { logger } from "@/lib/logger"
+import { supabase } from "@/lib/supabase/browser-client"
+
 import { getPlatformTools, platformToolDefinitionById } from "./platform-tools"
+
+export const checkAppSlugAvailability = async (appSlug: string) => {
+  const { count } = await supabase
+    .from("applications")
+    .select("id", { count: "exact" })
+    .eq("subdomain", appSlug)
+
+  return count === 0
+}
+
+export const getFileByAppSlug = async (appSlug: string) => {
+  logger.debug({ appSlug }, "getFileByAppSlug")
+
+  const { data: application, error } = await supabase
+    .from("applications")
+    .select("id")
+    .eq("subdomain", appSlug)
+    .single()
+
+  if (!application) {
+    throw new Error(error?.message)
+  }
+
+  const { data: applicationFiles, error: applicationFilesError } =
+    await supabase
+      .from("application_files")
+      .select("files!inner(*, file_items!inner(*))")
+      .eq("application_id", application.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+
+  if (!applicationFiles || applicationFiles.length === 0) {
+    throw new Error("No application files found")
+  }
+
+  return applicationFiles[0].files
+}
 
 export const getApplicationById = async (
   applicationId: string,
@@ -134,7 +174,6 @@ export const updateApplication = async (
 
   // Update tools
   if (tools.length > 0 || platformTools.length > 0) {
-    console.log("Updating tools", tools, platformTools)
     await updateApplicationTools(
       tools.map(toolId => ({
         user_id: application.user_id!,
@@ -152,7 +191,7 @@ export const updateApplication = async (
   // Update models
   await updateApplicationModels(applicationId, models)
 
-  return updatedApplication
+  return getApplicationById(applicationId)
 }
 
 const updateApplicationTools = async (
@@ -166,19 +205,17 @@ const updateApplicationTools = async (
     throw new Error("Application ID is required")
   }
 
-  // Remove existing tools
+  const { error: toolsDeleteError } = await supabase
+    .from("application_tools")
+    .delete()
+    .eq("application_id", applicationId)
+
+  if (toolsDeleteError) {
+    throw new Error(toolsDeleteError.message)
+  }
 
   // Add new tools
   if (tools.length > 0) {
-    const { error: toolsDeleteError } = await supabase
-      .from("application_tools")
-      .delete()
-      .eq("application_id", applicationId)
-
-    if (toolsDeleteError) {
-      throw new Error(toolsDeleteError.message)
-    }
-
     const { error: toolsError } = await supabase
       .from("application_tools")
       .insert(tools)
@@ -188,17 +225,17 @@ const updateApplicationTools = async (
     }
   }
 
+  const { error: platformToolsDeleteError } = await supabase
+    .from("application_platform_tools")
+    .delete()
+    .eq("application_id", applicationId)
+
+  if (platformToolsDeleteError) {
+    throw new Error(platformToolsDeleteError.message)
+  }
+
   // Add new platform tools
   if (platformTools.length > 0) {
-    const { error: platformToolsDeleteError } = await supabase
-      .from("application_platform_tools")
-      .delete()
-      .eq("application_id", applicationId)
-
-    if (platformToolsDeleteError) {
-      throw new Error(platformToolsDeleteError.message)
-    }
-
     const { error: platformToolsError } = await supabase
       .from("application_platform_tools")
       .insert(platformTools)
@@ -339,4 +376,44 @@ export async function updateApplicationChatId(
   }
 
   return data
+}
+
+export const getApplicationByChatId = async (chatId: string) => {
+  const { data, error } = await supabase
+    .from("applications")
+    .select("*")
+    .eq("chat_id", chatId)
+    .single()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return data
+}
+
+// Generates random subdomain for new applications in words of 4 characters
+export const generateRandomSubdomain = async () => {
+  const { data, error } = await supabase.rpc("generate_random_subdomain")
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return data
+}
+
+export const getApplicationByFileId = async (fileId: string) => {
+  const { data, error } = await supabase
+    .from("application_files")
+    .select("applications(*)")
+    .eq("file_id", fileId)
+    .single()
+
+  if (error) {
+    logger.error({ error }, "Error fetching application by file ID")
+    return null
+  }
+
+  return data?.applications
 }
