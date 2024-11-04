@@ -76,5 +76,23 @@ export const CATEGORIES: Record<string, Category> = {
     description:
       "Focused on academic research, writing, and higher education topics",
     color: "purple"
+  },
+  VISION: {
+    category: "Vision",
+    description:
+      "Capable of processing and analyzing visual information, including images and visual content",
+    color: "fuchsia"
+  },
+  ANALYSIS: {
+    category: "Analysis",
+    description:
+      "Specialized in data analysis, pattern recognition, and analytical tasks",
+    color: "rose"
+  },
+  TOOLS: {
+    category: "Tools",
+    description:
+      "Supports function calling and integration with external tools and plugins",
+    color: "slate"
   }
 }

@@ -171,6 +171,9 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
     () => !isMobileScreen()
   )
 
+  const [showAdvancedSettings, setShowAdvancedSettings] =
+    useState<boolean>(false)
+
   useEffect(() => {
     ;(async () => {
       try {
@@ -551,7 +554,11 @@ export const GlobalState: FC<GlobalStateProps> = ({ children }) => {
 
         // PROFILE SETTINGS
         isProfileSettingsOpen,
-        setIsProfileSettingsOpen
+        setIsProfileSettingsOpen,
+
+        // ADVANCED SETTINGS
+        showAdvancedSettings,
+        setShowAdvancedSettings
       }}
     >
       {children}

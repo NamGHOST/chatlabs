@@ -48,6 +48,7 @@ import { Button } from "../ui/button"
 import { motion, AnimatePresence } from "framer-motion" // Add this import
 import { cn } from "@/lib/utils"
 import { ModelIcon } from "../models/model-icon"
+import { AssistantCard } from "@/components/assistants/assistant-card" // Add this import
 
 interface ChatUIProps {
   chatId?: string
@@ -465,32 +466,32 @@ interface EmptyChatViewProps {
   theme: string | undefined
 }
 
-interface EmptyChatViewProps {
-  selectedAssistant: Tables<"assistants"> | null
-  theme: string | undefined
-}
-
 const EmptyChatView: React.FC<EmptyChatViewProps> = ({
+  model,
   selectedAssistant,
   theme
-}) => (
-  <div className="center flex w-full flex-1 flex-col items-center justify-center transition-[height]">
-    {!selectedAssistant ? (
+}) => {
+  const { assistants } = useContext(ChatbotUIContext)
+
+  const handleAssistantClick = async (assistant: Tables<"assistants">) => {
+    const searchParams = new URLSearchParams(window.location.search)
+    searchParams.set("assistant", assistant.id)
+    window.history.replaceState(null, "", `?${searchParams.toString()}`)
+  }
+
+  return (
+    <div className="center flex w-full flex-1 flex-col items-center justify-center transition-[height]">
       <Brand theme={theme === "dark" ? "dark" : "light"} />
-    ) : (
-      <>
-        <AssistantIcon
-          className="size-[100px] rounded-xl"
-          assistant={selectedAssistant}
-          size={100}
-        />
-        <div className="text-foreground mt-4 text-center text-2xl font-bold">
-          {selectedAssistant.name}
-        </div>
-        <div className="text-foreground mt-2 text-center text-sm">
-          {selectedAssistant.description}
-        </div>
-      </>
-    )}
-  </div>
-)
+
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+        {assistants.map(assistant => (
+          <AssistantCard
+            key={assistant.id}
+            assistant={assistant}
+            onClick={() => handleAssistantClick(assistant)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}

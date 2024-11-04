@@ -168,7 +168,24 @@
   "What outcome do you hope this product will help you achieve?": "이 제품을 통해 어떤 결과를 얻고 싶으신가요?",
   "Write your response here....": "여기에 응답을 작성해 주세요....",
   "We read every response and will make sure we do our best to deliver a better experience.": "모든 응답을 읽고 더 나은 경험을 제공하기 위해 최선을 다하겠습니다.",
-  "Submit and start chatting": "제출하고 채팅 시작하기"
+  "Submit and start chatting": "제출하고 채팅 시작하기",
     
-  
+  "Profile Settings": "프로필 설정",
+  "Imogen API Keys Hub": "Imogen API 키 허브",
+  "How to use API keys?": "API 키 사용 방법",
+  "Paid Imogen accounts:": "유료 Imogen 계정:",
+  "By default, Imogen provides usage limits based on your subscription plan. Imogen ensure a seamless experience for you.": "기본적으로 Imogen은 구독 플랜에 따라 사용 제한을 제공합니다. API 키를 사용하지 않아도 Imogen이 원활한 경험을 보장하며, 구독 시 모든 기능이 해제됩니다.",
+  "Use your own API keys:": "자체 API 키 사용:",
+  "If you provide your own API keys here, Imogen will use them instead. This option lifts the plan-based limitations but requires you to manage your own API usage and billing with the respective providers.": "여기에 자체 API 키를 제공하면 Imogen이 이를 대신 사용합니다. 이 옵션은 플랜 기반 제한을 해제하지만 해당 제공업체와의 API 사용량과 요금을 직접 관리해야 합니다.",
+  "Choose the option that best suits your needs and usage patterns. Click on the link below for more details.": "필요와 사용 패턴에 가장 적합한 옵션을 선택하세요. 자세한 내용은 아래 링크를 클릭하세요.",
+  "Subscribe to unlock all API keys storage.": "모든 API 키 저장소를 해제하려면 구독하세요.",
+  "Upgrade to use all AI models": "모든 AI 모델을 사용하려면 업그레이드하세요",
+  "Current Subscription Plan": "현재 구독 플랜",
+  "Upgrade to paid plan to unlock all models, plugins and image generation.": "모든 모델, 플러그인 및 이미지 생성을 해제하려면 유료 플랜으로 업그레이드하세요.",
+  "Upgrade to Ultimate to get access to OpenAI o1-preview and Claude 3 Opus": "OpenAI o1-preview와 Claude 3 Opus에 접근하려면 Ultimate로 업그레이드하세요",
+  "You're on the Ultimate plan! Enjoy your access to all models, plugins and image generation.": "Ultimate 플랜을 사용 중입니다! 모든 모델, 플러그인 및 이미지 생성 기능을 즐기세요.",
+  "Manage Subscription": "구독 관리",
+  "Download Imogen 1.0 data as JSON. Import coming soon!": "Imogen 1.0 데이터를 JSON으로 다운로드하세요. 가져오기 기능이 곧 출시됩니다!",
+  "Files command": "파일 명령어",
+  "Prompts command": "프롬프트 명령어"
 }
