@@ -197,9 +197,9 @@ export default function SetupPage() {
         <StepContainer
           key={1}
           totalSteps={totalSteps}
-          stepDescription="Let's create your profile."
+          stepDescription={t("Let's create your profile.")}
           stepNum={currentStep}
-          stepTitle="Welcome to Imogen"
+          stepTitle={t("Welcome to Imogen")}
           onShouldProceed={handleOnProfileShouldProceed}
           showNextButton={!!(username && usernameAvailable)}
           showBackButton={false}
@@ -215,9 +215,9 @@ export default function SetupPage() {
       <StepContainer
         key={2}
         totalSteps={totalSteps}
-        stepDescription="Pro plan gives unlimited access to over 20 AI models."
+        stepDescription={t("Use all the AI models and features!")}
         stepNum={currentStep}
-        stepTitle="Choose your plan"
+        stepTitle={t("Choose your plan")}
         onShouldProceed={handleOnPlanShouldProceed}
         showNextButton={true}
         showBackButton={enableProfileStep}
@@ -227,9 +227,9 @@ export default function SetupPage() {
       <StepContainer
         key={3}
         totalSteps={totalSteps}
-        stepDescription="You are all set up!"
+        stepDescription={t("You are all set up!")}
         stepNum={currentStep}
-        stepTitle="Setup Complete"
+        stepTitle={t("Setup Complete")}
         onShouldProceed={handleOnFinishShouldProceed}
         showNextButton={true}
         showBackButton={true}

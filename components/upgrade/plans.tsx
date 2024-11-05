@@ -308,8 +308,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
         t("AI model Arena"),
         t("Translation, email replies, reports, grammar checks"),
         t("AI web search"),
-        t("Support for specified search sources"),
-        t("Unlimited AI summaries"),
+        t("AI summaries"),
         t("Scan webpages, YouTube videos, or files")
       ]
     },
@@ -366,7 +365,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
         t("AI model Arena"),
         t("Translation, email replies, reports, grammar checks"),
         t("AI web search"),
-        t("Unlimited AI summaries"),
+        t("AI summaries"),
         t("Scan webpages, YouTube videos, or files")
       ]
     },
