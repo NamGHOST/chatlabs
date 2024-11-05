@@ -80,8 +80,9 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "openai/gpt-4o-mini": true,
   "openai/gpt-4-vision-preview": false,
 
-  "anthropic/claude-3-haiku": false,
+  "anthropic/claude-3-5-haiku-20241022:beta": false,
   "anthropic/claude-3.5-sonnet": false,
+  "anthropic/claude-3-haiku": true,
 
   "google/gemini-pro-1.5": false,
   "google/gemini-pro-vision": false,

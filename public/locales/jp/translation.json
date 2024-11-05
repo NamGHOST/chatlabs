@@ -137,7 +137,7 @@
   "Pro Plan": "Pro プラン",
   "Standard models: 5000 requests": "標準モデル: 5000回のリクエスト",
   "GPT-4o mini, Claude 3 Haiku and more": "GPT-4o mini、Claude 3 Haiku など",
-  "Pro models: 250 requests": "Pro モデル: 250回のリクエスト",
+  "Pro models: 200 requests": "Pro モデル: 200回のリクエスト",
   "Limited time offer: Access to OpenAI: O1mini, GPT 4o ,X-AI Grok2": "期間限定オファー: OpenAIへのアクセス: O1mini、GPT 4o、X-AI Grok2",
   "Powered by Stable Diffusion": "Stable Diffusion搭載",
   "Connect to OpenAI, Anthropic, Google Gemini, and more": "OpenAI、Anthropic、Google Geminiなどに接続",
@@ -185,9 +185,13 @@
   "Manage Subscription": "サブスクリプション管理",
   "Download Imogen 1.0 data as JSON. Import coming soon!": "Imogen 1.0のデータをJSONとしてダウンロード。インポート機能は近日公開予定！",
   "Files command": "ファイルコマンド",
-  "Prompts command": "プロンプトコマンド"
+  "Prompts command": "プロンプトコマンド",
 
-
+  "Prompts": "プロンプト",
+  "Files": "ファイル",
+  "Plugins": "プラグイン",
+  "Text to Image": "テキスト生成画像",
+  "Split view": "分割ビュー"
 
 
   

@@ -1,44 +1,55 @@
+import {
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react"
 import { ChatbotUIContext } from "@/context/context"
+import { getMostRecentModels } from "@/db/models"
+import { Tables } from "@/supabase/types"
 import { LLM, LLMID, ModelProvider } from "@/types"
 import {
   IconCheck,
   IconChevronDown,
+  IconFilter,
+  IconFilterOff,
   IconKey,
   IconSquarePlus,
   IconX
 } from "@tabler/icons-react"
-import {
-  FC,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-  useCallback
-} from "react"
+import ReactMarkdown from "react-markdown"
+
+import { CHAT_SETTING_LIMITS } from "@/lib/chat-setting-limits"
+import { CATEGORIES } from "@/lib/models/categories"
+import { validatePlanForModel } from "@/lib/subscription"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
   DropdownMenuSubContent2,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsList, TabsTrigger } from "../ui/tabs"
-import { ModelIcon } from "./model-icon"
-import { ModelOption } from "./model-option"
-import { getMostRecentModels } from "@/db/models"
-import { Tables } from "@/supabase/types"
 import { Separator } from "@/components/ui/separator"
+import { ModelDetails } from "@/components/models/model-details"
 import {
   DEFAULT_MODEL_VISIBILITY,
   ModelSettings
 } from "@/components/models/model-settings"
-import { validatePlanForModel } from "@/lib/subscription"
-import { CHAT_SETTING_LIMITS } from "@/lib/chat-setting-limits"
-import { cn } from "@/lib/utils"
-import ReactMarkdown from "react-markdown"
-import { ModelDetails } from "@/components/models/model-details"
+
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs"
+import { ModelIcon } from "./model-icon"
+import { ModelOption } from "./model-option"
 
 interface ModelSelectProps {
   selectedModelId: string
@@ -73,6 +84,20 @@ export const ModelSelectChat: FC<ModelSelectProps> = ({
   >([])
 
   const [hoveredModel, setHoveredModel] = useState<LLM | null>(null)
+
+  const [selectedTiers, setSelectedTiers] = useState<string[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+
+  const tiers = [
+    { value: "free", label: "Free" },
+    { value: "pro", label: "Pro" },
+    { value: "ultimate", label: "Ultimate" }
+  ]
+
+  const categories = Object.entries(CATEGORIES).map(([key, value]) => ({
+    value: key,
+    label: value.category
+  }))
 
   useEffect(() => {
     if (isOpen) {
@@ -130,8 +155,20 @@ export const ModelSelectChat: FC<ModelSelectProps> = ({
         .filter(model =>
           model.modelName.toLowerCase().includes(search.toLowerCase())
         )
+        .filter(
+          model =>
+            selectedTiers.length === 0 ||
+            selectedTiers.includes(model.tier || "")
+        )
+        .filter(
+          model =>
+            selectedCategories.length === 0 ||
+            model.categories?.some(cat =>
+              selectedCategories.includes(cat.category)
+            )
+        )
         .sort((a, b) => a.provider.localeCompare(b.provider)),
-    [allModels, tab, profile, search]
+    [allModels, tab, profile, search, selectedTiers, selectedCategories]
   )
 
   const modelForDetails = useMemo(
@@ -146,6 +183,15 @@ export const ModelSelectChat: FC<ModelSelectProps> = ({
   }, [])
 
   // if (!profile) return null
+
+  const resetFilters = () => {
+    setSearch("")
+    setSelectedTiers([])
+    setSelectedCategories([])
+  }
+
+  const isFiltered =
+    search || selectedTiers.length > 0 || selectedCategories.length > 0
 
   if (allModels.length === 0 && profile?.plan.startsWith("byok_")) {
     return (
@@ -168,7 +214,9 @@ export const ModelSelectChat: FC<ModelSelectProps> = ({
       open={isOpen}
       onOpenChange={isOpen => {
         setIsOpen(isOpen)
-        setSearch("")
+        if (!isOpen) {
+          resetFilters()
+        }
       }}
     >
       <DropdownMenuTrigger
@@ -227,59 +275,142 @@ export const ModelSelectChat: FC<ModelSelectProps> = ({
             </Tabs>
           )}
 
-          <Input
-            ref={inputRef}
-            className="w-full"
-            placeholder="Search models..."
-            value={search}
-            onChange={handleSearchChange}
-          />
+          <div className="flex items-center space-x-1">
+            <Input
+              ref={inputRef}
+              className="grow"
+              placeholder="Search models..."
+              value={search}
+              onChange={handleSearchChange}
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  size="icon"
+                  className={
+                    isFiltered ? "text-foreground" : "text-foreground/50"
+                  }
+                >
+                  <IconFilter className="size-4" stroke={1.5} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>Tiers</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {tiers.map(tier => (
+                      <DropdownMenuCheckboxItem
+                        key={tier.value}
+                        checked={selectedTiers.includes(tier.value)}
+                        onCheckedChange={checked => {
+                          setSelectedTiers(prev =>
+                            checked
+                              ? [...prev, tier.value]
+                              : prev.filter(t => t !== tier.value)
+                          )
+                        }}
+                      >
+                        {tier.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>Categories</DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    {categories.map(category => (
+                      <DropdownMenuCheckboxItem
+                        key={category.value}
+                        checked={selectedCategories.includes(category.value)}
+                        onCheckedChange={checked => {
+                          setSelectedCategories(prev =>
+                            checked
+                              ? [...prev, category.value]
+                              : prev.filter(c => c !== category.value)
+                          )
+                        }}
+                      >
+                        {category.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={resetFilters}
+                  disabled={!isFiltered}
+                >
+                  <IconFilterOff className="mr-2 size-4" />
+                  Reset Filters
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           <div className="max-h-[300px] overflow-auto">
-            {!search && mostRecentModels.length > 0 && (
-              <div>
-                {mostRecentModels.map(recentModel => {
-                  const model = allModels.find(
-                    model => model.modelId === recentModel.model
-                  )
-                  if (!model) return null
-                  return (
-                    <div
-                      onMouseEnter={() => setHoveredModel(model)}
-                      key={model.modelId}
-                      className="flex items-center space-x-1"
-                    >
-                      <ModelOption
-                        recent={true}
+            {filteredModels.length > 0 ? (
+              <>
+                {!search && mostRecentModels.length > 0 && (
+                  <div>
+                    {mostRecentModels.map(recentModel => {
+                      const model = allModels.find(
+                        model => model.modelId === recentModel.model
+                      )
+                      if (!model) return null
+                      return (
+                        <div
+                          onMouseEnter={() => setHoveredModel(model)}
+                          key={model.modelId}
+                          className="flex items-center space-x-1"
+                        >
+                          <ModelOption
+                            recent={true}
+                            key={model.modelId}
+                            model={model}
+                            selected={false}
+                            onSelect={() => handleSelectModel(model.modelId)}
+                          />
+                        </div>
+                      )
+                    })}
+                    <Separator className={"opacity-75"} />
+                  </div>
+                )}
+                <div className="mb-1">
+                  {filteredModels.map(model => {
+                    return (
+                      <div
                         key={model.modelId}
-                        model={model}
-                        selected={false}
-                        onSelect={() => handleSelectModel(model.modelId)}
-                      />
-                    </div>
-                  )
-                })}
-                <Separator className={"opacity-75"} />
+                        className="flex items-center space-x-1"
+                        onMouseEnter={() => setHoveredModel(model)}
+                      >
+                        <ModelOption
+                          key={model.modelId}
+                          model={model}
+                          selected={selectedModelId === model.modelId}
+                          onSelect={() => handleSelectModel(model.modelId)}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-4">
+                <p className="text-muted-foreground mb-2">
+                  No models found with the current filters.
+                </p>
+                <Button
+                  onClick={resetFilters}
+                  variant="outline"
+                  className="flex items-center"
+                >
+                  <IconFilterOff className="mr-2" size={16} />
+                  Reset Filters
+                </Button>
               </div>
             )}
-            <div className="mb-1">
-              {filteredModels.map(model => {
-                return (
-                  <div
-                    key={model.modelId}
-                    className="flex items-center space-x-1"
-                    onMouseEnter={() => setHoveredModel(model)}
-                  >
-                    <ModelOption
-                      key={model.modelId}
-                      model={model}
-                      selected={selectedModelId === model.modelId}
-                      onSelect={() => handleSelectModel(model.modelId)}
-                    />
-                  </div>
-                )
-              })}
-            </div>
           </div>
           {showModelSettings && (
             <>

@@ -9,6 +9,7 @@ import { CATEGORIES } from "@/lib/models/categories"
 import Markdown from "react-markdown"
 import { WithTooltip } from "../ui/with-tooltip"
 import { useTranslation } from "react-i18next"
+import { OPENROUTER_LLM_LIST } from "@/lib/models/llm/openrouter-llm-list"
 
 export function ModelDetails({
   className,
@@ -29,6 +30,16 @@ export function ModelDetails({
   const formattedContextLength = contextLength.toLocaleString()
   const inputCost = model.pricing?.inputCost?.toLocaleString()
   const outputCost = model.pricing?.outputCost?.toLocaleString()
+
+  let displayName = model.modelName
+  if (model.provider === "openrouter") {
+    const openRouterModel = OPENROUTER_LLM_LIST.find(
+      m => m.modelId === model.modelId
+    )
+    if (openRouterModel) {
+      displayName = openRouterModel.modelName
+    }
+  }
 
   function Row({
     label,
@@ -62,7 +73,7 @@ export function ModelDetails({
             <span>/</span>
           </>
         )}
-        <span className={"font-semibold"}>{model.modelName}</span>
+        <span className={"font-semibold"}>{displayName}</span>
       </div>
       <div className="flex flex-wrap gap-2">
         {model.categories?.map(category => (

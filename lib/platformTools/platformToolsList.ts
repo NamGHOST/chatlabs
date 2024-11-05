@@ -7,9 +7,9 @@ import { webSearchTool } from "./library/TavilySearch"
 // Add your tool to the list
 export const platformToolList = [
   //exaResearcherTool,
-  webScraperTool,
+  webScraperTool
   ///webSearchTool,
-  imageGeneratorTool,
-  stableDiffusionTools,
-  flux1ProTools
+  ///imageGeneratorTool,
+  ///stableDiffusionTools,
+  ///flux1ProTools
 ]

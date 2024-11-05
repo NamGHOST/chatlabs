@@ -286,7 +286,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
       items: [
         t("Standard models: 5000 requests"),
         t("GPT-4o mini, Claude 3 Haiku and more"),
-        t("Pro models: 250 requests"),
+        t("Pro models: 200 requests"),
         t("Limited time offer: Access to OpenAI: O1mini, GPT 4o ,X-AI Grok2")
       ]
     },

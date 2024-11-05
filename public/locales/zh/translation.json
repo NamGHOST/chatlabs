@@ -146,7 +146,7 @@
   "Pro Plan": "Pro Plan",
   "Standard models: 5000 requests": "Standard模型: 5000次存取",
   "GPT-4o mini, Claude 3 Haiku and more": "GPT-4o mini, Claude 3 Haiku and more",
-  "Pro models: 250 requests": "Pro模型: 250次存取",
+  "Pro models: 200 requests": "Pro模型: 200次存取",
   "Limited time offer: Access to OpenAI: O1mini, GPT 4o ,X-AI Grok2": "限時優惠: 使用OpenAI: O1mini, GPT 4o ,X-AI Grok2",
   "Powered by Stable Diffusion": "Powered by Stable Diffusion",
   "Connect to OpenAI, Anthropic, Google Gemini, and more": "Connect to OpenAI, Anthropic, Google Gemini, and more",
@@ -194,5 +194,11 @@
   "Manage Subscription": "管理訂閱",
   "Download Imogen 1.0 data as JSON. Import coming soon!": "下載 Imogen 1.0 數據為 JSON。導入功能即將推出！",
   "Files command": "文件指令",
-  "Prompts command": "提示詞指令"
+  "Prompts command": "提示詞指令",
+
+  "Prompts": "提示詞",
+  "Files": "文件",
+  "Plugins": "工具",
+  "Text to Image": "圖像生成",
+  "Split view": "分屏模式"
 }

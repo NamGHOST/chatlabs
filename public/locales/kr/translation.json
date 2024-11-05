@@ -138,7 +138,7 @@
   "Pro Plan": "Pro 플랜",
   "Standard models: 5000 requests": "표준 모델: 5000회 요청",
   "GPT-4o mini, Claude 3 Haiku and more": "GPT-4o mini, Claude 3 Haiku 등",
-  "Pro models: 250 requests": "Pro 모델: 250회 요청",
+  "Pro models: 200 requests": "Pro 모델: 200회 요청",
   "Limited time offer: Access to OpenAI: O1mini, GPT 4o ,X-AI Grok2": "한정 시간 제공: OpenAI 접근: O1mini, GPT 4o, X-AI Grok2",
   "Powered by Stable Diffusion": "Stable Diffusion 기반",
   "Connect to OpenAI, Anthropic, Google Gemini, and more": "OpenAI, Anthropic, Google Gemini 등에 연결",
@@ -187,5 +187,11 @@
   "Manage Subscription": "구독 관리",
   "Download Imogen 1.0 data as JSON. Import coming soon!": "Imogen 1.0 데이터를 JSON으로 다운로드하세요. 가져오기 기능이 곧 출시됩니다!",
   "Files command": "파일 명령어",
-  "Prompts command": "프롬프트 명령어"
+  "Prompts command": "프롬프트 명령어",
+
+  "Prompts": "프롬프트",
+  "Files": "파일",
+  "Plugins": "플러그인",
+  "Text to Image": "텍스트 이미지",
+  "Split view": "분할 뷰"
 }

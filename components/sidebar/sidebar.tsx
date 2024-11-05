@@ -45,7 +45,7 @@ import { Tables } from "@/supabase/types"
 
 import { useRouter } from "next/navigation"
 import { SidebarMeetingItem } from "./items/all/sidebar-meeting-item"
-
+import { useTranslation } from "next-i18next"
 export const Sidebar: FC = () => {
   const {
     prompts,
@@ -233,6 +233,7 @@ export const Sidebar: FC = () => {
 
   const COLLAPSED_SIDEBAR_WIDTH = 58
   const EXPANDED_SIDEBAR_WIDTH = 300
+  const { t } = useTranslation()
 
   const handleUpgrade = () => {
     setIsPaywallOpen(true)
@@ -346,28 +347,28 @@ export const Sidebar: FC = () => {
             <div className="p-2">
               <SidebarItem
                 icon={<IconBulb {...iconProps} />}
-                label="Prompts"
+                label={t("Prompts")}
                 onClick={() => handleSubmenuOpen("prompts")}
                 hasSubmenu
                 isCollapsed={isCollapsed}
               />
               <SidebarItem
                 icon={<IconRobot {...iconProps} />}
-                label="Assistants"
+                label={t("Assistants")}
                 onClick={() => handleSubmenuOpen("assistants")}
                 hasSubmenu
                 isCollapsed={isCollapsed}
               />
               <SidebarItem
                 icon={<IconFolder {...iconProps} />}
-                label="Files"
+                label={t("Files")}
                 onClick={() => handleSubmenuOpen("files")}
                 hasSubmenu
                 isCollapsed={isCollapsed}
               />
               <SidebarItem
                 icon={<IconPuzzle {...iconProps} />}
-                label="Plugins"
+                label={t("Plugins")}
                 onClick={() => handleSubmenuOpen("tools")}
                 hasSubmenu
                 isCollapsed={isCollapsed}
@@ -375,7 +376,7 @@ export const Sidebar: FC = () => {
               <Link href="/splitview" target="_blank" passHref>
                 <SidebarItem
                   icon={<IconLayoutColumns {...iconProps} />}
-                  label="Split view"
+                  label={t("Split view")}
                   onClick={() => {}} // This onClick is now optional
                   isCollapsed={isCollapsed}
                 />
@@ -384,7 +385,7 @@ export const Sidebar: FC = () => {
               <Link href="/image-generation" target="_blank" passHref>
                 <SidebarItem
                   icon={<IconPhotoAi {...iconProps} />}
-                  label="Text to Image"
+                  label={t("Text to Image")}
                   onClick={() => {}}
                   isCollapsed={isCollapsed}
                 />

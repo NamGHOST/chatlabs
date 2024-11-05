@@ -20,7 +20,7 @@ export const Brand: FC<BrandProps> = ({ theme = "dark" }) => {
 
       <div className="rounded-full border border-gray-200 px-4 py-1">
         <h3 className="sans-noto font-montserrat text-2xl font-light ">
-          imogenai.app
+          imogenAI.app
         </h3>
       </div>
     </div>

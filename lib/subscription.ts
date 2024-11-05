@@ -57,7 +57,7 @@ export const ULTIMATE_MESSAGE_MONTHLY_LIMIT = getEnvInt(
   500 // Default value, adjust as needed
 )
 
-export const LITE_PRO_MONTHLY_LIMIT = getEnvInt("LITE_PRO_MONTHLY_LIMIT", 250)
+export const LITE_PRO_MONTHLY_LIMIT = getEnvInt("LITE_PRO_MONTHLY_LIMIT", 200)
 
 export const PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT = getEnvInt(
   "PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT",

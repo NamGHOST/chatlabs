@@ -17,6 +17,7 @@ import { useTheme } from "next-themes"
 import { Badge } from "@/components/ui/badge"
 import { PLAN_FREE } from "@/lib/stripe/config"
 import { ImageIcon, WrenchIcon } from "lucide-react"
+import { OPENROUTER_LLM_LIST } from "@/lib/models/llm/openrouter-llm-list"
 
 interface ModelOptionProps {
   model: LLM | OpenRouterLLM
@@ -39,6 +40,17 @@ export const ModelOption: FC<ModelOptionProps> = ({
   if ("maxContext" in model) {
     contextLength = model.maxContext
   }
+
+  let displayName = model.modelName
+  if (model.provider === "openrouter") {
+    const openRouterModel = OPENROUTER_LLM_LIST.find(
+      m => m.modelId === model.modelId
+    )
+    if (openRouterModel) {
+      displayName = openRouterModel.modelName
+    }
+  }
+
   return (
     <div
       className="hover:bg-accent flex w-full cursor-pointer justify-start space-x-3 truncate rounded p-2 hover:opacity-50"
@@ -68,7 +80,7 @@ export const ModelOption: FC<ModelOptionProps> = ({
               "text-sm " + (selected ? "font-semibold" : "font-normal")
             }
           >
-            {model.modelName}
+            {displayName}
           </div>
           {model.tier && model.tier !== "free" && (
             <Badge variant="outline" className="relative overflow-hidden">

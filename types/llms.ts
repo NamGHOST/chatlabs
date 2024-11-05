@@ -104,6 +104,7 @@ export type OpenRouterLLMID =
   | "google/gemini-pro-1.5-exp"
   | "google/gemini-flash-1.5-8b"
   | "anthropic/claude-3-haiku"
+  | "anthropic/claude-3-5-haiku-20241022:beta"
   | "anthropic/claude-3.5-sonnet"
   | "databricks/dbrx-instruct"
   | "mistralai/mixtral-8x22b-instruct"
