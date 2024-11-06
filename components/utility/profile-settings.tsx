@@ -321,7 +321,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
         {label}
       </Label>
       <Input
-        placeholder={`${label} (Upgrade to edit)`}
+        placeholder={`${label} (Input your API key here)`}
         type="password"
         value={isDisabled ? "" : value}
         onChange={e => onChange(e.target.value)}
@@ -584,12 +584,108 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                 </CalloutDescription>
               </Callout>
               <div className="mt-5 space-y-2">
-                {renderAPIKeyInput(
-                  "OpenAI API Key",
-                  openaiAPIKey,
-                  setOpenaiAPIKey,
-                  profile?.plan === "free"
+                <div className="space-y-1">
+                  <Label className="flex items-center">
+                    {useAzureOpenai ? "Azure OpenAI API Key" : "OpenAI API Key"}
+                    <Button
+                      className="ml-3 h-[18px] w-[150px] text-[11px]"
+                      onClick={() => setUseAzureOpenai(!useAzureOpenai)}
+                      disabled={profile?.plan === "free"}
+                    >
+                      {useAzureOpenai
+                        ? "Switch To Standard OpenAI"
+                        : "Switch To Azure OpenAI"}
+                    </Button>
+                  </Label>
+
+                  {useAzureOpenai ? (
+                    <Input
+                      placeholder={`Azure OpenAI API Key ${profile?.plan === "free" ? "(Input your API key here)" : ""}`}
+                      type="password"
+                      value={profile?.plan === "free" ? "" : azureOpenaiAPIKey}
+                      onChange={e => setAzureOpenaiAPIKey(e.target.value)}
+                      disabled={profile?.plan === "free"}
+                      className={profile?.plan === "free" ? "opacity-50" : ""}
+                    />
+                  ) : (
+                    <Input
+                      placeholder={`OpenAI API Key ${profile?.plan === "free" ? "(Input your API key here)" : ""}`}
+                      type="password"
+                      value={profile?.plan === "free" ? "" : openaiAPIKey}
+                      onChange={e => setOpenaiAPIKey(e.target.value)}
+                      disabled={profile?.plan === "free"}
+                      className={profile?.plan === "free" ? "opacity-50" : ""}
+                    />
+                  )}
+                </div>
+
+                {profile?.plan !== "free" && (
+                  <div className="ml-8 space-y-3">
+                    {useAzureOpenai ? (
+                      <>
+                        <div className="space-y-1">
+                          <Label>Azure Endpoint</Label>
+                          <Input
+                            placeholder="https://your-endpoint.openai.azure.com"
+                            value={azureOpenaiEndpoint}
+                            onChange={e =>
+                              setAzureOpenaiEndpoint(e.target.value)
+                            }
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label>Azure GPT-3.5 Turbo Deployment Name</Label>
+                          <Input
+                            placeholder="Azure GPT-3.5 Turbo Deployment Name"
+                            value={azureOpenai35TurboID}
+                            onChange={e =>
+                              setAzureOpenai35TurboID(e.target.value)
+                            }
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label>Azure GPT-4.5 Turbo Deployment Name</Label>
+                          <Input
+                            placeholder="Azure GPT-4.5 Turbo Deployment Name"
+                            value={azureOpenai45TurboID}
+                            onChange={e =>
+                              setAzureOpenai45TurboID(e.target.value)
+                            }
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label>Azure GPT-4.5 Vision Deployment Name</Label>
+                          <Input
+                            placeholder="Azure GPT-4.5 Vision Deployment Name"
+                            value={azureOpenai45VisionID}
+                            onChange={e =>
+                              setAzureOpenai45VisionID(e.target.value)
+                            }
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label>Azure Embeddings Deployment Name</Label>
+                          <Input
+                            placeholder="Azure Embeddings Deployment Name"
+                            value={azureEmbeddingsID}
+                            onChange={e => setAzureEmbeddingsID(e.target.value)}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="space-y-1">
+                        <Label>OpenAI Organization ID</Label>
+                        <Input
+                          placeholder="OpenAI Organization ID (optional)"
+                          type="password"
+                          value={openaiOrgID}
+                          onChange={e => setOpenaiOrgID(e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
                 )}
+
                 {renderAPIKeyInput(
                   "Anthropic API Key",
                   anthropicAPIKey,
