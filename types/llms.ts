@@ -38,8 +38,7 @@ export type AnthropicLLMID =
   | "claude-instant-1.2" // Claude Instant
   | "claude-3-haiku-20240307" // Claude 3 Haiku
   | "claude-3-sonnet-20240229" // Claude 3 Sonnet
-  | "claude-3-opus-20240229" // Claude 3 Opus
-
+  | "claude-3-5-haiku-20241022" // Claude 3.5 HAIKU
 // Mistral Models
 export type MistralLLMID =
   | "mistral-tiny" // Mistral Tiny
@@ -104,7 +103,7 @@ export type OpenRouterLLMID =
   | "google/gemini-pro-1.5-exp"
   | "google/gemini-flash-1.5-8b"
   | "anthropic/claude-3-haiku"
-  | "anthropic/claude-3-5-haiku-20241022:beta"
+  | "anthropic/claude-3-5-haiku"
   | "anthropic/claude-3.5-sonnet"
   | "databricks/dbrx-instruct"
   | "mistralai/mixtral-8x22b-instruct"

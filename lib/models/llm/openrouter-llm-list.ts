@@ -135,9 +135,9 @@ const CLAUDE_3_HAIKU: LLM = {
   tier: "free" as LLMTier
 }
 
-const CLAUDE_35_HAIKU_BETA: LLM = {
-  modelId: "anthropic/claude-3-5-haiku-20241022:beta",
-  modelName: "Claude 3.5 Haiku Beta",
+const CLAUDE_35_HAIKU: LLM = {
+  modelId: "anthropic/claude-3-5-haiku",
+  modelName: "Claude 3.5 Haiku",
   provider: "openrouter",
   hostedId: "claude-3.5-haiku-20241022:beta",
   platformLink: OPENROUTER_PLATFORM_LINK,
@@ -388,7 +388,7 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   GEMINI_FLASH_15_EXP,
   GEMINI_FLASH_15_8B,
   CLAUDE_3_HAIKU,
-  CLAUDE_35_HAIKU_BETA,
+  CLAUDE_35_HAIKU,
   CLAUDE_35_SONNET,
   LLAMA_3_1_SONAR_HUGE_128K_ONLINE,
   META_LLAMA_3_1_405B,
@@ -417,7 +417,7 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
 //- google/gemini-flash-1.5-exp
 //- google/gemini-pro-vision
 //- anthropic/claude-3-haiku
-//- anthropic/claude-3-5-haiku-20241022:beta
+//- anthropic/claude-3-5-haiku
 //- anthropic/claude-3.5-sonnet
 //- meta-llama/llama-3.1-405b-instruct
 //- deepseek/deepseek-chat

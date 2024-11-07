@@ -39,7 +39,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "claude-3-haiku-20240307": true,
   "claude-3-sonnet-20240229": false,
   "claude-3-5-sonnet-20240620": true,
-  "claude-3-opus-20240229": false,
+  "claude-3-5-haiku-20241022": false,
   "gemini-pro": false,
   "gemini-pro-vision": false,
   "mistral-large-latest": true,
@@ -80,7 +80,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "openai/gpt-4o-mini": true,
   "openai/gpt-4-vision-preview": false,
 
-  "anthropic/claude-3-5-haiku-20241022:beta": false,
+  "anthropic/claude-3-5-haiku": false,
   "anthropic/claude-3.5-sonnet": false,
   "anthropic/claude-3-haiku": true,
 

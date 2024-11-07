@@ -69,7 +69,8 @@ export async function POST(request: NextRequest) {
     const modelsSupportingCacheControl = [
       "claude-3-opus-20240229",
       "claude-3-haiku-20240307",
-      "claude-3-5-sonnet-20240715"
+      "claude-3-5-sonnet-20240715",
+      "claude-3-5-haiku-20241022"
     ]
 
     let ANTHROPIC_FORMATTED_MESSAGES: any =

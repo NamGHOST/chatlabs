@@ -86,21 +86,21 @@ const CLAUDE_3_5_SONNET: LLM = {
     "Claude 3.5 Sonnet delivers better-than-Opus capabilities, faster-than-Sonnet speeds, at the same Sonnet prices. Particularly good at coding, data science, visual processing, and agentic tasks."
 }
 
-// Claude 3 Opus (UPDATED 03/04/24)
-const CLAUDE_3_OPUS: LLM = {
-  modelId: "claude-3-opus-20240229",
-  modelName: "Claude 3 Opus",
+// Claude 3.5 HAIKU (UPDATED 08/11/24)
+const CLAUDE_3_5_HAIKU: LLM = {
+  modelId: "claude-3-5-haiku-20241022",
+  modelName: "Claude 3.5 Haiku",
   provider: "anthropic",
-  hostedId: "claude-3-opus-20240229",
+  hostedId: "claude-3-5-haiku-20241022",
   platformLink: ANTHROPIC_PLATFORM_LINK,
-  imageInput: true,
-  tier: "ultimate",
+  imageInput: false,
+  tier: "pro",
   tools: true,
   pricing: {
     currency: "USD",
     unit: "1M tokens",
-    inputCost: 15,
-    outputCost: 75
+    inputCost: 1,
+    outputCost: 5
   },
   categories: [
     CATEGORIES.TECHNOLOGY,
@@ -114,12 +114,12 @@ const CLAUDE_3_OPUS: LLM = {
     CATEGORIES.MARKETING
   ],
   description:
-    "Claude 3 Opus is Anthropic's most powerful model for highly complex tasks. It boasts top-level performance, intelligence, fluency, and understanding."
+    "Claude 3.5 HAIKU is Anthropic's fastest model for highly complex tasks. It boasts top-level performance, intelligence, fluency, and understanding."
 }
 
 export const ANTHROPIC_LLM_LIST: LLM[] = [
   CLAUDE_3_HAIKU,
   CLAUDE_3_SONNET,
-  CLAUDE_3_OPUS,
+  CLAUDE_3_5_HAIKU,
   CLAUDE_3_5_SONNET
 ]

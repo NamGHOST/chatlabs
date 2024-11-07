@@ -112,7 +112,7 @@ function parseSupportedModelsFromEnv() {
 
     "anthropic/claude-3.5-sonnet",
     "anthropic/claude-3-haiku",
-    "anthropic/claude-3-5-haiku-20241022:beta",
+    "anthropic/claude-3-5-haiku",
 
     "google/gemini-pro-1.5",
     "google/gemini-pro-1.5-exp",

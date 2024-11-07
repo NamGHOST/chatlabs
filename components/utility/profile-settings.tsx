@@ -716,13 +716,12 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                   setPerplexityAPIKey,
                   false
                 )}
-                {profile?.plan.startsWith("byok") &&
-                  renderAPIKeyInput(
-                    "OpenRouter API Key",
-                    openrouterAPIKey,
-                    setOpenrouterAPIKey,
-                    false
-                  )}
+                {renderAPIKeyInput(
+                  "OpenRouter API Key",
+                  openrouterAPIKey,
+                  setOpenrouterAPIKey,
+                  false
+                )}
               </div>
               {profile?.plan === "free" && (
                 <div className="mt-4 text-center">
