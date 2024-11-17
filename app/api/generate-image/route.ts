@@ -17,6 +17,7 @@ export async function POST(req: Request) {
       prompt,
       aspectRatio: params.aspectRatio,
       style: params.style,
+      recraftStyle: params.recraftStyle,
       guidanceScale: params.guidanceScale,
       steps: params.steps
     })

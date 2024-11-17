@@ -1,7 +1,10 @@
+import { RecraftStyle } from "@/types/image-generation"
+
 export interface GenerateImageParams {
   prompt: string
   aspectRatio: string
   style: string
+  recraftStyle?: RecraftStyle
   guidanceScale?: number
   negativePrompt?: string
   steps?: number

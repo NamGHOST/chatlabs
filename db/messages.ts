@@ -1,7 +1,9 @@
 import { supabase } from "@/lib/supabase/browser-client"
-import { TablesInsert, TablesUpdate } from "@/supabase/types"
+import { Tables, TablesInsert, TablesUpdate } from "@/supabase/types"
 import { LLM_LIST } from "@/lib/models/llm/llm-list"
 import { PLAN_FREE } from "@/lib/subscription"
+import { isUsingOwnKey } from "@/lib/utils"
+
 export const getMessageById = async (messageId: string) => {
   const { data: message } = await supabase
     .from("messages")
@@ -160,11 +162,38 @@ export const getMessageCountForTier = async (
   userId: string,
   tier: string,
   userPlan: string,
+  currentProvider?: string,
   subscriptionStartDate?: string
 ) => {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", userId)
+    .single()
+
+  if (!profile) {
+    throw new Error("Profile not found")
+  }
+
+  // Get all models for this tier
+  const tierModels = LLM_LIST.filter(x => x.tier === tier)
+
+  // Get the current model being used
+  const currentModel = currentProvider
+    ? tierModels.find(model => model.provider === currentProvider)
+    : undefined
+
+  // Only exclude counting for models of the specific provider where user has API key
+  const modelsToCount = tierModels.filter(model => {
+    const providerKeyName =
+      `${model.provider}_api_key` as keyof Tables<"profiles">
+    return !(
+      profile[providerKeyName] && model.provider === currentModel?.provider
+    )
+  })
+
   let since: Date
   if (userPlan === PLAN_FREE) {
-    // For free and premium plans, reset daily
     since = new Date()
     since.setUTCHours(0, 0, 0, 0)
   } else if (subscriptionStartDate) {
@@ -186,21 +215,16 @@ export const getMessageCountForTier = async (
     since.setUTCHours(0, 0, 0, 0)
   }
 
-  const modelsInTier = LLM_LIST.filter(model => model.tier === tier).map(
-    model => model.modelId
-  )
-
-  const { count, error } = await supabase
+  const { count } = await supabase
     .from("messages")
-    .select("*", { count: "exact", head: true })
+    .select("*", { count: "exact" })
     .eq("user_id", userId)
-    .gte("created_at", since.toISOString())
     .eq("role", "user")
-    .in("model", modelsInTier)
+    .in(
+      "model",
+      modelsToCount.map(m => m.modelId)
+    )
+    .gte("created_at", since.toISOString())
 
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return count
+  return count || 0
 }

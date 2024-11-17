@@ -1,9 +1,9 @@
 export const aspectRatios = [
-  { value: "1:1", width: 512, height: 512 },
-  { value: "4:3", width: 512, height: 384 },
-  { value: "3:4", width: 384, height: 512 },
-  { value: "16:9", width: 512, height: 288 },
-  { value: "9:16", width: 288, height: 512 }
+  { value: "1:1", width: 1024, height: 1024 },
+  { value: "4:3", width: 1365, height: 1024 },
+  { value: "3:4", width: 1024, height: 1365 },
+  { value: "16:9", width: 1820, height: 1024 },
+  { value: "9:16", width: 1024, height: 1820 }
 ] as const
 
 export const generators = {

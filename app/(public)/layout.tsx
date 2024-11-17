@@ -2,10 +2,18 @@ import "../(private)/globals.css"
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google"
+import { Viewport } from "next"
 
 export const metadata = {
   title: "Imogen",
   description: "Created with Imogen App Builder"
+}
+
+export const viewport: Viewport = {
+  themeColor: "#FFFFFF",
+  width: "device-width",
+  initialScale: 1,
+  interactiveWidget: "resizes-content"
 }
 
 export default function RootLayout({

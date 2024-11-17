@@ -31,7 +31,8 @@ import {
   saveImageToHistory,
   getImageHistory,
   GeneratedImage,
-  deleteImageFromHistory
+  deleteImageFromHistory,
+  getImageGenerationCount
 } from "@/lib/storage/image-history"
 import { Badge } from "../ui/badge"
 import {
@@ -55,6 +56,18 @@ import { getGeneratedImageFromStorage } from "@/db/storage/generated-images"
 import { getImageWithFallback } from "@/lib/storage/image-history"
 import { PLAN_FREE } from "@/lib/subscription"
 import Image from "next/image"
+import {
+  ImageModelId,
+  ModelTier,
+  PlanType,
+  IMAGE_MODEL_TIERS,
+  IMAGE_GENERATION_LIMITS,
+  MODEL_DISPLAY_NAMES
+} from "@/lib/subscription/image-limits"
+import { UsageCounter } from "./usage-counter"
+import { useImageGenerationLimits } from "@/hooks/useImageGenerationLimits"
+import { recraftStyles } from "./AdvancedParametersPanel"
+import { RecraftStyle } from "@/types/image-generation"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -80,6 +93,13 @@ interface TextToImageGeneratorProps {
 const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
   user
 }) => {
+  const userPlan = (user.plan?.split("_")[0].toUpperCase() ||
+    "FREE") as PlanType
+  const { hasReachedLimit, refreshCounts } = useImageGenerationLimits(
+    user.id,
+    userPlan
+  )
+
   const [params, setParams] = useState({
     prompt: "",
     magicPrompt: "",
@@ -92,11 +112,13 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
     batchSize: 1,
     batchCount: 1,
     clipSkip: 1,
-    tiling: false
+    tiling: false,
+    recraftStyle: recraftStyles[0].value
   })
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([])
-  const [selectedStyle, setSelectedStyle] = useState("dall-e")
+  const [selectedImgModel, setSelectedImgModel] =
+    useState<ImageModelId>("flux-schnell")
   const [isFormCollapsed, setIsFormCollapsed] = useState(false)
   const [isTranslating, setIsTranslating] = useState(false)
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(
@@ -112,6 +134,9 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isHistoryLoading, setIsHistoryLoading] = useState(true)
+  const [imageLoadErrors, setImageLoadErrors] = useState<
+    Record<string, boolean>
+  >({})
 
   // Load history on mount
   useEffect(() => {
@@ -138,29 +163,67 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
   }, [])
 
   const handleChange = (name: string, value: string | number | boolean) => {
-    setParams(prev => ({ ...prev, [name]: value }))
+    if (name === "recraftStyle") {
+      setParams(prev => ({ ...prev, recraftStyle: value as RecraftStyle }))
+    } else {
+      setParams(prev => ({ ...prev, [name]: value }))
+    }
+  }
+
+  const handleRecraftStyleChange = (value: string) => {
+    if (isValidRecraftStyle(value)) {
+      setParams(prev => ({ ...prev, recraftStyle: value as RecraftStyle }))
+    }
+  }
+
+  const isValidRecraftStyle = (value: string): value is RecraftStyle => {
+    return recraftStyles.some(style => style.value === value)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Check if the user is on a free plan
-    const userPlan = user.plan || PLAN_FREE
-    if (userPlan === PLAN_FREE) {
+    console.log("Selected recraftStyle:", params.recraftStyle)
+    console.log("Selected style:", selectedImgModel)
+
+    if (!selectedImgModel) {
+      toast.error("Please select an image generation model")
+      return
+    }
+
+    const allowedModels = IMAGE_GENERATION_LIMITS[userPlan].MODELS
+    if (!allowedModels.includes(selectedImgModel)) {
+      const requiredPlan =
+        selectedImgModel.includes("pro-ultra") ||
+        selectedImgModel.includes("recraft")
+          ? "Pro"
+          : "Lite"
       toast.error(
-        "Image generation is not available on the free plan. Please upgrade to continue."
+        `You need a ${requiredPlan} plan to use ${MODEL_DISPLAY_NAMES[selectedImgModel]}`
+      )
+      return
+    }
+
+    const modelTier = IMAGE_MODEL_TIERS[selectedImgModel as ImageModelId]
+    if (hasReachedLimit(modelTier)) {
+      const period = userPlan === "FREE" ? "daily" : "monthly"
+      toast.error(
+        `You have reached your ${period} limit for ${modelTier} models`
       )
       return
     }
 
     setIsGenerating(true)
-
     try {
       const imageUrl = await generateImage({
         prompt: params.prompt,
         negativePrompt: params.negativePrompt,
         aspectRatio: params.aspectRatio,
-        style: selectedStyle,
+        style: selectedImgModel,
+        recraftStyle:
+          selectedImgModel === "recraft-v3"
+            ? (params.recraftStyle as RecraftStyle)
+            : undefined,
         guidanceScale: params.guidanceScale,
         steps: params.steps,
         seed: params.seed,
@@ -177,7 +240,7 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
         prompt: params.prompt,
         params: {
           aspectRatio: params.aspectRatio,
-          style: selectedStyle,
+          style: selectedImgModel,
           guidanceScale: params.guidanceScale,
           steps: params.steps
         }
@@ -186,6 +249,8 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
       saveImageToHistory(newImage, user.id)
       setGeneratedImages(prev => [newImage, ...prev])
       toast.success("Image generated successfully!")
+
+      await refreshCounts()
     } catch (error: any) {
       console.error("Failed to generate image:", error)
       toast.error(error.message || "Failed to generate image")
@@ -287,6 +352,17 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
     }
   }
 
+  const handleImageError = (timestamp: number) => {
+    setImageLoadErrors(prev => ({
+      ...prev,
+      [timestamp]: true
+    }))
+  }
+
+  useEffect(() => {
+    console.log("Updated recraftStyle:", params.recraftStyle)
+  }, [params.recraftStyle])
+
   if (isLoading) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
@@ -302,11 +378,17 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
         <Brand />
       </div>
 
+      <div className="flex flex-col space-y-4">
+        <UsageCounter
+          userId={user.id}
+          userPlan={user.plan?.split("_")[0].toUpperCase() as PlanType}
+        />
+      </div>
       {/* Existing Content */}
       <div className="p-4 md:p-6 lg:p-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {/* Form Section */}
-          <div className="w-full">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+          {/* Form Section - reduced from 1/2 to 2/5 */}
+          <div className="lg:col-span-2">
             <form
               onSubmit={handleSubmit}
               className="space-y-4 md:sticky md:top-6 md:space-y-6"
@@ -350,7 +432,7 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                       <div className="flex flex-col gap-2 sm:flex-row">
                         <Input
                           id="magicPrompt"
-                          placeholder="Enter simple or foreign language text"
+                          placeholder="English, 中文, 日本語, 韓国語..."
                           value={params.magicPrompt}
                           onChange={e =>
                             handleChange("magicPrompt", e.target.value)
@@ -391,21 +473,33 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
 
                 {/* Model & Aspect Ratio Section */}
                 <Card className="p-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="style">Model</Label>
                       <Select
-                        value={selectedStyle}
-                        onValueChange={value => setSelectedStyle(value)}
+                        value={selectedImgModel}
+                        onValueChange={value =>
+                          setSelectedImgModel(value as ImageModelId)
+                        }
                       >
                         <SelectTrigger id="style">
                           <SelectValue placeholder="Select model" />
                         </SelectTrigger>
                         <SelectContent>
-                          {/*<SelectItem value="dall-e">DALL-E 3</SelectItem>*/}
-                          {/*<SelectItem value="stable-diffusion">Stable Diffusion 3</SelectItem>*/}
                           <SelectItem value="flux-schnell">
-                            FLUX Schnell
+                            FLUX Schnell (Fast) - All Plans
+                          </SelectItem>
+                          <SelectItem value="flux-1.1-pro">
+                            FLUX 1.1 Pro (Quality) - All Plans
+                          </SelectItem>
+                          <SelectItem value="flux-1.1-pro-ultra">
+                            FLUX 1.1 Pro Ultra (Realistic) - Pro Plan
+                          </SelectItem>
+                          <SelectItem value="stable-diffusion-3.5-large-turbo">
+                            Stable Diffusion 3.5 Turbo (Realistic) - Pro Plan
+                          </SelectItem>
+                          <SelectItem value="recraft-v3">
+                            Recraft v3 (Realistic) - Pro Plan
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -431,6 +525,27 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                         </SelectContent>
                       </Select>
                     </div>
+
+                    {selectedImgModel === "recraft-v3" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="recraftStyle">Art Style</Label>
+                        <Select
+                          value={params.recraftStyle}
+                          onValueChange={handleRecraftStyleChange}
+                        >
+                          <SelectTrigger id="recraftStyle">
+                            <SelectValue placeholder="Select style" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {recraftStyles.map(style => (
+                              <SelectItem key={style.value} value={style.value}>
+                                {style.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                 </Card>
 
@@ -545,8 +660,8 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
             </form>
           </div>
 
-          {/* Generated Images Section */}
-          <div className="space-y-4 md:space-y-6">
+          {/* Generated Images Section - increased from 1/2 to 3/5 */}
+          <div className="space-y-4 md:space-y-6 lg:col-span-3">
             <h2 className="text-xl font-bold md:text-2xl">Generated Images</h2>
 
             <div className="grid gap-4 md:gap-6">
@@ -569,15 +684,24 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                     {/* Image Container with proper aspect ratio handling */}
                     <div className="relative w-full">
                       <div className="relative aspect-[4/3] overflow-hidden">
-                        <Image
-                          src={image.url}
-                          alt={`Generated image: ${image.prompt.slice(0, 30)}...`}
-                          className="absolute inset-0 size-full bg-black/5 object-contain"
-                          width={1024}
-                          height={768}
-                          unoptimized={false}
-                          loader={({ src }) => src}
-                        />
+                        {!imageLoadErrors[image.timestamp] ? (
+                          <Image
+                            src={image.url}
+                            alt={`Generated image: ${image.prompt.slice(0, 30)}...`}
+                            className="absolute inset-0 size-full bg-black/5 object-contain"
+                            width={1024}
+                            height={1024}
+                            unoptimized={true}
+                            priority={false}
+                            onError={() => handleImageError(image.timestamp)}
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                            <p className="text-sm text-gray-500">
+                              Failed to load image
+                            </p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Image Info Overlay */}
@@ -659,46 +783,86 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                 open={showImagePreview}
                 onOpenChange={setShowImagePreview}
               >
-                <DialogContent className="max-h-[90vh] max-w-[90vw] p-0">
-                  <DialogHeader>
-                    <DialogTitle>Image Preview</DialogTitle>
-                    <DialogDescription className="sr-only">
-                      Preview of generated image with prompt:{" "}
-                      {selectedImage.prompt}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="relative size-full">
-                    <Image
-                      src={selectedImage.url}
-                      alt={selectedImage.prompt}
-                      className="size-full object-contain"
-                      width={600}
-                      height={800}
-                      unoptimized={false}
-                      loader={({ src }) => src}
-                    />
-                    <DialogClose className="absolute right-2 top-2">
+                <DialogContent className="flex h-[95vh] w-[70vw] max-w-[70vw] flex-col overflow-hidden p-0">
+                  <DialogHeader className="relative border-b p-4">
+                    <DialogClose className="absolute right-4 top-4">
                       <Button variant="ghost" size="icon">
                         <IconX className="size-4" />
                       </Button>
                     </DialogClose>
+                    <DialogTitle className="text-center">
+                      Image Preview
+                    </DialogTitle>
+                  </DialogHeader>
+
+                  <div className="relative flex-1 overflow-auto p-4">
+                    <div className="flex size-full items-center justify-center">
+                      <Image
+                        src={selectedImage.url}
+                        alt={selectedImage.prompt}
+                        className="max-h-[85vh] w-full max-w-[90vw] rounded-lg object-contain"
+                        width={2048}
+                        height={2048}
+                        unoptimized={true}
+                        priority={true}
+                      />
+                    </div>
                   </div>
-                  <div className="bg-background p-4">
-                    <p className="text-sm">{selectedImage.prompt}</p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() =>
-                          handleDownload(
-                            selectedImage.url,
-                            selectedImage.timestamp.toString()
-                          )
-                        }
-                      >
-                        <IconDownload className="mr-2 size-4" />
-                        Download
-                      </Button>
+
+                  <div className="bg-background/80 sticky bottom-0 border-t p-4 backdrop-blur">
+                    <div className="flex flex-col gap-4">
+                      <div className="max-h-[80px] overflow-y-auto">
+                        <p
+                          className="mx-auto max-w-[60ch] cursor-pointer text-center text-sm hover:opacity-80"
+                          onClick={() => {
+                            navigator.clipboard
+                              .writeText(selectedImage.prompt)
+                              .then(() =>
+                                toast.success("Prompt copied to clipboard!")
+                              )
+                              .catch(() => toast.error("Failed to copy prompt"))
+                          }}
+                          title="Click to copy prompt"
+                        >
+                          {selectedImage.prompt}
+                        </p>
+                      </div>
+                      <div className="flex justify-center gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() =>
+                            handleDownload(
+                              selectedImage.url,
+                              selectedImage.timestamp.toString()
+                            )
+                          }
+                          disabled={isDownloading}
+                        >
+                          {isDownloading ? (
+                            <>
+                              <Loader2 className="mr-2 size-4 animate-spin" />
+                              Downloading...
+                            </>
+                          ) : (
+                            <>
+                              <IconDownload className="mr-2 size-4" />
+                              Download
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            setShowImagePreview(false)
+                            handleDeleteImage(selectedImage)
+                          }}
+                        >
+                          <IconTrash className="mr-2 size-4" />
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </DialogContent>

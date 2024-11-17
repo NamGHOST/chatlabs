@@ -3,6 +3,10 @@ import { supabase } from "@/lib/supabase/browser-client"
 import { Json, Tables } from "@/supabase/types"
 import { handleReplicateImage } from "@/lib/storage/image-processing"
 import { uploadGeneratedImage } from "@/db/storage/generated-images"
+import {
+  IMAGE_MODEL_TIERS,
+  ImageModelId
+} from "@/lib/subscription/image-limits"
 
 export interface GeneratedImage {
   url: string
@@ -34,7 +38,10 @@ export const saveImageToHistory = async (
     // Upload to Supabase storage
     const path = await uploadGeneratedImage(storagePath, imageFile)
 
-    // Save record to database with storage path
+    // Get the model tier from the style
+    const modelTier = IMAGE_MODEL_TIERS[newImage.params.style as ImageModelId]
+
+    // Save record to database with storage path and model_tier
     const cleanUrl = newImage.url.replace(/[\[\]"]/g, "").trim()
     const { data, error } = await supabase
       .from("image_history")
@@ -45,7 +52,8 @@ export const saveImageToHistory = async (
           timestamp: newImage.timestamp,
           prompt: newImage.prompt,
           params: newImage.params as Json,
-          storage_path: path
+          storage_path: path,
+          model_tier: modelTier
         }
       ])
       .select()
@@ -72,13 +80,36 @@ export const getImageHistory = async (
 
     if (error) throw error
 
-    return (data || []).map(record => ({
-      url: record.url,
-      timestamp: record.timestamp,
-      prompt: record.prompt,
-      params: record.params as GeneratedImage["params"],
-      storagePath: record.storage_path || undefined
-    }))
+    // Process each record to get proper URLs
+    const processedData = await Promise.all(
+      (data || []).map(async record => {
+        let imageUrl = record.url
+
+        // If there's a storage path, get the signed URL
+        if (record.storage_path) {
+          try {
+            const signedUrl = await getGeneratedImageFromStorage(
+              record.storage_path
+            )
+            if (signedUrl) {
+              imageUrl = signedUrl
+            }
+          } catch (error) {
+            console.error("Error getting signed URL:", error)
+          }
+        }
+
+        return {
+          url: imageUrl,
+          timestamp: record.timestamp,
+          prompt: record.prompt,
+          params: record.params as GeneratedImage["params"],
+          storagePath: record.storage_path || undefined
+        }
+      })
+    )
+
+    return processedData
   } catch (error) {
     console.error("Error getting image history:", error)
     return []
@@ -117,12 +148,10 @@ export const deleteImageFromHistory = async (
 }
 
 export const getImageWithFallback = async (image: GeneratedImage) => {
-  // Try storage path first if available
   if (image.storagePath) {
     try {
       const newUrl = await getGeneratedImageFromStorage(image.storagePath)
       if (newUrl) {
-        console.log("Using storage URL:", newUrl)
         return newUrl
       }
     } catch (error) {
@@ -130,13 +159,44 @@ export const getImageWithFallback = async (image: GeneratedImage) => {
     }
   }
 
-  // For Replicate URLs, just clean and return
+  // For Replicate URLs, extract the direct image URL
   if (image.url.includes("replicate.delivery")) {
     const cleanUrl = image.url.replace(/[\[\]"]/g, "").trim()
-    console.log("Using Replicate URL:", cleanUrl)
-    return cleanUrl
+    if (typeof cleanUrl === "string") {
+      return cleanUrl
+    }
   }
 
-  // Return cleaned original URL as last resort
-  return image.url.replace(/[\[\]"]/g, "").trim()
+  // Return original URL as last resort
+  return image.url
+}
+
+export const getImageGenerationCount = async (
+  userId: string,
+  modelTier: string,
+  userPlan: string
+): Promise<number> => {
+  try {
+    const startDate = new Date()
+    if (userPlan === "free") {
+      // For free users, check daily limit
+      startDate.setHours(0, 0, 0, 0)
+    } else {
+      // For paid users, check monthly limit
+      startDate.setDate(1)
+      startDate.setHours(0, 0, 0, 0)
+    }
+
+    const { count } = await supabase
+      .from("image_history")
+      .select("*", { count: "exact" })
+      .eq("user_id", userId)
+      .gte("timestamp", startDate.getTime())
+      .eq("model_tier", modelTier)
+
+    return count || 0
+  } catch (error) {
+    console.error("Error getting image generation count:", error)
+    return 0
+  }
 }

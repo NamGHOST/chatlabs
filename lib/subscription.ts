@@ -145,3 +145,42 @@ export {
   PLAN_PRO,
   PLAN_ULTIMATE
 } from "@/lib/stripe/config"
+
+export function isUsingOwnKey(
+  profile: Tables<"profiles">,
+  model: string
+): boolean {
+  if (!profile || !model) return false
+
+  const modelData = LLM_LIST.find(
+    x => x.modelId === model || x.hostedId === model
+  )
+  if (!modelData) return false
+
+  // Check if it's an OpenRouter model (has "/" in ID and provider is openrouter)
+
+  // Check provider-specific API keys
+  switch (modelData.provider) {
+    case "openai":
+      return (
+        (!!profile.openai_api_key || !!profile.azure_openai_api_key) &&
+        !process.env.OPENAI_API_KEY
+      )
+    case "anthropic":
+      return !!profile.anthropic_api_key && !process.env.ANTHROPIC_API_KEY
+    case "google":
+      return (
+        !!profile.google_gemini_api_key && !process.env.GOOGLE_GEMINI_API_KEY
+      )
+    case "mistral":
+      return !!profile.mistral_api_key && !process.env.MISTRAL_API_KEY
+    case "groq":
+      return !!profile.groq_api_key && !process.env.GROQ_API_KEY
+    case "perplexity":
+      return !!profile.perplexity_api_key && !process.env.PERPLEXITY_API_KEY
+    case "openrouter":
+      return !!profile.openrouter_api_key && !process.env.OPENROUTER_API_KEY
+    default:
+      return false
+  }
+}

@@ -28,7 +28,7 @@ describe("validateMessageCount", () => {
   const date = new Date()
   const freeModel: LLMID = "gpt-4o-mini"
   const proModel: LLMID = "gpt-4o"
-  const ultimateModelGrandfathered: LLMID = "claude-3-opus-20240229"
+  const ultimateModelGrandfathered: LLMID = "o1-preview"
   const ultimateModel: LLMID = "o1-preview"
 
   beforeEach(() => {

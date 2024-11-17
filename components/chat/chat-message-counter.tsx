@@ -10,7 +10,8 @@ import {
   PRO_ULTIMATE_MESSAGE_DAILY_LIMIT,
   PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT,
   ULTIMATE_MESSAGE_DAILY_LIMIT,
-  ULTIMATE_MESSAGE_MONTHLY_LIMIT
+  ULTIMATE_MESSAGE_MONTHLY_LIMIT,
+  isUsingOwnKey
 } from "@/lib/subscription"
 import { getMessageCountForTier } from "@/db/messages"
 import { Button } from "@/components/ui/button"
@@ -32,6 +33,7 @@ const ChatMessageCounter: React.FC<ChatMessageCounterProps> = () => {
     if (!profile || !chatSettings?.model) {
       return
     }
+
     const fetchMessageCount = async () => {
       try {
         const modelData = LLM_LIST.find(
@@ -40,13 +42,16 @@ const ChatMessageCounter: React.FC<ChatMessageCounterProps> = () => {
             x.hostedId === chatSettings.model
         )
         const tier = modelData?.tier || "free"
+        const provider = modelData?.provider
+
         const count = await getMessageCountForTier(
           profile.user_id,
           tier,
           userPlan,
+          provider,
           profile.subscription_start_date || undefined
         )
-        setMessageCount(count || 0)
+        setMessageCount(count)
       } catch (error) {
         console.error(error)
       }
@@ -103,11 +108,11 @@ const ChatMessageCounter: React.FC<ChatMessageCounterProps> = () => {
     if (modelTier === "pro") {
       limit = LITE_PRO_MONTHLY_LIMIT
     } else {
-      showCounter = false
+      showCounter = true
     }
     if (modelTier === "free") {
       limit = LITE_MESSAGE_MONTHLY_LIMIT
-      showCounter = false
+      showCounter = true
     }
   }
 
@@ -121,6 +126,7 @@ const ChatMessageCounter: React.FC<ChatMessageCounterProps> = () => {
   // BYOK users have unlimited messages
   if (userPlan === "byok") {
     showCounter = false
+    return null
   }
 
   if (!showCounter) {
