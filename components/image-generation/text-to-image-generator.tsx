@@ -793,6 +793,18 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                     <DialogTitle className="text-center">
                       Image Preview
                     </DialogTitle>
+                    <div className="text-muted-foreground mt-2 flex flex-wrap items-center justify-center gap-2 text-sm">
+                      <span>
+                        {new Date(selectedImage.timestamp).toLocaleString()}
+                      </span>
+                      <span>•</span>
+                      <Badge variant="secondary">
+                        {selectedImage.params.style}
+                      </Badge>
+                      <Badge variant="secondary">
+                        {selectedImage.params.aspectRatio}
+                      </Badge>
+                    </div>
                   </DialogHeader>
 
                   <div className="relative flex-1 overflow-auto p-4">

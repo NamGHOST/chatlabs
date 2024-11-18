@@ -19,15 +19,9 @@ export default function LoginDialog({ redirectTo }: { redirectTo?: string }) {
   return (
     <Dialog open={dialogOpen} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div
-          id={"dialog"}
-          className={
-            "absolute right-0 top-0 z-[100] size-full cursor-auto h-screen" +
-            " w-screen"
-          }
-        ></div>
+        <div id={"dialog"} className="fixed inset-0 z-[100] min-h-dvh w-full" />
       </DialogTrigger>
-      <DialogContent className={"rounded-xl"}>
+      <DialogContent className="rounded-xl">
         <LoginForm redirectTo={redirectTo} popup={openLoginInAPopup} />
       </DialogContent>
     </Dialog>
