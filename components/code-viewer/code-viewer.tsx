@@ -1,22 +1,26 @@
-import { useChatHandler } from "@/components/chat/chat-hooks/use-chat-handler"
-import { CodeViewerCode } from "@/components/code-viewer/code-viewer-code"
-import { CodeViewerNavbar } from "@/components/code-viewer/code-viewer-navbar"
-import CodeViewerPreview2 from "@/components/code-viewer/code-viewer-preview-2"
-import { UITheme } from "@/components/code-viewer/theme-configurator"
-import { MessageSharingDialog } from "@/components/messages/message-sharing-dialog"
-import { useAuth } from "@/context/auth"
-import { ChatbotUIChatContext } from "@/context/chat"
-import { ChatbotUIContext } from "@/context/context"
-import { cn, generateRandomString, programmingLanguages } from "@/lib/utils"
-import { CodeBlock } from "@/types"
 import {
   FC,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from "react"
+import { useAuth } from "@/context/auth"
+import { ChatbotUIChatContext } from "@/context/chat"
+import { ChatbotUIContext } from "@/context/context"
+import { CodeBlock } from "@/types"
+import { IconMaximize, IconMinimize } from "@tabler/icons-react" // Import icons for fullscreen
+
+import { cn, generateRandomString, programmingLanguages } from "@/lib/utils"
+import { useChatHandler } from "@/components/chat/chat-hooks/use-chat-handler"
+import { CodeViewerCode } from "@/components/code-viewer/code-viewer-code"
+import { CodeViewerNavbar } from "@/components/code-viewer/code-viewer-navbar"
+import CodeViewerPreview2 from "@/components/code-viewer/code-viewer-preview-2"
+import { UITheme } from "@/components/code-viewer/theme-configurator"
+import { MessageSharingDialog } from "@/components/messages/message-sharing-dialog"
+
 import { ChatMessages } from "../chat/chat-messages"
 
 interface CodeViewerProps {
@@ -28,7 +32,11 @@ interface CodeViewerProps {
   showCloseButton?: boolean
   autoScroll?: boolean
   isEditable: boolean
-  onCodeChange: (updatedCode: string) => void
+  onCodeChange: (
+    updatedCode: string,
+    messageId: string,
+    sequenceNo: number
+  ) => void
 }
 
 export const CodeViewer: FC<CodeViewerProps> = ({
@@ -45,7 +53,7 @@ export const CodeViewer: FC<CodeViewerProps> = ({
   const { user } = useAuth()
   const { selectedWorkspace, profile, selectedAssistant } =
     useContext(ChatbotUIContext)
-  const { setSelectedHtmlElements, chatSettings, chatMessages } =
+  const { setSelectedHtmlElements, chatSettings, chatMessages, selectedChat } =
     useContext(ChatbotUIChatContext)
   const { handleSendMessage } = useChatHandler()
   const [sharing, setSharing] = useState(false)
@@ -53,11 +61,14 @@ export const CodeViewer: FC<CodeViewerProps> = ({
   const [inspectMode, setInspectMode] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false) // Add state for fullscreen
 
   const handleFixError = useCallback(
-    (error: string) => {
+    (errors: string[], consoleMessages: string[]) => {
       handleSendMessage(
-        `We have experienced an error: ${error}. Please fix the error`,
+        `We have experienced an error: ${errors.join("\n")}
+Browser console messages: ${consoleMessages.join("\n")}
+Please fix the error`,
         chatMessages,
         false
       )
@@ -113,12 +124,30 @@ export const CodeViewer: FC<CodeViewerProps> = ({
     }
   }, [isGenerating])
 
+  const toggleFullscreen = useCallback(() => {
+    setIsFullscreen(prev => !prev)
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isFullscreen])
+
   return useMemo(
     () => (
       <div
         className={cn(
-          `codeblock relative flex w-full flex-col overflow-hidden rounded-xl font-sans shadow-lg`,
-          className
+          `codeblock relative flex w-full flex-col overflow-hidden rounded-xl font-sans shadow-lg`, // Add transition classes
+          className,
+          { "absolute top-0 left-0 w-full h-full z-50": isFullscreen } // Very high z-index
         )}
       >
         <CodeViewerNavbar
@@ -138,9 +167,14 @@ export const CodeViewer: FC<CodeViewerProps> = ({
           onThemeChange={() => {}}
           onFork={onFork}
           showSidebarButton={false}
-          // showSidebarButton={false}
           showForkButton={
             !!codeBlock.messageId && codeBlock.sequenceNo > -1 && !!profile
+          }
+          isFullscreen={isFullscreen}
+          toggleFullscreen={toggleFullscreen}
+          showFullscreenButton={
+            codeBlock.language.toLowerCase() === "html" &&
+            !!profile?.experimental_code_editor
           }
         />
         <div className="relative w-full flex-1 overflow-auto bg-zinc-950">
@@ -166,17 +200,19 @@ export const CodeViewer: FC<CodeViewerProps> = ({
           )}
         </div>
         <MessageSharingDialog
+          chatId={selectedChat?.id}
           open={sharing}
           setOpen={setSharing}
           user={user}
           selectedWorkspace={selectedWorkspace}
           chatSettings={chatSettings}
           defaultFilename={codeBlock.filename || "Untitled"}
-          fileContent={codeBlock.code}
+          codeBlock={codeBlock}
         />
       </div>
     ),
     [
+      showCloseButton,
       codeBlock,
       execute,
       inspectMode,
@@ -185,11 +221,24 @@ export const CodeViewer: FC<CodeViewerProps> = ({
       isGenerating,
       isSidebarOpen,
       theme,
+      selectedChat,
       isEditable,
       chatSettings?.model,
-      selectedAssistant
+      selectedAssistant,
+      isFullscreen // Add dependency for fullscreen
     ]
   )
 }
 
 CodeViewer.displayName = "CodeViewer"
+
+// Add CSS for fullscreen mode
+// .fullscreen-class {
+//   position: fixed;
+//   top: 0;
+//   left: 0;
+//   width: 100%;
+//   height: 100%;
+//   z-index: 9999;
+//   background-color: #000; // Optional: to cover the entire screen
+// }
