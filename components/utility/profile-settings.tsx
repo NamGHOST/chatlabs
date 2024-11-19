@@ -720,7 +720,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                   "OpenRouter API Key",
                   openrouterAPIKey,
                   setOpenrouterAPIKey,
-                  false
+                  profile?.plan === "free"
                 )}
               </div>
               {profile?.plan === "free" && (
