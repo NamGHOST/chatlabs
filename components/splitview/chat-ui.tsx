@@ -356,6 +356,7 @@ export const ChatUI: FC<ChatUIProps> = () => {
           handleSendMessage={handleSendMessage}
           handleStopMessage={handleStopMessage}
           handleReset={handleReset}
+          chatsSize={chatsSize}
         />
         <div className="w-18 h-full shrink-0 py-3">
           <Select onValueChange={value => setChatsSize(parseInt(value))}>

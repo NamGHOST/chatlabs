@@ -83,7 +83,7 @@ function getProviderCaller(model: string, profile: Tables<"profiles">) {
     return new GroqFunctionCaller(
       new OpenAI({
         apiKey: profile.groq_api_key || "",
-        baseURL: "https://api.groq.com/openai/v1"
+        baseURL: process.env.GROQ_BASE_URL || undefined
       })
     )
   }

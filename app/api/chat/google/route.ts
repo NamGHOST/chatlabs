@@ -23,7 +23,14 @@ export async function POST(request: Request) {
     await validateModelAndMessageCount(chatSettings.model, new Date())
 
     const genAI = new GoogleGenerativeAI(profile.google_gemini_api_key || "")
-    const googleModel = genAI.getGenerativeModel({ model: chatSettings.model })
+    const googleModel = genAI.getGenerativeModel(
+      {
+        model: chatSettings.model
+      },
+      {
+        baseUrl: process.env.GOOGLE_BASE_URL || undefined
+      }
+    )
 
     if (
       chatSettings.model === "gemini-pro" ||

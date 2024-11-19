@@ -9,6 +9,7 @@ import { SubscriptionRequiredError } from "@/lib/errors"
 import {
   CATCHALL_MESSAGE_DAILY_LIMIT,
   FREE_MESSAGE_DAILY_LIMIT,
+  isUsingOwnKey,
   LITE_MESSAGE_DAILY_LIMIT,
   LITE_MESSAGE_MONTHLY_LIMIT,
   LITE_PRO_MONTHLY_LIMIT,
@@ -274,30 +275,13 @@ export async function validateMessageCount(
     )
   }
 
-  const ULTIMATE_GRANDFATHERED_DATE =
-    process.env.ULTIMATE_GRANDFATHERED_DATE || "2024-09-16"
-
-  // grandfathered pro users created before 2024-09-16 and using opus models
-  const isGrandfathered =
-    profile.created_at < ULTIMATE_GRANDFATHERED_DATE &&
-    userPlan === PLAN_PRO &&
-    model.includes("opus")
-
-  if (
-    isTierModel(model, PLAN_ULTIMATE) &&
-    userPlan === PLAN_PRO &&
-    !isGrandfathered
-  ) {
+  if (isTierModel(model, PLAN_ULTIMATE) && userPlan === PLAN_PRO) {
     if (count >= PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT) {
       throw new SubscriptionRequiredError(
         `You have reached monthly message limit for Pro plan for ${model}. Upgrade to Ultimate plan to continue or come back tomorrow.`
       )
     }
-  } else if (
-    isTierModel(model, PLAN_ULTIMATE) &&
-    userPlan === PLAN_PRO &&
-    isGrandfathered
-  ) {
+  } else if (isTierModel(model, PLAN_ULTIMATE) && userPlan === PLAN_PRO) {
     if (count >= ULTIMATE_MESSAGE_MONTHLY_LIMIT) {
       throw new SubscriptionRequiredError(
         `You have reached monthly message limit for Ultimate plan for ${model}`

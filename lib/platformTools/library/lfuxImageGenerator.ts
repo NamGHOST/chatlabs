@@ -7,10 +7,10 @@ import {
 class Flux1ProGenerator extends BaseImageGenerator {
   constructor() {
     super(
-      "FLUX.1 Pro",
+      "FLUX 1.1 Pro",
       "b3f07a6e-5e01-423e-1f05-ee51830608da",
       "flux1Pro",
-      "Generate images using FLUX.1 Pro based on a text description."
+      "Generate images using FLUX 1.1 Pro based on a text description."
     )
   }
 
@@ -24,29 +24,33 @@ class Flux1ProGenerator extends BaseImageGenerator {
     height: number,
     userSettings: ImageGenerationUserSettings
   ): Promise<string> {
-    const aspect_ratio =
-      width > height ? "16:9" : width < height ? "9:16" : "1:1"
-
     const input = {
-      steps: 25,
       prompt: prompt,
-      guidance: 3,
-      interval: 2,
-      aspect_ratio: aspect_ratio,
-      safety_tolerance: 2
+      aspect_ratio: width === height ? "1:1" : width > height ? "16:9" : "9:16",
+      output_format: "webp",
+      output_quality: 80,
+      safety_tolerance: 2,
+      prompt_upsampling: true
     }
 
     const replicate = new Replicate({
       auth: await this.getApiKey()
     })
 
-    // @ts-ignore
-    const result = await replicate.run("black-forest-labs/flux-pro", {
+    const result = await replicate.run("black-forest-labs/flux-1.1-pro", {
       input
     })
 
-    //@ts-ignore
-    return result as string
+    if (typeof result === "object" && result !== null) {
+      if ("output" in result) {
+        return result.output as string
+      }
+      if (Array.isArray(result) && result.length > 0) {
+        return result[0] as string
+      }
+    }
+
+    throw new Error("Invalid response from Replicate API")
   }
 }
 

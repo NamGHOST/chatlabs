@@ -1,4 +1,6 @@
+import { Tables } from "@/supabase/types"
 import { clsx, type ClassValue } from "clsx"
+import { LLM_LIST } from "./models/llm/llm-list"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -73,4 +75,43 @@ export function isEqual(obj1: any, obj2: any): boolean {
     if (!keys2.includes(key) || !isEqual(obj1[key], obj2[key])) return false
   }
   return true
+}
+
+export function isUsingOwnKey(
+  profile: Tables<"profiles">,
+  model: string
+): boolean {
+  if (!profile || !model) return false
+
+  const modelData = LLM_LIST.find(
+    x => x.modelId === model || x.hostedId === model
+  )
+  if (!modelData) return false
+
+  // Handle OpenRouter models (models with "/" and provider is openrouter)
+
+  // Check provider-specific API keys for the specific model being used
+  switch (modelData.provider) {
+    case "openai":
+      return (
+        (!!profile.openai_api_key || !!profile.azure_openai_api_key) &&
+        !process.env.OPENAI_API_KEY
+      )
+    case "anthropic":
+      return !!profile.anthropic_api_key && !process.env.ANTHROPIC_API_KEY
+    case "google":
+      return (
+        !!profile.google_gemini_api_key && !process.env.GOOGLE_GEMINI_API_KEY
+      )
+    case "mistral":
+      return !!profile.mistral_api_key && !process.env.MISTRAL_API_KEY
+    case "groq":
+      return !!profile.groq_api_key && !process.env.GROQ_API_KEY
+    case "perplexity":
+      return !!profile.perplexity_api_key && !process.env.PERPLEXITY_API_KEY
+    case "openrouter":
+      return !!profile.openrouter_api_key && !process.env.OPENROUTER_API_KEY
+    default:
+      return false
+  }
 }

@@ -24,19 +24,20 @@ import { ToolSelect } from "@/components/tools/tool-select"
 import { ChatFilesDisplay } from "@/components/chat/chat-files-display"
 import { PromptCatalog } from "@/components/splitview/prompt-catalog"
 import { reconstructContentWithCodeBlocks } from "@/lib/messages"
+import { SplitViewMessageCounter } from "@/components/splitview/splitview-hooks/use-chat-handler"
+import { range } from "lodash"
 
 interface ChatInputProps {
   isGenerating: boolean
   className?: string
-  // userInput: string
-  // setUserInput: (input: string) => void,
   handleSendMessage: (input: string, isRegeneration: boolean) => void
   handleStopMessage: () => void
   handleReset: () => void
   hasMessages: boolean
   imagesAllowed?: boolean
   toolsAllowed?: boolean
-  chatSettings?: any // Add this prop
+  chatSettings?: any
+  chatsSize: number
 }
 
 export const ChatInput: FC<ChatInputProps> = ({
@@ -47,7 +48,8 @@ export const ChatInput: FC<ChatInputProps> = ({
   handleStopMessage,
   toolsAllowed,
   handleReset,
-  chatSettings
+  chatSettings,
+  chatsSize
 }) => {
   const { t } = useTranslation()
 
@@ -186,103 +188,92 @@ export const ChatInput: FC<ChatInputProps> = ({
     <>
       <ChatFilesDisplay />
       <div className={cn("relative", className)}>
-        {/*<ChatCommandInput/>*/}
-        <div className="border-input my-3 flex min-h-[60px] w-full flex-col justify-end overflow-hidden rounded-xl border backdrop-blur-xl">
-          {/*{selectedAssistant && (*/}
-          {/*  <div className="bg-secondary flex items-center justify-between space-x-2 p-2 pl-4 pr-3">*/}
-          {/*    <div className={"flex items-center space-x-2"}>*/}
-          {/*      <AssistantIcon assistant={selectedAssistant} size={24}/>*/}
-          {/*      <div className="text-sm font-bold">*/}
-          {/*        Talking to {selectedAssistant.name}*/}
-          {/*      </div>*/}
-          {/*    </div>*/}
+        <div className="relative mx-auto flex w-full flex-col">
+          <SplitViewMessageCounter
+            chatIds={range(chatsSize).map(String)}
+            chatsSize={chatsSize}
+          />
+          <div className="flex items-center justify-between space-x-2">
+            <div className="border-input my-3 flex min-h-[60px] w-full flex-col justify-end overflow-hidden rounded-xl border backdrop-blur-xl">
+              <div className={"relative my-2 flex items-center justify-center"}>
+                <div className={"absolute left-3 flex items-center space-x-1"}>
+                  <IconPaperclip
+                    className="cursor-pointer p-1 hover:opacity-50"
+                    size={32}
+                    onClick={() => fileInputRef.current?.click()}
+                  />
+                  <PromptCatalog onSelect={setUserInput} />
+                  {/*{toolsAllowed && (*/}
+                  {/*  <ToolSelect*/}
+                  {/*    className={"px-0"}*/}
+                  {/*    selectedTools={selectedTools}*/}
+                  {/*    onSelectTools={setSelectedTools}*/}
+                  {/*  />*/}
+                  {/*)}*/}
+                </div>
 
-          {/*    <IconX*/}
-          {/*      onClick={() => setSelectedAssistant(null)}*/}
-          {/*      className={*/}
-          {/*        "hover:text-foreground/50 flex size-4 cursor-pointer items-center justify-center text-[10px]"*/}
-          {/*      }*/}
-          {/*    />*/}
-          {/*  </div>*/}
-          {/*)}*/}
-
-          <div className={"relative my-2 flex items-center justify-center"}>
-            <div className={"absolute left-3 flex items-center space-x-1"}>
-              <IconPaperclip
-                className="cursor-pointer p-1 hover:opacity-50"
-                size={32}
-                onClick={() => fileInputRef.current?.click()}
-              />
-              <PromptCatalog onSelect={setUserInput} />
-              {/*{toolsAllowed && (*/}
-              {/*  <ToolSelect*/}
-              {/*    className={"px-0"}*/}
-              {/*    selectedTools={selectedTools}*/}
-              {/*    onSelectTools={setSelectedTools}*/}
-              {/*  />*/}
-              {/*)}*/}
-            </div>
-
-            {/* Hidden input to select files from device */}
-            <Input
-              ref={fileInputRef}
-              className="hidden"
-              type="file"
-              onChange={e => {
-                if (!e.target.files) return
-                handleSelectDeviceFile(e.target.files[0])
-              }}
-              accept={filesToAccept}
-            />
-
-            <TextareaAutosize
-              // textareaRef={chatInputRef}
-              className={cn(
-                "ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring text-md flex w-full resize-none rounded-md border-none bg-transparent px-14 py-2 pl-20 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
-                toolsAllowed && "pl-32"
-              )}
-              placeholder={t(
-                `Ask anything. `
-                // Type "${profile?.assistant_command}" for assistants, "${profile?.prompt_command}" for prompts, "${profile?.files_command}" for files, and "${profile?.tools_command}" for plugins.`
-              )}
-              onValueChange={setUserInput}
-              value={userInput}
-              minRows={1}
-              maxRows={18}
-              onKeyDown={handleKeyDown}
-              onPaste={handlePaste}
-              onCompositionStart={() => setIsTyping(true)}
-              onCompositionEnd={() => setIsTyping(false)}
-            />
-
-            <div className="absolute bottom-1.5 right-3 flex cursor-pointer items-center space-x-2">
-              {!isGenerating && hasMessages && (
-                <IconPlaylistX
-                  className={"cursor-pointer hover:opacity-50"}
-                  onClick={handleReset}
-                  stroke={1.5}
-                  size={24}
-                />
-              )}
-              {isGenerating ? (
-                <IconPlayerStopFilled
-                  className="animate-pulse cursor-pointer rounded bg-transparent p-1 hover:opacity-50"
-                  onClick={handleStopMessage}
-                  size={30}
-                />
-              ) : (
-                <IconArrowUp
-                  className={cn(
-                    "bg-primary text-secondary rounded-lg p-1",
-                    !userInput && "opacity-md cursor-not-allowed"
-                  )}
-                  onClick={() => {
-                    if (!userInput) return
-                    handleSendMessage(userInput, false)
+                {/* Hidden input to select files from device */}
+                <Input
+                  ref={fileInputRef}
+                  className="hidden"
+                  type="file"
+                  onChange={e => {
+                    if (!e.target.files) return
+                    handleSelectDeviceFile(e.target.files[0])
                   }}
-                  size={30}
+                  accept={filesToAccept}
                 />
-              )}
+
+                <TextareaAutosize
+                  // textareaRef={chatInputRef}
+                  className={cn(
+                    "ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring text-md flex w-full resize-none rounded-md border-none bg-transparent px-14 py-2 pl-20 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+                    toolsAllowed && "pl-32"
+                  )}
+                  placeholder={t(
+                    `Ask anything. `
+                    // Type "${profile?.assistant_command}" for assistants, "${profile?.prompt_command}" for prompts, "${profile?.files_command}" for files, and "${profile?.tools_command}" for plugins.`
+                  )}
+                  onValueChange={setUserInput}
+                  value={userInput}
+                  minRows={1}
+                  maxRows={18}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                  onCompositionStart={() => setIsTyping(true)}
+                  onCompositionEnd={() => setIsTyping(false)}
+                />
+
+                <div className="absolute bottom-1.5 right-3 flex cursor-pointer items-center space-x-2">
+                  {!isGenerating && hasMessages && (
+                    <IconPlaylistX
+                      className={"cursor-pointer hover:opacity-50"}
+                      onClick={handleReset}
+                      stroke={1.5}
+                      size={24}
+                    />
+                  )}
+                  {isGenerating ? (
+                    <IconPlayerStopFilled
+                      className="animate-pulse cursor-pointer rounded bg-transparent p-1 hover:opacity-50"
+                      onClick={handleStopMessage}
+                      size={30}
+                    />
+                  ) : (
+                    <IconArrowUp
+                      className={cn(
+                        "bg-primary text-secondary rounded-lg p-1",
+                        !userInput && "opacity-md cursor-not-allowed"
+                      )}
+                      onClick={() => {
+                        if (!userInput) return
+                        handleSendMessage(userInput, false)
+                      }}
+                      size={30}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

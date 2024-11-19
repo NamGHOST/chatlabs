@@ -92,6 +92,19 @@
 
     --ring: 0 0% 14.9%;
   }
+
+  html, body {
+    height: 100%;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 @layer base {
@@ -121,4 +134,37 @@ mjx-container[jax="SVG"] {
 
 .animate-fade-in {
   animation: fadeIn 1s ease-in-out;
+}
+
+#__next {
+  height: 100%;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+  
+  html {
+    height: -webkit-fill-available;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  body {
+    height: 100dvh;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+  
+  .chat-container {
+    height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
 }

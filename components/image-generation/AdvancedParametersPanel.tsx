@@ -21,6 +21,31 @@ const aspectRatios = [
   { value: "9:16", width: 288, height: 512 }
 ]
 
+export const recraftStyles = [
+  { value: "any", label: "Any" },
+  { value: "realistic_image", label: "Realistic Image" },
+  { value: "digital_illustration", label: "Digital Illustration" },
+  { value: "digital_illustration/pixel_art", label: "Pixel Art" },
+  { value: "digital_illustration/hand_drawn", label: "Hand Drawn" },
+  { value: "digital_illustration/grain", label: "Grain" },
+  { value: "digital_illustration/infantile_sketch", label: "Infantile Sketch" },
+  { value: "digital_illustration/2d_art_poster", label: "2D Art Poster" },
+  { value: "digital_illustration/handmade_3d", label: "Handmade 3D" },
+  {
+    value: "digital_illustration/hand_drawn_outline",
+    label: "Hand Drawn Outline"
+  },
+  { value: "digital_illustration/engraving_color", label: "Engraving Color" },
+  { value: "digital_illustration/2d_art_poster_2", label: "2D Art Poster 2" },
+  { value: "realistic_image/b_and_w", label: "Black & White" },
+  { value: "realistic_image/hard_flash", label: "Hard Flash" },
+  { value: "realistic_image/hdr", label: "HDR" },
+  { value: "realistic_image/natural_light", label: "Natural Light" },
+  { value: "realistic_image/studio_portrait", label: "Studio Portrait" },
+  { value: "realistic_image/enterprise", label: "Enterprise" },
+  { value: "realistic_image/motion_blur", label: "Motion Blur" }
+]
+
 interface AdvancedParametersPanelProps {
   params: {
     prompt: string
@@ -35,6 +60,8 @@ interface AdvancedParametersPanelProps {
     batchCount: number
     clipSkip: number
     tiling: boolean
+    style: string
+    recraftStyle?: string
   }
   onParamChange: (name: string, value: string | number | boolean) => void
   onSubmit: (e: React.FormEvent) => void

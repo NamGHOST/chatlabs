@@ -403,7 +403,7 @@ ${content}
         </div>
       )}
       {/* Chat Content */}
-      <div className="flex size-full">
+      <div className="flex min-h-[calc(100dvh-4rem)] w-full">
         {loading ? (
           <Loading />
         ) : (
