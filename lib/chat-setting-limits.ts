@@ -524,7 +524,7 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 127072,
     MAX_CONTEXT_LENGTH: 127072
   },
-  "x-ai/grok-2": {
+  "x-ai/grok-beta": {
     MIN_TEMPERATURE: 0.0,
     MAX_TEMPERATURE: 1.0,
     MAX_TOKEN_OUTPUT_LENGTH: 4096,
@@ -541,5 +541,23 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TEMPERATURE: 1.0,
     MAX_TOKEN_OUTPUT_LENGTH: 4096,
     MAX_CONTEXT_LENGTH: 131072
+  },
+  "google/gemini-exp-1114": {
+    MIN_TEMPERATURE: 0.0,
+    MAX_TEMPERATURE: 1.0,
+    MAX_TOKEN_OUTPUT_LENGTH: 8000,
+    MAX_CONTEXT_LENGTH: 1000000
+  },
+  "qwen/qwen-2.5-coder-32b-instruct": {
+    MIN_TEMPERATURE: 0.0,
+    MAX_TEMPERATURE: 1.0,
+    MAX_TOKEN_OUTPUT_LENGTH: 4096,
+    MAX_CONTEXT_LENGTH: 33000
+  },
+  "mistralai/pixtral-large-2411": {
+    MIN_TEMPERATURE: 0.0,
+    MAX_TEMPERATURE: 1.0,
+    MAX_TOKEN_OUTPUT_LENGTH: 128000,
+    MAX_CONTEXT_LENGTH: 128000
   }
 }

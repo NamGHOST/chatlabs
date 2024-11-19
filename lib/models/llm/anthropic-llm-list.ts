@@ -96,6 +96,7 @@ const CLAUDE_3_5_HAIKU: LLM = {
   imageInput: false,
   tier: "pro",
   tools: true,
+  new: true,
   pricing: {
     currency: "USD",
     unit: "1M tokens",

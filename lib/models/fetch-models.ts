@@ -118,6 +118,7 @@ function parseSupportedModelsFromEnv() {
     "google/gemini-pro-1.5-exp",
     "google/gemini-flash-1.5-exp",
     "google/gemini-flash-1.5-8b",
+    "google/gemini-exp-1114",
 
     "databricks/dbrx-instruct",
     "mistralai/mixtral-8x22b-instruct",
@@ -133,9 +134,11 @@ function parseSupportedModelsFromEnv() {
     "cohere/command-r-08-2024",
     "mythic/mythomax-13b",
     "perplexity/llama-3.1-sonar-large-128k-online",
-    "x-ai/grok-2",
+    "x-ai/grok-beta",
     "liquid/lfm-40b",
-    "nvidia/llama-3.1-nemotron-70b-instruct"
+    "nvidia/llama-3.1-nemotron-70b-instruct",
+    "qwen/qwen-2.5-coder-32b-instruct",
+    "mistralai/pixtral-large-2411"
   ]
 
   if (process.env.NEXT_PUBLIC_OPENROUTER_MODELS) {

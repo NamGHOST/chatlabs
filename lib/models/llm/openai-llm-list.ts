@@ -141,7 +141,7 @@ const O1_Preview: LLM = {
   imageInput: false,
   tools: false,
   tier: "ultimate",
-  new: true,
+  new: false,
   supportsStreaming: false,
   pricing: {
     currency: "USD",
@@ -169,7 +169,7 @@ const O1_Mini: LLM = {
   imageInput: false,
   tools: false,
   tier: "pro",
-  new: true,
+  new: false,
   supportsStreaming: false,
   pricing: {
     currency: "USD",

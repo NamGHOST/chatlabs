@@ -14,7 +14,6 @@ const O1_MINI: LLM = {
   tools: false,
   supportsStreaming: true,
   tier: "pro" as LLMTier,
-  new: true,
   categories: [CATEGORIES.TECHNOLOGY]
 }
 
@@ -27,8 +26,7 @@ const O1_PREVIEW: LLM = {
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "ultimate" as LLMTier,
-  new: true
+  tier: "ultimate" as LLMTier
 }
 
 const GPT_4O: LLM = {
@@ -144,7 +142,8 @@ const CLAUDE_35_HAIKU: LLM = {
   imageInput: true,
   tools: false,
   supportsStreaming: true,
-  tier: "pro" as LLMTier
+  tier: "pro" as LLMTier,
+  new: true
 }
 
 const CLAUDE_35_SONNET: LLM = {
@@ -339,11 +338,11 @@ const LLAMA_31_SONAR_LARGE_128K_ONLINE: LLM = {
   tier: "free" as LLMTier
 }
 
-const GROK_2: LLM = {
-  modelId: "x-ai/grok-2",
-  modelName: "Grok 2",
+const GROK: LLM = {
+  modelId: "x-ai/grok-beta",
+  modelName: "Grok",
   provider: "openrouter",
-  hostedId: "grok-2",
+  hostedId: "grok",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
   tools: false,
@@ -361,8 +360,7 @@ const LIQUID_LFM_40B: LLM = {
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "free" as LLMTier,
-  new: true
+  tier: "free" as LLMTier
 }
 
 const NVIDIA_LLAMA_31_NEMOTRON_70B: LLM = {
@@ -377,6 +375,46 @@ const NVIDIA_LLAMA_31_NEMOTRON_70B: LLM = {
   tier: "free" as LLMTier,
   new: true
 }
+
+const GEMINI_EXP_1114: LLM = {
+  modelId: "google/gemini-exp-1114",
+  modelName: "Gemini Exp 1114",
+  provider: "openrouter",
+  hostedId: "gemini-exp-1114",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true
+}
+
+const QWEN_25_CODER_32B: LLM = {
+  modelId: "qwen/qwen-2.5-coder-32b-instruct",
+  modelName: "Qwen 2.5 Coder 32B",
+  provider: "openrouter",
+  hostedId: "qwen-2.5-coder-32b-instruct",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true
+}
+
+const PIXTRAL_LARGE_2411: LLM = {
+  modelId: "mistralai/pixtral-large-2411",
+  modelName: "PixTral Large 2411",
+  provider: "openrouter",
+  hostedId: "pixtral-large-2411",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: true,
+  tools: false,
+  supportsStreaming: true,
+  tier: "pro" as LLMTier,
+  new: true
+}
+
 export const OPENROUTER_LLM_LIST: LLM[] = [
   O1_MINI,
   O1_PREVIEW,
@@ -404,9 +442,12 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   WIZARDLM_2_8X22B,
   MYTHOMAX_13B,
   LLAMA_31_SONAR_LARGE_128K_ONLINE,
-  GROK_2,
+  GROK,
   LIQUID_LFM_40B,
-  NVIDIA_LLAMA_31_NEMOTRON_70B
+  NVIDIA_LLAMA_31_NEMOTRON_70B,
+  GEMINI_EXP_1114,
+  QWEN_25_CODER_32B,
+  PIXTRAL_LARGE_2411
 ]
 
 //- openai/gpt-4o-2024-08-06

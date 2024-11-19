@@ -18,6 +18,7 @@ export const AnthropicSVG: FC<AnthropicSVGProps> = ({
       height={height}
       viewBox="0 0 24 16"
       overflow="visible"
+      style={{ backgroundColor: "#CC9B7A" }}
     >
       <g
         style={{

@@ -4,6 +4,8 @@ import groq from "@/public/providers/groq.png"
 import meta from "@/public/providers/meta.png"
 import perplexity from "@/public/providers/perplexity.png"
 import databricks from "@/public/providers/databricks.png"
+import googleGemini from "@/public/providers/googleGemini.png"
+
 import { XaiSVG } from "@/components/icons/xai-svg"
 import { ModelProvider } from "@/types"
 import { IconSparkles } from "@tabler/icons-react"
@@ -18,6 +20,7 @@ import { MicrosoftSVG } from "@/components/icons/microsoft-svg"
 import { Chat } from "openai/resources/index.mjs"
 import { ChatbotUISVG } from "../icons/chatbotui-svg"
 import { NvidiaSVG } from "../icons/nividia-svg"
+import { CohereSVG } from "../icons/cohere-svg"
 
 interface ModelIconProps extends HTMLAttributes<HTMLDivElement> {
   provider: ModelProvider
@@ -35,6 +38,10 @@ export const ModelIcon: FC<ModelIconProps> = ({
   ...props
 }) => {
   const { theme } = useTheme()
+
+  if (modelId?.toLowerCase().includes("mistral")) {
+    provider = "mistral"
+  }
 
   switch (provider as ModelProvider) {
     case "openai":
@@ -91,12 +98,14 @@ export const ModelIcon: FC<ModelIconProps> = ({
       )
     case "google":
       return (
-        <GoogleSVG
+        <Image
           className={cn(
-            "rounded-sm bg-white p-1 text-black",
+            "rounded-sm p-1",
             className,
             theme === "dark" ? "bg-white" : "border-foreground/10 border"
           )}
+          src={googleGemini.src}
+          alt="Google Gemini"
           width={width}
           height={height}
         />
@@ -110,7 +119,7 @@ export const ModelIcon: FC<ModelIconProps> = ({
             className
           )}
           src={perplexity.src}
-          alt="Mistral"
+          alt="Perplexity"
           width={width}
           height={height}
         />
@@ -183,6 +192,19 @@ export const ModelIcon: FC<ModelIconProps> = ({
         <NvidiaSVG
           className={cn(
             "rounded-sm p-1 text-black",
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
+          )}
+          width={width}
+          height={height}
+        />
+      )
+
+    case "cohere":
+      return (
+        <CohereSVG
+          className={cn(
+            "rounded-sm p-1",
             theme === "dark" ? "bg-white" : "border-foreground/10 border",
             className
           )}

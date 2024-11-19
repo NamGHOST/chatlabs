@@ -88,9 +88,11 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "google/gemini-pro-vision": false,
   "google/gemini-flash-1.5-exp": true,
   "google/gemini-pro-1.5-exp": false,
+  "google/gemini-exp-1114": false,
 
   "databricks/dbrx-instruct": false,
   "mistralai/mixtral-8x22b-instruct": false,
+  "mistralai/pixtral-large-2411": false,
   "microsoft/wizardlm-2-8x22b": false,
   "meta-llama/llama-3.1-405b-instruct": false,
   "perplexity/llama-3.1-sonar-huge-128k-online": false,
@@ -99,13 +101,18 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
 
   "qwen/qwen-2.5-72b-instruct": false,
   "qwen/qwen-2-vl-72b-instruct": false,
+  "qwen/qwen-2.5-coder-32b-instruct": false,
+
   "cohere/command-r-plus-08-2024": false,
   "cohere/command-r-08-2024": false,
+
   "google/gemini-flash-1.5-8b": false,
+
   "meta-llama/llama-3.2-90b-vision-instruct": false,
   "meta-llama/llama-3.2-11b-vision-instruct": false,
+
   "perplexity/llama-3.1-sonar-large-128k-online": false,
-  "x-ai/grok-2": false,
+  "x-ai/grok-beta": false,
   "liquid/lfm-40b": false,
   "nvidia/llama-3.1-nemotron-70b-instruct": false,
 

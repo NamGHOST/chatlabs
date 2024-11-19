@@ -119,9 +119,12 @@ export type OpenRouterLLMID =
   | "cohere/command-r-08-2024"
   | "mythic/mythomax-13b"
   | "perplexity/llama-3.1-sonar-large-128k-online"
-  | "x-ai/grok-2"
+  | "x-ai/grok-beta"
   | "liquid/lfm-40b"
   | "nvidia/llama-3.1-nemotron-70b-instruct"
+  | "google/gemini-exp-1114"
+  | "qwen/qwen-2.5-coder-32b-instruct"
+  | "mistralai/pixtral-large-2411"
 
 export interface LLM {
   modelId: LLMID
