@@ -161,10 +161,15 @@ export async function deleteMessagesIncludingAndAfter(
 export const getMessageCountForTier = async (
   userId: string,
   tier: string,
-  userPlan: string,
-  currentProvider?: string,
-  subscriptionStartDate?: string
+  plan: string,
+  provider?: string,
+  subscriptionStartDate?: string,
+  chatId?: string
 ) => {
+  const whereClause = chatId
+    ? { user_id: userId, chat_id: chatId }
+    : { user_id: userId }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
@@ -179,8 +184,8 @@ export const getMessageCountForTier = async (
   const tierModels = LLM_LIST.filter(x => x.tier === tier)
 
   // Get the current model being used
-  const currentModel = currentProvider
-    ? tierModels.find(model => model.provider === currentProvider)
+  const currentModel = provider
+    ? tierModels.find(model => model.provider === provider)
     : undefined
 
   // Only exclude counting for models of the specific provider where user has API key
@@ -193,7 +198,7 @@ export const getMessageCountForTier = async (
   })
 
   let since: Date
-  if (userPlan === PLAN_FREE) {
+  if (plan === PLAN_FREE) {
     since = new Date()
     since.setUTCHours(0, 0, 0, 0)
   } else if (subscriptionStartDate) {

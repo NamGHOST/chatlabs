@@ -14,7 +14,7 @@ import {
   LLMTier
 } from "@/types"
 import { useRouter } from "next/navigation"
-import React, { useContext, useEffect, useRef } from "react"
+import React, { useContext, useEffect, useRef, useState } from "react"
 import { LLM_LIST } from "@/lib/models/llm/llm-list"
 import {
   createTempMessages,
@@ -38,6 +38,110 @@ import {
   DialogDescription,
   DialogHeader
 } from "@/components/ui/dialog"
+import {
+  FREE_MESSAGE_DAILY_LIMIT,
+  LITE_MESSAGE_MONTHLY_LIMIT,
+  PRO_MESSAGE_MONTHLY_LIMIT,
+  ULTIMATE_MESSAGE_MONTHLY_LIMIT
+} from "@/lib/subscription"
+import { getMessageCountForTier } from "@/db/messages"
+import { useTranslation } from "react-i18next"
+import { Zap } from "lucide-react"
+
+interface SplitViewMessageCounterProps {
+  chatIds: string[]
+  chatsSize: number
+}
+
+export const SplitViewMessageCounter: React.FC<
+  SplitViewMessageCounterProps
+> = ({ chatIds, chatsSize }) => {
+  const { profile, setIsPaywallOpen } = useContext(ChatbotUIContext)
+  const { isGenerating, chatSettings } = useContext(ChatbotUIChatContext)
+  const [messageCounts, setMessageCounts] = useState<Record<string, number>>({})
+  const { t } = useTranslation()
+
+  useEffect(() => {
+    if (!profile || !chatSettings?.model) {
+      return
+    }
+
+    const fetchMessageCounts = async () => {
+      try {
+        const modelData = LLM_LIST.find(
+          x =>
+            x.modelId === chatSettings.model ||
+            x.hostedId === chatSettings.model
+        )
+        const tier = modelData?.tier || "free"
+        const provider = modelData?.provider
+
+        // Fetch counts for each chat view
+        const counts: Record<string, number> = {}
+        for (const chatId of chatIds) {
+          const count = await getMessageCountForTier(
+            profile.user_id,
+            tier,
+            userPlan,
+            provider,
+            profile.subscription_start_date || undefined,
+            chatId // Add chatId parameter to track per-view
+          )
+          counts[chatId] = count
+        }
+        setMessageCounts(counts)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    fetchMessageCounts()
+  }, [profile, isGenerating, chatSettings, chatIds])
+
+  if (!profile || !chatSettings?.model) {
+    return null
+  }
+
+  const userPlan = profile.plan.split("_")[0]
+  const modelData = LLM_LIST.find(
+    x => x.modelId === chatSettings.model || x.hostedId === chatSettings.model
+  )
+  const modelTier = modelData?.tier
+
+  // Calculate total usage across all views
+  const totalCount = Object.values(messageCounts).reduce(
+    (sum, count) => sum + count,
+    0
+  )
+
+  // Rest of the limit logic remains same as ChatMessageCounter
+  let limit = FREE_MESSAGE_DAILY_LIMIT
+  let showCounter = true
+
+  // ... (keep existing limit logic)
+
+  if (!showCounter) {
+    return null
+  }
+
+  return (
+    <div className="variant-outline flex justify-end p-2">
+      <button
+        className="relative flex h-8 w-auto items-center justify-center rounded-full border border-purple-200 bg-gradient-to-r from-purple-300 to-blue-500 px-1.5 transition-all hover:border-pink-200 hover:from-purple-100 hover:to-pink-100"
+        onClick={() => setIsPaywallOpen(true)}
+      >
+        <span className="mr-1 font-light text-black">
+          <span className="text-xs">{limit - totalCount}</span>
+          <span className="text-[10px]">/{limit}</span>
+        </span>
+        <Zap
+          className="h-6 w-4 text-yellow-400"
+          fill="currentColor"
+          strokeWidth={0}
+        />
+      </button>
+    </div>
+  )
+}
 
 export const useChatHandler = () => {
   const router = useRouter()
