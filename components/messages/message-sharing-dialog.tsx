@@ -232,9 +232,9 @@ export function MessageSharingDialog({
   }
 
   const currentAppUrl = existingApp
-    ? `https://${existingApp.subdomain}.imogenai.app`
+    ? `https://${existingApp.subdomain}.toolzflow.app`
     : ""
-  const newAppUrl = `https://${subdomain}.imogenai.app`
+  const newAppUrl = `https://${subdomain}.toolzflow.app`
 
   const handleEditSubdomain = () => {
     setIsEditingSubdomain(true)
@@ -251,7 +251,7 @@ export function MessageSharingDialog({
     )
   }
 
-  const appUrl = `https://${subdomain}.imogenai.app`
+  const appUrl = `https://${subdomain}.toolzflow.app`
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -296,7 +296,7 @@ export function MessageSharingDialog({
                     className="mx-0 border-0 px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                   <span className="text-muted-foreground px-3 pl-0.5 text-sm">
-                    .imogenai.app
+                    .toolzflow.app
                   </span>
                 </div>
               ) : (
