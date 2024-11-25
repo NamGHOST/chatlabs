@@ -77,7 +77,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       application_models: {
@@ -106,7 +106,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "applications"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       application_platform_tools: {
@@ -145,7 +145,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       application_tools: {
@@ -191,7 +191,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       applications: {
@@ -201,11 +201,9 @@ export type Database = {
           created_at: string
           description: string
           folder_id: string | null
-          icon: string | null
           id: string
           name: string
           sharing: string
-          subdomain: string | null
           theme: string
           updated_at: string | null
           user_id: string
@@ -217,11 +215,9 @@ export type Database = {
           created_at?: string
           description: string
           folder_id?: string | null
-          icon?: string | null
           id?: string
           name: string
           sharing?: string
-          subdomain?: string | null
           theme: string
           updated_at?: string | null
           user_id: string
@@ -233,11 +229,9 @@ export type Database = {
           created_at?: string
           description?: string
           folder_id?: string | null
-          icon?: string | null
           id?: string
           name?: string
           sharing?: string
-          subdomain?: string | null
           theme?: string
           updated_at?: string | null
           user_id?: string
@@ -271,7 +265,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       assistant_collections: {
@@ -317,7 +311,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       assistant_files: {
@@ -363,7 +357,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       assistant_platform_tools: {
@@ -402,7 +396,52 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          }
+        ]
+      }
+      assistant_prompts: {
+        Row: {
+          assistant_id: string
+          content: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assistant_id: string
+          content: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assistant_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistant_prompts_assistant_id_fkey"
+            columns: ["assistant_id"]
+            isOneToOne: false
+            referencedRelation: "assistants"
+            referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "assistant_prompts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
         ]
       }
       assistant_tools: {
@@ -448,7 +487,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       assistant_workspaces: {
@@ -494,7 +533,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       assistants: {
@@ -572,7 +611,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       chat_files: {
@@ -618,7 +657,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       chats: {
@@ -743,7 +782,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       collection_files: {
@@ -789,7 +828,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       collection_workspaces: {
@@ -835,7 +874,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       collections: {
@@ -883,45 +922,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
-        ]
-      }
-      daily_message_count: {
-        Row: {
-          count: number
-          created_at: string | null
-          day: string
-          id: string
-          model_id: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          count?: number
-          created_at?: string | null
-          day: string
-          id?: string
-          model_id: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          count?: number
-          created_at?: string | null
-          day?: string
-          id?: string
-          model_id?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "daily_message_count_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
+          }
         ]
       }
       file_items: {
@@ -978,7 +979,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       file_workspaces: {
@@ -1024,7 +1025,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       files: {
@@ -1087,7 +1088,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       folders: {
@@ -1135,7 +1136,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       message_file_items: {
@@ -1181,7 +1182,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       messages: {
@@ -1251,7 +1252,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       model_workspaces: {
@@ -1297,7 +1298,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       models: {
@@ -1357,7 +1358,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       preset_workspaces: {
@@ -1403,7 +1404,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       presets: {
@@ -1472,7 +1473,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       profiles: {
@@ -1600,7 +1601,7 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       prompt_category: {
@@ -1673,7 +1674,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       prompts: {
@@ -1733,7 +1734,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       prompts_categories: {
@@ -1763,32 +1764,67 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "prompts"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
-      subdomain_adjectives: {
+      shared_chats: {
         Row: {
-          word: string
+          chat_id: string
+          created_at: string
+          id: string
+          last_message_id: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
         }
         Insert: {
-          word: string
+          chat_id: string
+          created_at?: string
+          id?: string
+          last_message_id: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
         }
         Update: {
-          word?: string
+          chat_id?: string
+          created_at?: string
+          id?: string
+          last_message_id?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
         }
-        Relationships: []
-      }
-      subdomain_nouns: {
-        Row: {
-          word: string
-        }
-        Insert: {
-          word: string
-        }
-        Update: {
-          word?: string
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "shared_chats_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shared_chats_last_message_id_fkey"
+            columns: ["last_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shared_chats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shared_chats_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       tool_workspaces: {
         Row: {
@@ -1833,7 +1869,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       tools: {
@@ -1893,7 +1929,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       user_questions: {
@@ -1940,7 +1976,7 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       workspaces: {
@@ -2067,7 +2103,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
     }
@@ -2078,10 +2114,6 @@ export type Database = {
           new_chat_id: string
           new_user_id: string
         }
-        Returns: undefined
-      }
-      create_word_arrays: {
-        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       delete_message_including_and_after: {
@@ -2113,10 +2145,6 @@ export type Database = {
           object_path: string
         }
         Returns: Record<string, unknown>
-      }
-      generate_random_subdomain: {
-        Args: Record<PropertyKey, never>
-        Returns: string
       }
       get_assistants_for_user: {
         Args: {
@@ -2406,7 +2434,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "buckets"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
     }
@@ -2518,7 +2546,7 @@ export type Tables<
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -2542,7 +2570,7 @@ export type TablesInsert<
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
@@ -2563,7 +2591,7 @@ export type TablesUpdate<
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
@@ -2584,10 +2612,9 @@ export type Enums<
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never = never
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
-

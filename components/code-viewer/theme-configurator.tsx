@@ -1,22 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react"
-import { IconPalette } from "@tabler/icons-react"
-
-import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import NavbarButton from "@/components/code-viewer/code-navbar-button"
-import {
-  DEFAULT_THEME,
-  FONT_FAMILIES,
-  THEMES
-} from "@/components/code-viewer/theme-config"
-
+import { FC, useRef, useEffect, useState } from "react"
 import { Button } from "../ui/button"
 import {
   DropdownMenu,
@@ -24,6 +6,22 @@ import {
   DropdownMenuTrigger
 } from "../ui/dropdown-menu"
 import { Input } from "../ui/input"
+import { IconPalette } from "@tabler/icons-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import {
+  THEMES,
+  DEFAULT_THEME,
+  FONT_FAMILIES
+} from "@/components/code-viewer/theme-config"
+import NavbarButton from "@/components/code-viewer/code-navbar-button"
 
 export interface UITheme {
   "color-scheme": string
