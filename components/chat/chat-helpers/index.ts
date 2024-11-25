@@ -1,10 +1,15 @@
-import { threadId } from "node:worker_threads"
-import React from "react"
 import { createChatFiles } from "@/db/chat-files"
 import { createChat } from "@/db/chats"
 import { createMessageFileItems } from "@/db/message-file-items"
 import { createMessages, updateMessage } from "@/db/messages"
 import { uploadMessageImage } from "@/db/storage/message-images"
+import {
+  buildClaudeFinalMessages,
+  buildFinalMessages,
+  buildGoogleGeminiFinalMessages,
+  buildOpenRouterFinalMessages
+} from "@/lib/build-prompt"
+import { consumeReadableStream, parseDataStream } from "@/lib/consume-stream"
 import { Tables, TablesInsert } from "@/supabase/types"
 import {
   ChatFile,
@@ -14,24 +19,18 @@ import {
   LLM,
   MessageImage
 } from "@/types"
-import { encode } from "gpt-tokenizer"
+import React from "react"
 import { toast } from "sonner"
 import { v4 as uuidv4 } from "uuid"
-
-import {
-  buildClaudeFinalMessages,
-  buildFinalMessages,
-  buildGoogleGeminiFinalMessages,
-  buildOpenRouterFinalMessages
-} from "@/lib/build-prompt"
-import { consumeReadableStream, parseDataStream } from "@/lib/consume-stream"
 import { SubscriptionRequiredError } from "@/lib/errors"
+import { validatePlanForModel, validatePlanForTools } from "@/lib/subscription"
+import { encode } from "gpt-tokenizer"
 import {
   parseChatMessageCodeBlocksAndContent,
   reconstructContentWithCodeBlocks,
   reconstructContentWithCodeBlocksInChatMessage
 } from "@/lib/messages"
-import { validatePlanForModel, validatePlanForTools } from "@/lib/subscription"
+import { threadId } from "node:worker_threads"
 import { useCodeBlockManager } from "@/hooks/useCodeBlockManager"
 
 export const validateChatSettings = (
@@ -413,6 +412,7 @@ export const fetchChatResponse = async (
         }
 
         if (response.status === 504 && retriesLeft > 0) {
+          console.log("Retrying...", retriesLeft)
           await new Promise(resolve => setTimeout(resolve, retryDelay))
           return fetchWithRetry(retriesLeft - 1)
         }
