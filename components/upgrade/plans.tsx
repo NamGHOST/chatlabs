@@ -175,17 +175,17 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
           <p className="text-xl font-semibold">{title}</p>
           <div className="flex items-baseline gap-2">
             <p className="text-xl font-semibold">
-              {billingCycle === "yearly" ? yearlyPrice : monthlyPrice} HKD
+              {billingCycle === "yearly" ? yearlyPrice : monthlyPrice} USD
             </p>
             {billingCycle === "yearly" && (
               <p className="text-foreground/50 line-through">
-                {monthlyPrice} HKD
+                {monthlyPrice} USD
               </p>
             )}
           </div>
           <p className="text-foreground/50 text-sm">
             {billingCycle === "yearly"
-              ? `per month, billed annually (${parseFloat(yearlyPrice) * 12} HKD/year)`
+              ? `per month, billed annually (${parseFloat(monthlyPrice) * 10} USD/year)`
               : "per month"}
           </p>
         </div>
@@ -443,16 +443,16 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
             <div className="flex flex-col-reverse md:flex-row">
               <PlanColumn
                 title="Lite Plan"
-                monthlyPrice="85"
-                yearlyPrice="71"
+                monthlyPrice="11"
+                yearlyPrice="9.2"
                 features={liteFeatures}
                 planPrefix={LITE_PLAN_PREFIX}
               />
 
               <PlanColumn
                 title={t("Pro Plan")}
-                monthlyPrice="180"
-                yearlyPrice="150"
+                monthlyPrice="20"
+                yearlyPrice="16.8"
                 features={proFeatures}
                 planPrefix={PRO_PLAN_PREFIX}
               />

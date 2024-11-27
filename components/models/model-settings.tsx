@@ -80,7 +80,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "openai/gpt-4o-mini": true,
   "openai/gpt-4-vision-preview": false,
 
-  "anthropic/claude-3-5-haiku": false,
+  "anthropic/claude-3.5-haiku": false,
   "anthropic/claude-3.5-sonnet": false,
   "anthropic/claude-3-haiku": true,
 

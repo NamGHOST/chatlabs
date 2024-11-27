@@ -134,7 +134,7 @@ const CLAUDE_3_HAIKU: LLM = {
 }
 
 const CLAUDE_35_HAIKU: LLM = {
-  modelId: "anthropic/claude-3-5-haiku",
+  modelId: "anthropic/claude-3.5-haiku",
   modelName: "Claude 3.5 Haiku",
   provider: "openrouter",
   hostedId: "claude-3.5-haiku-20241022:beta",

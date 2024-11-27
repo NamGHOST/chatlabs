@@ -398,7 +398,7 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 8192,
     MAX_CONTEXT_LENGTH: 200000
   },
-  "anthropic/claude-3-5-haiku": {
+  "anthropic/claude-3.5-haiku": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
     MAX_TOKEN_OUTPUT_LENGTH: 4096,
