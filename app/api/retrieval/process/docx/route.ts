@@ -7,6 +7,7 @@ import { createClient } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 import OpenAI from "openai"
 import { generateJinaEmbedding } from "@/lib/generate-jina-embedding"
+import { validateEmbeddingAccess } from "@/lib/subscription"
 
 export async function POST(req: Request) {
   const json = await req.json()
@@ -29,6 +30,19 @@ export async function POST(req: Request) {
     )
 
     const profile = await getServerProfile()
+
+    try {
+      validateEmbeddingAccess(profile)
+    } catch (error) {
+      return new NextResponse(
+        JSON.stringify({
+          message:
+            "This feature requires a paid subscription. Please upgrade to continue.",
+          requiresUpgrade: true
+        }),
+        { status: 403 }
+      )
+    }
 
     // TODO: remove below line after migration is done
     // let currentProvider: "jina" | "openai" | "local" = initialProvider || "jina"

@@ -12,7 +12,9 @@ import {
   IconPhoto,
   IconShield,
   IconChevronDown,
-  IconChevronUp
+  IconChevronUp,
+  IconUsers,
+  IconPhotoAi
 } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { PlanFeature } from "@/components/upgrade/plan-picker"
@@ -212,11 +214,19 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
             ))}
         </FeatureGroup>
         <FeatureGroup
-          icon={<IconPhoto size={20} />}
+          icon={<IconPhotoAi size={20} />}
           title={t("Image Generation")}
+          className={planPrefix === LITE_PLAN_PREFIX ? "mb-12" : undefined}
         >
           {features
             .find(f => f.title === t("Image Generation"))
+            ?.items.map((item: string, index: number) => (
+              <PlanFeature key={index} title={item} />
+            ))}
+        </FeatureGroup>
+        <FeatureGroup icon={<IconUsers size={20} />} title={t("AI Meeting")}>
+          {features
+            .find(f => f.title === t("AI Meeting"))
             ?.items.map((item: string, index: number) => (
               <PlanFeature key={index} title={item} />
             ))}
@@ -258,7 +268,8 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                     ![
                       t("AI Models"),
                       t("Image Generation"),
-                      t("ImogenAI API Key Hub")
+                      t("ImogenAI API Key Hub"),
+                      t("AI Meeting")
                     ].includes(f.title)
                 )
                 .map((feature, index) => (
@@ -284,16 +295,21 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
       icon: <IconRobot size={20} />,
       title: t("AI Models"),
       items: [
-        t("Standard models: 5000 requests"),
+        t("Standard models: 1500 requests"),
         t("GPT-4o mini, Claude 3 Haiku and more"),
-        t("Pro models: 200 requests"),
+        t("Pro models: 120 requests"),
         t("Limited time offer: Access to OpenAI: O1mini, GPT 4o ,X-AI Grok2")
       ]
     },
     {
-      icon: <IconPhoto size={20} />,
+      icon: <IconUsers size={20} />,
+      title: t("AI Meeting"),
+      items: [t("Brainstorming, idea generation, and more")]
+    },
+    {
+      icon: <IconPhotoAi size={20} />,
       title: t("Image Generation"),
-      items: [t("Powered by Stable Diffusion")]
+      items: [t("Powered by Flux Family"), t("150 times fast generation")]
     },
     {
       icon: <IconKey size={20} />,
@@ -348,9 +364,18 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
       ]
     },
     {
-      icon: <IconPhoto size={20} />,
+      icon: <IconUsers size={20} />,
+      title: t("AI Meeting"),
+      items: [t("Brainstorming, idea generation, and more")]
+    },
+    {
+      icon: <IconPhotoAi size={20} />,
       title: t("Image Generation"),
-      items: [t("Powered by Flux Pro 1.1")]
+      items: [
+        t("Powered by Flux Family, Stable Diffusion and Recraft"),
+        t("300 times fast generation"),
+        t("50 times Pro quality generation")
+      ]
     },
     {
       icon: <IconKey size={20} />,

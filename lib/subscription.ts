@@ -9,10 +9,7 @@ import {
 } from "@/lib/stripe/config"
 import { getEnvInt } from "@/lib/env"
 
-export const FREE_MESSAGE_DAILY_LIMIT = getEnvInt(
-  "FREE_MESSAGE_DAILY_LIMIT",
-  10
-)
+export const FREE_MESSAGE_DAILY_LIMIT = getEnvInt("FREE_MESSAGE_DAILY_LIMIT", 5)
 
 export const LITE_MESSAGE_DAILY_LIMIT = getEnvInt(
   "LITE_MESSAGE_DAILY_LIMIT",
@@ -44,7 +41,7 @@ export const ULTIMATE_MESSAGE_DAILY_LIMIT = getEnvInt(
 // **New Monthly Limits for Paid Plans**
 export const LITE_MESSAGE_MONTHLY_LIMIT = getEnvInt(
   "LITE_MESSAGE_MONTHLY_LIMIT",
-  5000 // Default value, adjust as needed
+  1500 // Default value, adjust as needed
 )
 
 export const PRO_MESSAGE_MONTHLY_LIMIT = getEnvInt(
@@ -57,11 +54,11 @@ export const ULTIMATE_MESSAGE_MONTHLY_LIMIT = getEnvInt(
   500 // Default value, adjust as needed
 )
 
-export const LITE_PRO_MONTHLY_LIMIT = getEnvInt("LITE_PRO_MONTHLY_LIMIT", 200)
+export const LITE_PRO_MONTHLY_LIMIT = getEnvInt("LITE_PRO_MONTHLY_LIMIT", 120)
 
 export const PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT = getEnvInt(
   "PRO_ULTIMATE_MESSAGE_MONTHLY_LIMIT",
-  30
+  5
 )
 
 export const ALLOWED_USERS =
@@ -183,4 +180,18 @@ export function isUsingOwnKey(
     default:
       return false
   }
+}
+
+export function validateEmbeddingAccess(profile: Tables<"profiles"> | null) {
+  if (!profile || profile.plan === PLAN_FREE) {
+    throw new Error("Embedding features require a paid subscription")
+  }
+
+  const userPlan = profile.plan.split("_")[0]
+  return (
+    userPlan === PLAN_LITE ||
+    userPlan === PLAN_PRO ||
+    userPlan === PLAN_ULTIMATE ||
+    userPlan.startsWith("byok")
+  )
 }

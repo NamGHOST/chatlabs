@@ -22,8 +22,8 @@ export function UsageCounter({ userId, userPlan }: UsageCounterProps) {
       <h3 className="font-semibold">Generation Limits</h3>
       <div className="space-y-1 text-sm">
         <div>
-          Standard Models: {counts.standard} / {limits.DAILY || limits.MONTHLY}{" "}
-          per {period}
+          Fast Models: {counts.standard} / {limits.DAILY || limits.MONTHLY} per{" "}
+          {period}
         </div>
         {limits.PRO_MONTHLY && (
           <div>

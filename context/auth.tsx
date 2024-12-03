@@ -72,7 +72,25 @@ export const AuthProvider = ({
     session,
     user,
     profile,
-    signOut: () => supabase.auth.signOut()
+    signOut: async () => {
+      try {
+        const { error } = await supabase.auth.signOut()
+        if (error) throw error
+
+        window.localStorage.clear()
+
+        document.cookie.split(";").forEach(cookie => {
+          document.cookie = cookie
+            .replace(/^ +/, "")
+            .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`)
+        })
+
+        window.location.href = "/"
+      } catch (error) {
+        console.error("Logout failed:", error)
+        window.location.href = "/"
+      }
+    }
   }
 
   // use a provider to pass down the value
