@@ -2,10 +2,19 @@ import he from "he"
 import { find } from "lodash"
 import striptags from "striptags"
 
-const fetchCaptions = async (videoId: string, lang: string) => {
+const fetchCaptions = async (
+  videoId: string,
+  lang: string,
+  headers?: HeadersInit
+) => {
   try {
     // First, get the video page to extract caption data
-    const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`)
+    const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
+      headers: headers || {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      }
+    })
     const html = await response.text()
 
     // Extract caption tracks data
@@ -50,13 +59,15 @@ const fetchCaptions = async (videoId: string, lang: string) => {
 
 export async function getSubtitles({
   videoID,
-  lang = "en"
+  lang = "en",
+  headers
 }: {
   videoID: string
   lang: string
+  headers?: HeadersInit
 }) {
   try {
-    const transcript = await fetchCaptions(videoID, lang)
+    const transcript = await fetchCaptions(videoID, lang, headers)
 
     // Parse the XML transcript into the expected format
     const lines = transcript

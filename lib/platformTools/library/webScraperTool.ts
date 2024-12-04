@@ -142,12 +142,19 @@ export async function getYoutubeCaptions(
   }
 
   logger.debug("Fetching subtitles")
-  const result = (
-    await getSubtitles({
-      videoID: videoId,
-      lang: "en"
-    })
-  ).flatMap(x => (!!x ? [x] : []))
+  const result = await getSubtitles({
+    videoID: videoId,
+    lang: "en",
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept-Language": "en-US,en;q=0.9",
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      Referer: "https://www.youtube.com/",
+      Origin: "https://www.youtube.com"
+    }
+  })
 
   logger.debug("Optimizing subtitles")
   const optimizedResult = mergeSubtitleChunks(result, 6)

@@ -5,7 +5,17 @@ export async function POST(req: Request) {
   try {
     const { videoId } = await req.json()
 
-    // Try different languages in order of preference
+    // Add proper browser-like headers
+    const headers = {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept-Language": "en-US,en;q=0.9",
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      Referer: "https://www.youtube.com/",
+      Origin: "https://www.youtube.com"
+    }
+
     const languagesToTry = ["en", "zh-Hant", "zh-TW", "zh-CN", "zh"]
     let subtitles = null
     let error = null
@@ -14,11 +24,13 @@ export async function POST(req: Request) {
       try {
         subtitles = await getSubtitles({
           videoID: videoId,
-          lang: lang as "en" | "de" | "fr" | "zh-hk" | "zh-tw"
+          lang: lang as "en" | "de" | "fr" | "zh-hk" | "zh-tw",
+          headers // Pass headers to getSubtitles
         })
         if (subtitles) break
       } catch (e) {
         error = e
+        console.error(`Failed for language ${lang}:`, e)
         continue
       }
     }
