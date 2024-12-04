@@ -110,7 +110,7 @@ function mergeSubtitleChunks(chunks: any[], n: number) {
   return mergedChunks
 }
 
-async function getYoutubeCaptions(
+export async function getYoutubeCaptions(
   params: any
 ): Promise<Omit<GetYoutubeCaptionsResult, "responseTime">> {
   logger.debug("Starting getYoutubeCaptions function")

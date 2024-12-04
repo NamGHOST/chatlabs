@@ -13,7 +13,18 @@ export async function getSubtitles({
   lang = "en"
 }: {
   videoID: string
-  lang: "en" | "de" | "fr" | "zh-hk" | "zh-tw" | void
+  lang:
+    | "en"
+    | "de"
+    | "fr"
+    | "zh-hk"
+    | "zh-tw"
+    | "ja"
+    | "ko"
+    | "th"
+    | "vi"
+    | "es"
+    | void
 }) {
   const data = await fetchData(`https://www.youtube.com/watch?v=${videoID}`)
 

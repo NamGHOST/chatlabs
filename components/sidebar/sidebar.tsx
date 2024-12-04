@@ -24,7 +24,8 @@ import {
   IconSparkles,
   IconWorldSearch,
   IconPhoto,
-  IconPhotoAi
+  IconPhotoAi,
+  IconBrandYoutube
 } from "@tabler/icons-react"
 import { ChatbotUIContext } from "@/context/context"
 import { Button } from "../ui/button"
@@ -386,6 +387,14 @@ export const Sidebar: FC = () => {
                 <SidebarItem
                   icon={<IconPhotoAi {...iconProps} />}
                   label={t("Text to Image")}
+                  onClick={() => {}}
+                  isCollapsed={isCollapsed}
+                />
+              </Link>
+              <Link href="/youtube-summarizer" target="_blank" passHref>
+                <SidebarItem
+                  icon={<IconBrandYoutube {...iconProps} />}
+                  label={t("YouTube Summarizer")}
                   onClick={() => {}}
                   isCollapsed={isCollapsed}
                 />
