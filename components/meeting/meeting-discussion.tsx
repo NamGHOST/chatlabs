@@ -506,9 +506,9 @@ Note: Please provide specific points under each section based on the discussion 
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold">{setup.topic}</h2>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={handleSaveMeeting}>
+                {/* <Button variant="outline" onClick={handleSaveMeeting}>
                   Save Progress
-                </Button>
+                </Button> */}
                 <Button
                   variant="outline"
                   onClick={() => handleExportMeeting("md")}

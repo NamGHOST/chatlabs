@@ -40,6 +40,16 @@ export const MeetingSummaryDialog: FC<MeetingSummaryDialogProps> = ({
           <div className="prose prose-invert bg-muted max-w-none rounded-lg p-6">
             <Markdown
               components={{
+                h1: ({ children }) => (
+                  <h1 className="text-primary mb-4 text-2xl font-bold">
+                    {children}
+                  </h1>
+                ),
+                h2: ({ children }) => (
+                  <h2 className="text-primary mb-3 mt-6 text-xl font-semibold">
+                    {children}
+                  </h2>
+                ),
                 h3: ({ children }) => (
                   <h3 className="text-primary mb-2 mt-6 text-lg font-semibold">
                     {children}
