@@ -1,60 +1,26 @@
-import he from "he"
-import { find } from "lodash"
-import striptags from "striptags"
+import axios from "axios"
+import protobuf from "protobufjs"
 
-const fetchCaptions = async (
-  videoId: string,
-  lang: string,
-  headers?: HeadersInit
-) => {
-  try {
-    // First, get the video page to extract caption data
-    const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-      headers: headers || {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+interface Subtitle {
+  start: number
+  dur: number
+  text: string
+}
+
+function getBase64Protobuf(message: any) {
+  const root = protobuf.Root.fromJSON({
+    nested: {
+      Message: {
+        fields: {
+          param1: { id: 1, type: "string" },
+          param2: { id: 2, type: "string" }
+        }
       }
-    })
-    const html = await response.text()
-
-    // Extract caption tracks data
-    const captionRegex = /"captionTracks":(\[.*?\])/
-    const match = captionRegex.exec(html)
-
-    if (!match) {
-      throw new Error(`Could not find captions for video: ${videoId}`)
     }
-
-    const { captionTracks } = JSON.parse(`{${match[0]}}`)
-
-    // Find caption in requested language, with fallbacks
-    const caption =
-      captionTracks.find((track: any) => {
-        const trackLang = track.languageCode?.toLowerCase()
-        const targetLang = lang.toLowerCase()
-        return (
-          trackLang === targetLang ||
-          trackLang?.startsWith(targetLang) ||
-          targetLang?.startsWith(trackLang)
-        )
-      }) || captionTracks[0] // Fallback to first available caption
-
-    if (!caption?.baseUrl) {
-      throw new Error(`No captions available in ${lang} language`)
-    }
-
-    // Fetch the actual captions
-    const captionResponse = await fetch(caption.baseUrl)
-    if (!captionResponse.ok) {
-      throw new Error("Failed to fetch caption track")
-    }
-
-    const transcript = await captionResponse.text()
-    return transcript
-  } catch (error) {
-    console.error("Error in fetchCaptions:", error)
-    throw error
-  }
+  })
+  const MessageType = root.lookupType("Message")
+  const buffer = MessageType.encode(message).finish()
+  return Buffer.from(buffer).toString("base64")
 }
 
 export async function getSubtitles({
@@ -67,42 +33,123 @@ export async function getSubtitles({
   headers?: HeadersInit
 }) {
   try {
-    const transcript = await fetchCaptions(videoID, lang, headers)
+    // Try first without ASR (manual captions)
+    let message1 = {
+      param1: "", // Empty for manual captions
+      param2: lang
+    }
+    let protobufMessage1 = getBase64Protobuf(message1)
+    let message2 = {
+      param1: videoID,
+      param2: protobufMessage1
+    }
+    let params = getBase64Protobuf(message2)
 
-    // Parse the XML transcript into the expected format
-    const lines = transcript
-      .replace('<?xml version="1.0" encoding="utf-8" ?><transcript>', "")
-      .replace("</transcript>", "")
-      .split("</text>")
-      .filter(line => line && line.trim())
-      .map(line => {
-        const startRegex = /start="([\d.]+)"/
-        const durRegex = /dur="([\d.]+)"/
+    const axiosHeaders = headers
+      ? Object.fromEntries(
+          headers instanceof Headers
+            ? Array.from(headers.entries())
+            : Array.isArray(headers)
+              ? headers
+              : Object.entries(headers)
+        )
+      : {}
 
-        const startMatch = startRegex.exec(line)
-        const durMatch = durRegex.exec(line)
+    try {
+      const response = await axios.post(
+        "https://www.youtube.com/youtubei/v1/get_transcript",
+        {
+          context: {
+            client: {
+              clientName: "WEB",
+              clientVersion: "2.20240826.01.00",
+              hl: lang // Add language code to context
+            }
+          },
+          params
+        },
+        { headers: axiosHeaders }
+      )
 
-        if (!startMatch || !durMatch) return null
+      if (
+        response.data?.actions?.[0]?.updateEngagementPanelAction?.content
+          ?.transcriptRenderer?.content?.transcriptSearchPanelRenderer?.body
+          ?.transcriptSegmentListRenderer?.initialSegments
+      ) {
+        return processSegments(
+          response.data.actions[0].updateEngagementPanelAction.content
+            .transcriptRenderer.content.transcriptSearchPanelRenderer.body
+            .transcriptSegmentListRenderer.initialSegments
+        )
+      }
+    } catch (error) {
+      console.log("Manual captions not found, trying auto-generated...")
+    }
 
-        const htmlText = line
-          .replace(/<text.+>/, "")
-          .replace(/&amp;/gi, "&")
-          .replace(/<\/?[^>]+(>|$)/g, "")
+    // If manual captions fail, try ASR (auto-generated)
+    message1 = {
+      param1: "asr",
+      param2: lang
+    }
+    protobufMessage1 = getBase64Protobuf(message1)
+    message2 = {
+      param1: videoID,
+      param2: protobufMessage1
+    }
+    params = getBase64Protobuf(message2)
 
-        const decodedText = he.decode(htmlText)
-        const text = striptags(decodedText)
+    const asrResponse = await axios.post(
+      "https://www.youtube.com/youtubei/v1/get_transcript",
+      {
+        context: {
+          client: {
+            clientName: "WEB",
+            clientVersion: "2.20240826.01.00",
+            hl: lang
+          }
+        },
+        params
+      },
+      { headers: axiosHeaders }
+    )
 
-        return {
-          start: startMatch[1],
-          dur: durMatch[1],
-          text
-        }
-      })
-      .filter(Boolean)
+    if (
+      !asrResponse.data?.actions?.[0]?.updateEngagementPanelAction?.content
+        ?.transcriptRenderer?.content?.transcriptSearchPanelRenderer?.body
+        ?.transcriptSegmentListRenderer?.initialSegments
+    ) {
+      throw new Error(`No captions available for language: ${lang}`)
+    }
 
-    return lines
+    return processSegments(
+      asrResponse.data.actions[0].updateEngagementPanelAction.content
+        .transcriptRenderer.content.transcriptSearchPanelRenderer.body
+        .transcriptSegmentListRenderer.initialSegments
+    )
   } catch (error) {
     console.error("Error in getSubtitles:", error)
     throw error
   }
+}
+
+function processSegments(segments: any[]) {
+  if (!Array.isArray(segments)) {
+    throw new Error("Segments is not an array")
+  }
+
+  return segments.map((segment: any) => {
+    const renderer = segment.transcriptSegmentRenderer
+    if (
+      !renderer?.startMs ||
+      !renderer?.endMs ||
+      !renderer?.snippet?.runs?.[0]?.text
+    ) {
+      throw new Error("Invalid segment structure")
+    }
+    return {
+      start: parseInt(renderer.startMs) / 1000,
+      dur: (parseInt(renderer.endMs) - parseInt(renderer.startMs)) / 1000,
+      text: renderer.snippet.runs[0].text
+    }
+  })
 }
