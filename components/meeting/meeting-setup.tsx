@@ -187,7 +187,8 @@ const getRoleName = (seatNumber: number): string => {
 }
 
 const sanitizeInput = (input: string) => {
-  return input.trim().replace(/[<>]/g, "").replace(/[&'"]/g, "")
+  // Only remove angle brackets for basic XSS prevention
+  return input.replace(/[<>]/g, "")
 }
 
 export const MeetingSetup: FC<MeetingSetupProps> = ({ onStartMeeting }) => {
