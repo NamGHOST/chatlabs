@@ -22,6 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger
 } from "@/components/ui/accordion"
+import { DownloadIcon } from "lucide-react"
 
 interface SummaryData {
   summary: string
@@ -147,6 +148,41 @@ export const YouTubeSummarizer = () => {
       },
       {} as Record<string, typeof timeline>
     )
+  }
+
+  const downloadTranscript = (format: "txt" | "srt" | "json") => {
+    if (!summaryData?.timeline) return
+
+    let content = ""
+    const filename = `transcript-${videoId}`
+
+    switch (format) {
+      case "txt":
+        content = summaryData.timeline
+          .map(item => `${item.time}: ${item.content}`)
+          .join("\n")
+        break
+      case "srt":
+        content = summaryData.timeline
+          .map((item, index) => {
+            return `${index + 1}\n${item.time},000 --> ${item.time},999\n${item.content}\n\n`
+          })
+          .join("")
+        break
+      case "json":
+        content = JSON.stringify(summaryData.timeline, null, 2)
+        break
+    }
+
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `${filename}.${format}`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -278,6 +314,33 @@ export const YouTubeSummarizer = () => {
           </ResizablePanel>
         </ResizablePanelGroup>
       )}
+
+      <div className="flex gap-2">
+        <Button
+          onClick={() => downloadTranscript("txt")}
+          disabled={!summaryData}
+          size="sm"
+        >
+          <DownloadIcon className="mr-2 size-4" />
+          Download TXT
+        </Button>
+        <Button
+          onClick={() => downloadTranscript("srt")}
+          disabled={!summaryData}
+          size="sm"
+        >
+          <DownloadIcon className="mr-2 size-4" />
+          Download SRT
+        </Button>
+        <Button
+          onClick={() => downloadTranscript("json")}
+          disabled={!summaryData}
+          size="sm"
+        >
+          <DownloadIcon className="mr-2 size-4" />
+          Download JSON
+        </Button>
+      </div>
     </div>
   )
 }
