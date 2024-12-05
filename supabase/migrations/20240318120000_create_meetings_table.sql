@@ -1,3 +1,11 @@
+create or replace function set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
 create table meetings (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references auth.users(id) on delete cascade not null,
@@ -9,12 +17,10 @@ create table meetings (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Add indexes
 create index meetings_user_id_idx on meetings(user_id);
 create index meetings_created_at_idx on meetings(created_at);
 
--- Add trigger for updated_at
 create trigger set_updated_at
   before update on meetings
   for each row
-  execute function set_updated_at(); 
+  execute function set_updated_at();
