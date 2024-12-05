@@ -2,6 +2,7 @@
 
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import * as React from "react"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 import { cn } from "@/lib/utils"
 
@@ -42,6 +43,9 @@ const DialogContent = React.forwardRef<
         )}
         {...props}
       >
+        <VisuallyHidden>
+          <DialogTitle>Your Hidden Title</DialogTitle>
+        </VisuallyHidden>
         {children}
       </DialogPrimitive.Content>
     </DialogOverlay>

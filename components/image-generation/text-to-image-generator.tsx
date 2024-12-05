@@ -372,7 +372,7 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="size-full overflow-y-auto">
       {/* Brand Header */}
       <div className="py-8">
         <Brand />
@@ -884,8 +884,8 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
         </div>
       </div>
 
-      {/* Timeline Drawer */}
-      <div className="fixed inset-x-0 bottom-0">
+      {/* Timeline Drawer - adjust positioning for iPad */}
+      <div className="fixed inset-x-0 bottom-0 z-50">
         <div
           className={cn(
             "bg-background/80 relative border-t backdrop-blur-sm transition-transform duration-300",
@@ -969,8 +969,8 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
         </div>
       </div>
 
-      {/* Add padding at the bottom of the main content to account for the timeline */}
-      <div className="pb-32" />
+      {/* Increase bottom padding to ensure content isn't hidden behind drawer */}
+      <div className="pb-40" />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

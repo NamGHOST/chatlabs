@@ -146,6 +146,11 @@ export const Sidebar: FC = () => {
   }, [profile])
 
   const handleSubmenuOpen = (menuName: ContentType) => {
+    if (menuName === "files" && !isPaidPlan) {
+      setIsPaywallOpen(true)
+      return
+    }
+
     if (isCollapsed) {
       setExpandDelay(true)
       setTimeout(() => {

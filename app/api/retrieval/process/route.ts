@@ -8,6 +8,7 @@ import {
   processTxt
 } from "@/lib/retrieval/processing"
 import { checkApiKey, getServerProfile } from "@/lib/server/server-chat-helpers"
+import { validateEmbeddingAccess } from "@/lib/subscription"
 import { Database } from "@/supabase/types"
 import { FileItemChunk } from "@/types"
 import { createClient } from "@supabase/supabase-js"
@@ -25,6 +26,19 @@ export async function POST(req: Request) {
     )
 
     const profile = await getServerProfile()
+
+    try {
+      validateEmbeddingAccess(profile)
+    } catch (error) {
+      return new NextResponse(
+        JSON.stringify({
+          message:
+            "This feature requires a paid subscription. Please upgrade to continue.",
+          requiresUpgrade: true
+        }),
+        { status: 403 }
+      )
+    }
 
     const formData = await req.formData()
 

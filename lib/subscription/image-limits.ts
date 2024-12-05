@@ -23,13 +23,8 @@ export const IMAGE_GENERATION_LIMITS: Record<PlanType, PlanLimits> = {
   },
   LITE: {
     MONTHLY: 150,
-    PRO_MONTHLY: 25,
-    MODELS: [
-      "flux-schnell",
-      "flux-1.1-pro",
-      "stable-diffusion-3.5-large-turbo",
-      "recraft-v3"
-    ]
+    PRO_MONTHLY: 15,
+    MODELS: ["flux-schnell", "flux-1.1-pro"]
   },
   PRO: {
     MONTHLY: 300,

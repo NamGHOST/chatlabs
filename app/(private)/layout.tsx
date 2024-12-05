@@ -69,7 +69,7 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" suppressHydrationWarning className={"h-full"}>
+    <html lang="en" suppressHydrationWarning className="h-full">
       <head>
         <link
           rel="preconnect dns-prefetch"
@@ -84,7 +84,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       <body className={font.className + " h-full antialiased"}>
         <Providers attribute="class" defaultTheme="light">
           <Toaster richColors position="top-center" duration={3000} />
-          <div className="bg-background text-foreground flex size-full flex-col items-center sm:h-screen">
+          <div className="bg-background text-foreground flex min-h-full w-full flex-col items-center">
             <GlobalState>{children}</GlobalState>
           </div>
         </Providers>

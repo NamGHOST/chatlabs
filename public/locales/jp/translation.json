@@ -135,9 +135,9 @@
 
   "Lite Plan": "Lite プラン",
   "Pro Plan": "Pro プラン",
-  "Standard models: 5000 requests": "標準モデル: 5000回のリクエスト",
+  "Standard models: 1500 requests": "標準モデル: 1500回のリクエスト",
   "GPT-4o mini, Claude 3 Haiku and more": "GPT-4o mini、Claude 3 Haiku など",
-  "Pro models: 200 requests": "Pro モデル: 200回のリクエスト",
+  "Pro models: 120 requests": "Pro モデル: 120回のリクエスト",
   "Limited time offer: Access to OpenAI: O1mini, GPT 4o ,X-AI Grok2": "期間限定オファー: OpenAIへのアクセス: O1mini、GPT 4o、X-AI Grok2",
   "Powered by Stable Diffusion": "Stable Diffusion搭載",
   "Connect to OpenAI, Anthropic, Google Gemini, and more": "OpenAI、Anthropic、Google Geminiなどに接続",

@@ -30,7 +30,7 @@
   "TEMPERATURE_DESCRIPTION": "Temperature is a value that affects the randomness of AI model responses. Higher temperatures make responses more random, while lower temperatures make responses more deterministic.",
   "CONTEXT_LENGTH_DESCRIPTION": "The context length impacts the AI's grasp of chat history; longer contexts slow response but provide more history, while shorter ones increase speed and cut costs, as charges depend on the processed information volume.",
 
-  "WAITING_MESSAGES": "In the pipe, five by five...|Imogen at your service...|Beep boop beep boop...|AI remind: You forgot to say thank you...|Please wait a moment...|AI is training with its data now..."
+  "WAITING_MESSAGES": "In the pipe, five by five...|Imogen is finding a proper agent...|Connecting to your neural network...|AI remind: You forgot to say thank you...|Please wait a moment...|AI is training with its data now..."
 
 
 }
