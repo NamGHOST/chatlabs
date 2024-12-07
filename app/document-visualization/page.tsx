@@ -51,7 +51,7 @@ const InputWithIcon = ({
         onChange={onChange}
         onKeyDown={onKeyDown}
         disabled={disabled}
-        className="focus-visible:ring-primary/20 border-2 bg-white/50 pr-24 backdrop-blur-sm focus-visible:ring-1 dark:bg-black/50"
+        className="focus-visible:ring-primary/20 border-2 bg-white/50 pr-24 backdrop-blur-sm dark:bg-black/50"
       />
       <div className="absolute right-2 flex gap-1">
         <Button
@@ -69,15 +69,14 @@ const InputWithIcon = ({
         </Button>
         <Button
           size="icon"
-          variant="ghost"
-          className="hover:bg-primary/5 size-8"
+          className="size-8 bg-gradient-to-r from-violet-500/80 to-pink-500/80 text-white shadow-lg transition-all duration-200 hover:from-violet-500/80 hover:to-pink-500/80"
           onClick={onGenerate}
           disabled={disabled}
         >
           {disabled ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
-            <IconWand className="size-4 text-amber-500" />
+            <IconWand className="size-4" />
           )}
         </Button>
       </div>
