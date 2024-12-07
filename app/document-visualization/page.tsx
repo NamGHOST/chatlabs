@@ -13,8 +13,77 @@ import { Tldraw } from "tldraw"
 import "tldraw/tldraw.css"
 import { createMindMapShapes, MindMapNode } from "@/lib/tldraw/shapes"
 import { Editor } from "@tldraw/tldraw"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
+import { IconChevronDown, IconChevronUp, IconX } from "@tabler/icons-react"
 import { createTextShape } from "@/lib/tldraw/text-shapes"
+import { IconWand, IconBrain, IconTypography } from "@tabler/icons-react"
+
+const InputWithIcon = ({
+  placeholder,
+  value,
+  onChange,
+  onKeyDown,
+  disabled,
+  onGenerate,
+  onTypeChange,
+  generationType
+}: {
+  placeholder: string
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onKeyDown?: (e: React.KeyboardEvent) => void
+  disabled?: boolean
+  onGenerate: () => void
+  onTypeChange: () => void
+  generationType: "mindmap" | "text"
+}) => {
+  return (
+    <div className="relative flex items-center">
+      <Input
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        disabled={disabled}
+        className="focus-visible:ring-primary/20 border-2 bg-white/50 pr-24 backdrop-blur-sm focus-visible:ring-1 dark:bg-black/50"
+      />
+      <div className="absolute right-2 flex gap-1">
+        <Button
+          size="icon"
+          variant="ghost"
+          className="hover:bg-primary/5 size-8"
+          onClick={onTypeChange}
+          disabled={disabled}
+        >
+          {generationType === "mindmap" ? (
+            <IconBrain className="size-4 text-violet-500" />
+          ) : (
+            <IconTypography className="size-4 text-emerald-500" />
+          )}
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="hover:bg-primary/5 size-8"
+          onClick={onGenerate}
+          disabled={disabled}
+        >
+          {disabled ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <IconWand className="size-4 text-amber-500" />
+          )}
+        </Button>
+      </div>
+    </div>
+  )
+}
 
 export default function DocumentVisualizationPage() {
   const { files } = useContext(ChatbotUIContext)
@@ -25,6 +94,7 @@ export default function DocumentVisualizationPage() {
     "mindmap"
   )
   const [textPrompt, setTextPrompt] = useState("")
+  const [isInputVisible, setIsInputVisible] = useState(true)
 
   const handleGenerateMindMap = async () => {
     if (!mindMapPrompt.trim()) {
@@ -93,7 +163,7 @@ export default function DocumentVisualizationPage() {
 
   const handleGenerateText = async () => {
     if (!textPrompt.trim()) {
-      toast.error("Please enter text to generate")
+      toast.error("Please enter text to generate passage")
       return
     }
 
@@ -153,7 +223,7 @@ export default function DocumentVisualizationPage() {
       x: 0,
       y: 0,
       props: {
-        text: "Enter a topic and click Generate",
+        text: "This feature is now in Beta. Your progress will not be save here. 此功能正在測試階段",
         size: "l",
         color: "black"
       }
@@ -169,74 +239,64 @@ export default function DocumentVisualizationPage() {
     editor.zoomToFit()
   }
 
+  const toggleGenerationType = () => {
+    setGenerationType(prev => (prev === "mindmap" ? "text" : "mindmap"))
+  }
+
   return (
     <div className="relative size-full">
-      {/* Updated Floating Input Bar */}
+      {/* Floating Input Bar */}
       <div className="absolute left-1/2 top-4 z-10 w-full max-w-2xl -translate-x-1/2 px-4">
-        <Card className="border-2 shadow-lg">
-          <Tabs
-            defaultValue="mindmap"
-            className="w-full"
-            onValueChange={value =>
-              setGenerationType(value as "mindmap" | "text")
-            }
+        <Card className="relative border-none bg-gradient-to-r from-violet-500/10 via-amber-500/10 to-emerald-500/10 shadow-lg backdrop-blur-sm">
+          {/* Toggle visibility button */}
+          <Button
+            size="icon"
+            variant="ghost"
+            className="absolute -bottom-12 left-1/2 -translate-x-1/2 rounded-full bg-white/50 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white/80 dark:bg-black/50 dark:hover:bg-black/80"
+            onClick={() => setIsInputVisible(!isInputVisible)}
           >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="mindmap">Mind Map</TabsTrigger>
-              <TabsTrigger value="text">Text</TabsTrigger>
-            </TabsList>
+            {isInputVisible ? (
+              <IconChevronUp className="size-4" />
+            ) : (
+              <IconChevronDown className="size-4" />
+            )}
+          </Button>
 
+          {isInputVisible && (
             <div className="p-4">
               {generationType === "mindmap" ? (
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Enter a topic for your mind map..."
-                    value={mindMapPrompt}
-                    onChange={e => setMindMapPrompt(e.target.value)}
-                    className="flex-1"
-                    onKeyDown={e => {
-                      if (e.key === "Enter" && !isGenerating) {
-                        handleGenerateMindMap()
-                      }
-                    }}
-                    disabled={isGenerating}
-                  />
-                  <Button
-                    onClick={handleGenerateMindMap}
-                    disabled={isGenerating}
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      "Generate Mind Map"
-                    )}
-                  </Button>
-                </div>
+                <InputWithIcon
+                  placeholder="Enter a topic for your mind map..."
+                  value={mindMapPrompt}
+                  onChange={e => setMindMapPrompt(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" && !isGenerating) {
+                      handleGenerateMindMap()
+                    }
+                  }}
+                  disabled={isGenerating}
+                  onGenerate={handleGenerateMindMap}
+                  onTypeChange={toggleGenerationType}
+                  generationType={generationType}
+                />
               ) : (
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Enter text to generate..."
-                    value={textPrompt}
-                    onChange={e => setTextPrompt(e.target.value)}
-                    className="flex-1"
-                    onKeyDown={e => {
-                      if (e.key === "Enter" && !isGenerating) {
-                        handleGenerateText()
-                      }
-                    }}
-                    disabled={isGenerating}
-                  />
-                  <Button onClick={handleGenerateText} disabled={isGenerating}>
-                    {isGenerating ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      "Generate Text"
-                    )}
-                  </Button>
-                </div>
+                <InputWithIcon
+                  placeholder="Enter text to generate..."
+                  value={textPrompt}
+                  onChange={e => setTextPrompt(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" && !isGenerating) {
+                      handleGenerateText()
+                    }
+                  }}
+                  disabled={isGenerating}
+                  onGenerate={handleGenerateText}
+                  onTypeChange={toggleGenerationType}
+                  generationType={generationType}
+                />
               )}
             </div>
-          </Tabs>
+          )}
         </Card>
       </div>
 

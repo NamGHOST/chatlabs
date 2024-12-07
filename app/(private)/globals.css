@@ -168,3 +168,11 @@ html, body {
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
 }
+
+.focus-visible\:ring-primary\/20:focus-visible {
+  --tw-ring-color: rgb(var(--primary) / 0.2);
+}
+
+.hover\:bg-primary\/5:hover {
+  background-color: rgb(var(--primary) / 0.05);
+}
