@@ -388,10 +388,10 @@ export const Sidebar: FC = () => {
                   isCollapsed={isCollapsed}
                 />
               </Link>
-              <Link href="/document-visualization" target="_blank" passHref>
+              <Link href="/memo-draw" target="_blank" passHref>
                 <SidebarItem
                   icon={<IconFileAnalytics {...iconProps} />}
-                  label={t("Document Visualizer")}
+                  label={t("Memo draw")}
                   onClick={() => {}}
                   isCollapsed={isCollapsed}
                 />
