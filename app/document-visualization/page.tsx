@@ -280,7 +280,7 @@ export default function DocumentVisualizationPage() {
                 />
               ) : (
                 <InputWithIcon
-                  placeholder="Enter text to generate..."
+                  placeholder="Enter text to generate passage..."
                   value={textPrompt}
                   onChange={e => setTextPrompt(e.target.value)}
                   onKeyDown={e => {
