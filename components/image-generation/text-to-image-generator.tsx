@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Textarea } from "../ui/textarea"
@@ -68,6 +68,10 @@ import { UsageCounter } from "./usage-counter"
 import { useImageGenerationLimits } from "@/hooks/useImageGenerationLimits"
 import { recraftStyles } from "./AdvancedParametersPanel"
 import { RecraftStyle } from "@/types/image-generation"
+import { FileUploader } from "../ui/file-uploader"
+import { Canvas } from "../ui/canvas"
+import { ReactSketchCanvasRef } from "react-sketch-canvas"
+import { uploadMaskToStorage } from "@/lib/storage/image-processing"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -90,6 +94,17 @@ interface TextToImageGeneratorProps {
   }
 }
 
+interface ImageToImageParams {
+  image: File | null
+  mask: File | null
+  prompt: string
+  negativePrompt: string
+  guidanceScale: number
+  steps: number
+  imageUrl?: string
+  maskUrl?: string
+}
+
 const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
   user
 }) => {
@@ -100,7 +115,31 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
     userPlan
   )
 
-  const [params, setParams] = useState({
+  const [params, setParams] = useState<{
+    prompt: string
+    magicPrompt: string
+    negativePrompt: string
+    aspectRatio: string
+    steps: number
+    guidanceScale: number
+    seed: number
+    samplerName: string
+    batchSize: number
+    batchCount: number
+    clipSkip: number
+    tiling: boolean
+    recraftStyle: string
+    imageToImage: {
+      image: File | null
+      mask: File | null
+      prompt: string
+      negativePrompt: string
+      guidanceScale: number
+      steps: number
+      imageUrl: string | undefined
+      maskUrl: string | undefined
+    }
+  }>({
     prompt: "",
     magicPrompt: "",
     negativePrompt: "",
@@ -113,7 +152,17 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
     batchCount: 1,
     clipSkip: 1,
     tiling: false,
-    recraftStyle: recraftStyles[0].value
+    recraftStyle: recraftStyles[0].value,
+    imageToImage: {
+      image: null as File | null,
+      mask: null as File | null,
+      prompt: "",
+      negativePrompt: "",
+      guidanceScale: 7.5,
+      steps: 4,
+      imageUrl: undefined,
+      maskUrl: undefined
+    }
   })
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([])
@@ -137,6 +186,9 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
   const [imageLoadErrors, setImageLoadErrors] = useState<
     Record<string, boolean>
   >({})
+  const [activeTab, setActiveTab] = useState<"text" | "image">("text")
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const canvasRef = useRef<ReactSketchCanvasRef>(null)
 
   // Load history on mount
   useEffect(() => {
@@ -183,39 +235,20 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    console.log("Selected recraftStyle:", params.recraftStyle)
-    console.log("Selected style:", selectedImgModel)
-
     if (!selectedImgModel) {
-      toast.error("Please select an image generation model")
-      return
-    }
-
-    const allowedModels = IMAGE_GENERATION_LIMITS[userPlan].MODELS
-    if (!allowedModels.includes(selectedImgModel)) {
-      const requiredPlan =
-        selectedImgModel.includes("pro-ultra") ||
-        selectedImgModel.includes("recraft")
-          ? "Pro"
-          : "Lite"
-      toast.error(
-        `You need a ${requiredPlan} plan to use ${MODEL_DISPLAY_NAMES[selectedImgModel]}`
-      )
-      return
-    }
-
-    const modelTier = IMAGE_MODEL_TIERS[selectedImgModel as ImageModelId]
-    if (hasReachedLimit(modelTier)) {
-      const period = userPlan === "FREE" ? "daily" : "monthly"
-      toast.error(
-        `You have reached your ${period} limit for ${modelTier} models`
-      )
+      toast.error("Please select a model")
       return
     }
 
     setIsGenerating(true)
     try {
-      const imageUrl = await generateImage({
+      console.log("Generating with params:", {
+        prompt: params.prompt,
+        style: selectedImgModel
+        // ... other params
+      })
+
+      const response = await generateImage({
         prompt: params.prompt,
         negativePrompt: params.negativePrompt,
         aspectRatio: params.aspectRatio,
@@ -234,8 +267,15 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
         tiling: params.tiling
       })
 
+      console.log("Generation response:", response)
+
+      if (!response || typeof response !== "string") {
+        console.error("Invalid response:", response)
+        throw new Error("Invalid response from API")
+      }
+
       const newImage: GeneratedImage = {
-        url: imageUrl,
+        url: response,
         timestamp: Date.now(),
         prompt: params.prompt,
         params: {
@@ -246,10 +286,9 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
         }
       }
 
-      saveImageToHistory(newImage, user.id)
+      await saveImageToHistory(newImage, user.id)
       setGeneratedImages(prev => [newImage, ...prev])
       toast.success("Image generated successfully!")
-
       await refreshCounts()
     } catch (error: any) {
       console.error("Failed to generate image:", error)
@@ -363,6 +402,140 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
     console.log("Updated recraftStyle:", params.recraftStyle)
   }, [params.recraftStyle])
 
+  const handleImageUpload = useCallback(
+    async (file: File) => {
+      try {
+        // Convert file to blob
+        const blob = new Blob([file], { type: file.type })
+
+        // Use a temporary path with timestamp
+        const timestamp = Date.now()
+        const imagePath = `temp/uploads/${timestamp}_${user.id}_image.png`
+
+        // Upload to Supabase storage with expiration
+        const { data, error } = await supabase.storage
+          .from("generated_images")
+          .upload(imagePath, blob, {
+            contentType: file.type,
+            upsert: true,
+            cacheControl: "3600" // Cache for 1 hour
+          })
+
+        if (error) throw error
+
+        // Get URL that expires in 1 hour
+        const signedData = await supabase.storage
+          .from("generated_images")
+          .createSignedUrl(imagePath, 3600)
+
+        if (!signedData.data) throw new Error("Failed to get signed URL")
+
+        const { signedUrl } = signedData.data
+
+        // Schedule deletion after 1 hour
+        setTimeout(async () => {
+          await supabase.storage.from("generated_images").remove([imagePath])
+        }, 3600 * 1000)
+
+        // Update state with URL
+        setParams(prev => ({
+          ...prev,
+          imageToImage: {
+            ...prev.imageToImage,
+            imageUrl: signedUrl
+          }
+        }))
+
+        // Set preview URL
+        setPreviewUrl(signedUrl)
+      } catch (error) {
+        console.error("Error uploading image:", error)
+        toast.error("Failed to upload image")
+      }
+    },
+    [user.id]
+  )
+
+  const handleMaskChange = useCallback(
+    async (maskData: string) => {
+      if (!maskData) return
+
+      // Handle the mask data here
+      const maskUrl = await uploadMaskToStorage(maskData, user.id)
+
+      setParams(prev => ({
+        ...prev,
+        imageToImage: {
+          ...prev.imageToImage,
+          maskUrl
+        }
+      }))
+    },
+    [user.id]
+  )
+
+  const handleMaskSave = useCallback(() => {
+    toast.success("Mask saved!")
+  }, [])
+
+  const handleImageToImageSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!params.imageToImage.imageUrl) {
+      toast.error("Please upload or select an image")
+      return
+    }
+
+    if (!selectedImgModel) {
+      toast.error("Please select a model")
+      return
+    }
+
+    setIsGenerating(true)
+    try {
+      const imageUrl = await generateImage({
+        mode: "image-to-image",
+        imageUrl: params.imageToImage.imageUrl,
+        maskUrl: params.imageToImage.maskUrl,
+        prompt: params.imageToImage.prompt || "",
+        negativePrompt: params.imageToImage.negativePrompt,
+        guidanceScale: params.imageToImage.guidanceScale,
+        steps: params.imageToImage.steps,
+        style: selectedImgModel
+      })
+
+      // Save to history
+      const newImage: GeneratedImage = {
+        url: imageUrl,
+        timestamp: Date.now(),
+        prompt: params.imageToImage.prompt,
+        params: {
+          aspectRatio: params.aspectRatio,
+          style: selectedImgModel,
+          guidanceScale: params.imageToImage.guidanceScale || 7.5,
+          steps: params.imageToImage.steps || 20
+        }
+      }
+
+      await saveImageToHistory(newImage, user.id)
+      setGeneratedImages(prev => [newImage, ...prev])
+      toast.success("Image generated successfully!")
+      await refreshCounts()
+    } catch (error: any) {
+      console.error("Error in generateImage:", error)
+      toast.error(error.message || "Failed to generate image")
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  // Set default model for image-to-image
+  useEffect(() => {
+    if (activeTab === "image") {
+      setSelectedImgModel("flux-fill-pro")
+    }
+  }, [activeTab])
+
   if (isLoading) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
@@ -389,275 +562,497 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
           {/* Form Section - reduced from 1/2 to 2/5 */}
           <div className="lg:col-span-2">
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-4 md:sticky md:top-6 md:space-y-6"
+            <Tabs
+              defaultValue="text"
+              onValueChange={value => setActiveTab(value as "text" | "image")}
             >
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold md:text-3xl">
-                  Text to Image Generator
-                </h1>
-                {/* Optional: Collapsible form on mobile */}
-                <Button
-                  variant="ghost"
-                  className="md:hidden"
-                  onClick={() => setIsFormCollapsed(!isFormCollapsed)}
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="text">Text to Image</TabsTrigger>
+                <TabsTrigger value="image">Image to Image</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="text">
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-4 md:sticky md:top-6 md:space-y-6"
                 >
-                  {isFormCollapsed ? <ChevronDown /> : <ChevronUp />}
-                </Button>
-              </div>
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-bold md:text-3xl">
+                      Text to Image Generator
+                    </h1>
+                    {/* Optional: Collapsible form on mobile */}
+                    <Button
+                      variant="ghost"
+                      className="md:hidden"
+                      onClick={() => setIsFormCollapsed(!isFormCollapsed)}
+                    >
+                      {isFormCollapsed ? <ChevronDown /> : <ChevronUp />}
+                    </Button>
+                  </div>
 
-              <div
-                className={cn(
-                  "space-y-4",
-                  isFormCollapsed && "hidden md:block"
-                )}
-              >
-                {/* Main Prompts Section */}
-                <Card className="p-4">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="prompt">Prompt</Label>
-                      <Textarea
-                        id="prompt"
-                        placeholder="Describe your image. Get creative..."
-                        value={params.prompt}
-                        onChange={e => handleChange("prompt", e.target.value)}
-                        className="min-h-[100px] resize-y"
-                      />
-                    </div>
+                  <div
+                    className={cn(
+                      "space-y-4",
+                      isFormCollapsed && "hidden md:block"
+                    )}
+                  >
+                    {/* Main Prompts Section */}
+                    <Card className="p-4">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="prompt">Prompt</Label>
+                          <Textarea
+                            id="prompt"
+                            placeholder="Describe your image. Get creative..."
+                            value={params.prompt}
+                            onChange={e =>
+                              handleChange("prompt", e.target.value)
+                            }
+                            className="min-h-[100px] resize-y"
+                          />
+                        </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="magicPrompt">Magic Prompt</Label>
-                      <div className="flex flex-col gap-2 sm:flex-row">
-                        <Input
-                          id="magicPrompt"
-                          placeholder="English, 中文, 日本語, 韓国語..."
-                          value={params.magicPrompt}
-                          onChange={e =>
-                            handleChange("magicPrompt", e.target.value)
-                          }
-                          className="flex-1"
-                        />
-                        <Button
-                          type="button"
-                          className="shrink-0"
-                          onClick={handleMagicPrompt}
-                          disabled={isTranslating || !params.magicPrompt.trim()}
-                        >
-                          {isTranslating ? (
-                            <>
-                              <Loader2 className="mr-2 size-4 animate-spin" />
-                              Translating...
-                            </>
-                          ) : (
-                            "Translate & Add"
-                          )}
-                        </Button>
+                        <div className="space-y-2">
+                          <Label htmlFor="magicPrompt">Magic Prompt</Label>
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <Input
+                              id="magicPrompt"
+                              placeholder="English, 中文, 日本語, 韓国語..."
+                              value={params.magicPrompt}
+                              onChange={e =>
+                                handleChange("magicPrompt", e.target.value)
+                              }
+                              className="flex-1"
+                            />
+                            <Button
+                              type="button"
+                              className="shrink-0"
+                              onClick={handleMagicPrompt}
+                              disabled={
+                                isTranslating || !params.magicPrompt.trim()
+                              }
+                            >
+                              {isTranslating ? (
+                                <>
+                                  <Loader2 className="mr-2 size-4 animate-spin" />
+                                  Translating...
+                                </>
+                              ) : (
+                                "Translate & Add"
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="negativePrompt">
+                            Negative Prompt
+                          </Label>
+                          <Textarea
+                            id="negativePrompt"
+                            placeholder="Enter things to avoid in the image"
+                            value={params.negativePrompt}
+                            onChange={e =>
+                              handleChange("negativePrompt", e.target.value)
+                            }
+                          />
+                        </div>
                       </div>
-                    </div>
+                    </Card>
+
+                    {/* Model & Aspect Ratio Section */}
+                    <Card className="p-4">
+                      <div className="grid gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="style">Model</Label>
+                          <Select
+                            value={selectedImgModel}
+                            onValueChange={value =>
+                              setSelectedImgModel(value as ImageModelId)
+                            }
+                          >
+                            <SelectTrigger id="style">
+                              <SelectValue placeholder="Select model" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="flux-schnell">
+                                FLUX Schnell (Fast) - All Plans
+                              </SelectItem>
+                              <SelectItem value="flux-1.1-pro">
+                                FLUX 1.1 Pro (Quality) - All Plans
+                              </SelectItem>
+                              <SelectItem value="flux-1.1-pro-ultra">
+                                FLUX 1.1 Pro Ultra (Realistic) - Pro Plan
+                              </SelectItem>
+                              <SelectItem value="stable-diffusion-3.5-large-turbo">
+                                Stable Diffusion 3.5 Turbo (Realistic) - Pro
+                                Plan
+                              </SelectItem>
+                              <SelectItem value="recraft-v3">
+                                Recraft v3 (Realistic) - Pro Plan
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="aspectRatio">Aspect Ratio</Label>
+                          <Select
+                            value={params.aspectRatio}
+                            onValueChange={value =>
+                              handleChange("aspectRatio", value)
+                            }
+                          >
+                            <SelectTrigger id="aspectRatio">
+                              <SelectValue placeholder="Select aspect ratio" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {aspectRatios.map(ratio => (
+                                <SelectItem
+                                  key={ratio.value}
+                                  value={ratio.value}
+                                >
+                                  {ratio.value} ({ratio.width}x{ratio.height})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {selectedImgModel === "recraft-v3" && (
+                          <div className="space-y-2">
+                            <Label htmlFor="recraftStyle">Art Style</Label>
+                            <Select
+                              value={params.recraftStyle}
+                              onValueChange={handleRecraftStyleChange}
+                            >
+                              <SelectTrigger id="recraftStyle">
+                                <SelectValue placeholder="Select style" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {recraftStyles.map(style => (
+                                  <SelectItem
+                                    key={style.value}
+                                    value={style.value}
+                                  >
+                                    {style.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+
+                    {/* Advanced Settings Section */}
+                    <Collapsible>
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-between"
+                        >
+                          Advanced Settings
+                          <ChevronDown className="size-4" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <Card className="mt-2 p-4">
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="steps">
+                                Steps ({params.steps})
+                              </Label>
+                              <Slider
+                                id="steps"
+                                min={1}
+                                max={10}
+                                step={1}
+                                value={[params.steps]}
+                                onValueChange={value =>
+                                  handleChange("steps", value[0])
+                                }
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="guidanceScale">
+                                Guidance Scale ({params.guidanceScale})
+                              </Label>
+                              <Slider
+                                id="guidanceScale"
+                                min={1}
+                                max={20}
+                                step={0.1}
+                                value={[params.guidanceScale]}
+                                onValueChange={value =>
+                                  handleChange("guidanceScale", value[0])
+                                }
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="batchSize">Batch Size</Label>
+                                <Input
+                                  id="batchSize"
+                                  type="number"
+                                  value={params.batchSize}
+                                  onChange={e =>
+                                    handleChange(
+                                      "batchSize",
+                                      parseInt(e.target.value)
+                                    )
+                                  }
+                                  min={1}
+                                  max={4}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label htmlFor="batchCount">Batch Count</Label>
+                                <Input
+                                  id="batchCount"
+                                  type="number"
+                                  value={params.batchCount}
+                                  onChange={e =>
+                                    handleChange(
+                                      "batchCount",
+                                      parseInt(e.target.value)
+                                    )
+                                  }
+                                  min={1}
+                                  max={10}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="tiling"
+                                checked={params.tiling}
+                                onCheckedChange={checked =>
+                                  handleChange("tiling", Boolean(checked))
+                                }
+                              />
+                              <Label htmlFor="tiling">Tiling</Label>
+                            </div>
+                          </div>
+                        </Card>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      size="lg"
+                      disabled={isGenerating}
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="mr-2 size-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        "Generate Image"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="image">
+                <form
+                  onSubmit={handleImageToImageSubmit}
+                  className="space-y-4"
+                  id="image-to-image-form"
+                >
+                  <Card className="p-4">
+                    <Tabs defaultValue="upload">
+                      <TabsList>
+                        <TabsTrigger value="upload">Upload Image</TabsTrigger>
+                        <TabsTrigger value="history">From History</TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="upload">
+                        <FileUploader
+                          onFileSelected={handleImageUpload}
+                          accept="image/*"
+                          maxSize={5242880}
+                        />
+                      </TabsContent>
+
+                      <TabsContent value="history">
+                        <div className="grid max-h-60 grid-cols-3 gap-2 overflow-y-auto p-2">
+                          {generatedImages.map(img => (
+                            <div
+                              key={img.timestamp}
+                              className={cn(
+                                "cursor-pointer overflow-hidden rounded-md border",
+                                params.imageToImage.imageUrl === img.url &&
+                                  "ring-primary ring-2"
+                              )}
+                              onClick={() => {
+                                setParams(prev => ({
+                                  ...prev,
+                                  imageToImage: {
+                                    ...prev.imageToImage,
+                                    imageUrl: img.url
+                                  }
+                                }))
+                                setPreviewUrl(img.url)
+                              }}
+                            >
+                              <Image
+                                src={img.url}
+                                alt={img.prompt}
+                                width={100}
+                                height={100}
+                                className="aspect-square h-auto w-full object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+
+                    {previewUrl && (
+                      <div className="mt-4 space-y-2">
+                        <Label>Draw Mask (Optional)</Label>
+                        <Canvas
+                          ref={canvasRef}
+                          imageUrl={previewUrl}
+                          className="rounded-md border"
+                          onMaskChange={handleMaskChange}
+                          onMaskSave={handleMaskSave}
+                        />
+                      </div>
+                    )}
 
                     <div className="space-y-2">
-                      <Label htmlFor="negativePrompt">Negative Prompt</Label>
+                      <Label htmlFor="i2i-prompt">Prompt</Label>
                       <Textarea
-                        id="negativePrompt"
-                        placeholder="Enter things to avoid in the image"
-                        value={params.negativePrompt}
+                        id="i2i-prompt"
+                        placeholder="Describe the changes you want..."
+                        value={params.imageToImage.prompt}
                         onChange={e =>
-                          handleChange("negativePrompt", e.target.value)
+                          setParams(prev => ({
+                            ...prev,
+                            imageToImage: {
+                              ...prev.imageToImage,
+                              prompt: e.target.value
+                            }
+                          }))
                         }
                       />
                     </div>
-                  </div>
-                </Card>
 
-                {/* Model & Aspect Ratio Section */}
-                <Card className="p-4">
-                  <div className="grid gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="style">Model</Label>
+                      <Label htmlFor="i2i-negative-prompt">
+                        Negative Prompt
+                      </Label>
+                      <Textarea
+                        id="i2i-negative-prompt"
+                        placeholder="Things to avoid..."
+                        value={params.imageToImage.negativePrompt}
+                        onChange={e =>
+                          setParams(prev => ({
+                            ...prev,
+                            imageToImage: {
+                              ...prev.imageToImage,
+                              negativePrompt: e.target.value
+                            }
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                      <Label htmlFor="i2i-model">Model</Label>
                       <Select
                         value={selectedImgModel}
                         onValueChange={value =>
                           setSelectedImgModel(value as ImageModelId)
                         }
                       >
-                        <SelectTrigger id="style">
+                        <SelectTrigger id="i2i-model">
                           <SelectValue placeholder="Select model" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="flux-schnell">
-                            FLUX Schnell (Fast) - All Plans
-                          </SelectItem>
-                          <SelectItem value="flux-1.1-pro">
-                            FLUX 1.1 Pro (Quality) - All Plans
-                          </SelectItem>
-                          <SelectItem value="flux-1.1-pro-ultra">
-                            FLUX 1.1 Pro Ultra (Realistic) - Pro Plan
-                          </SelectItem>
-                          <SelectItem value="stable-diffusion-3.5-large-turbo">
-                            Stable Diffusion 3.5 Turbo (Realistic) - Pro Plan
-                          </SelectItem>
-                          <SelectItem value="recraft-v3">
-                            Recraft v3 (Realistic) - Pro Plan
+                          <SelectItem value="flux-fill-pro">
+                            FLUX Fill Pro (Image-to-Image) - Pro Plan
                           </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
+                  </Card>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="aspectRatio">Aspect Ratio</Label>
-                      <Select
-                        value={params.aspectRatio}
-                        onValueChange={value =>
-                          handleChange("aspectRatio", value)
-                        }
-                      >
-                        <SelectTrigger id="aspectRatio">
-                          <SelectValue placeholder="Select aspect ratio" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {aspectRatios.map(ratio => (
-                            <SelectItem key={ratio.value} value={ratio.value}>
-                              {ratio.value} ({ratio.width}x{ratio.height})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Model-specific settings */}
+                  <Card className="p-4">
+                    <div className="space-y-4">
+                      {selectedImgModel === "flux-fill-pro" && (
+                        <>
+                          <div className="space-y-2">
+                            <Label>Steps (1-50)</Label>
+                            <Slider
+                              min={1}
+                              max={50}
+                              step={1}
+                              value={[params.imageToImage.steps]}
+                              onValueChange={value =>
+                                setParams(prev => ({
+                                  ...prev,
+                                  imageToImage: {
+                                    ...prev.imageToImage,
+                                    steps: value[0]
+                                  }
+                                }))
+                              }
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Guidance (2-5)</Label>
+                            <Slider
+                              min={2}
+                              max={5}
+                              step={0.1}
+                              value={[params.imageToImage.guidanceScale]}
+                              onValueChange={value =>
+                                setParams(prev => ({
+                                  ...prev,
+                                  imageToImage: {
+                                    ...prev.imageToImage,
+                                    guidanceScale: value[0]
+                                  }
+                                }))
+                              }
+                            />
+                          </div>
+                        </>
+                      )}
+                      {/* Add other model-specific settings here */}
                     </div>
+                  </Card>
 
-                    {selectedImgModel === "recraft-v3" && (
-                      <div className="space-y-2">
-                        <Label htmlFor="recraftStyle">Art Style</Label>
-                        <Select
-                          value={params.recraftStyle}
-                          onValueChange={handleRecraftStyleChange}
-                        >
-                          <SelectTrigger id="recraftStyle">
-                            <SelectValue placeholder="Select style" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {recraftStyles.map(style => (
-                              <SelectItem key={style.value} value={style.value}>
-                                {style.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                  <Button
+                    type="submit"
+                    className="mt-4 w-full"
+                    disabled={!previewUrl || isGenerating}
+                    form="image-to-image-form"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      "Generate Image"
                     )}
-                  </div>
-                </Card>
-
-                {/* Advanced Settings Section */}
-                <Collapsible>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-between">
-                      Advanced Settings
-                      <ChevronDown className="size-4" />
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <Card className="mt-2 p-4">
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="steps">Steps ({params.steps})</Label>
-                          <Slider
-                            id="steps"
-                            min={1}
-                            max={10}
-                            step={1}
-                            value={[params.steps]}
-                            onValueChange={value =>
-                              handleChange("steps", value[0])
-                            }
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="guidanceScale">
-                            Guidance Scale ({params.guidanceScale})
-                          </Label>
-                          <Slider
-                            id="guidanceScale"
-                            min={1}
-                            max={20}
-                            step={0.1}
-                            value={[params.guidanceScale]}
-                            onValueChange={value =>
-                              handleChange("guidanceScale", value[0])
-                            }
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="batchSize">Batch Size</Label>
-                            <Input
-                              id="batchSize"
-                              type="number"
-                              value={params.batchSize}
-                              onChange={e =>
-                                handleChange(
-                                  "batchSize",
-                                  parseInt(e.target.value)
-                                )
-                              }
-                              min={1}
-                              max={4}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="batchCount">Batch Count</Label>
-                            <Input
-                              id="batchCount"
-                              type="number"
-                              value={params.batchCount}
-                              onChange={e =>
-                                handleChange(
-                                  "batchCount",
-                                  parseInt(e.target.value)
-                                )
-                              }
-                              min={1}
-                              max={10}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="tiling"
-                            checked={params.tiling}
-                            onCheckedChange={checked =>
-                              handleChange("tiling", Boolean(checked))
-                            }
-                          />
-                          <Label htmlFor="tiling">Tiling</Label>
-                        </div>
-                      </div>
-                    </Card>
-                  </CollapsibleContent>
-                </Collapsible>
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  size="lg"
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    "Generate Image"
-                  )}
-                </Button>
-              </div>
-            </form>
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Generated Images Section - increased from 1/2 to 3/5 */}
@@ -920,7 +1315,7 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                       : "flex h-24 gap-4 overflow-x-auto pb-2"
                   )}
                 >
-                  {generatedImages.map(image => (
+                  {generatedImages.map((image, index) => (
                     <div
                       key={image.timestamp}
                       className={cn(
@@ -937,10 +1332,10 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                           src={image.url}
                           alt={image.prompt}
                           className="size-full rounded-md object-cover"
-                          width={24}
-                          height={32}
-                          unoptimized={false}
-                          loader={({ src }) => src}
+                          width={96}
+                          height={96}
+                          unoptimized
+                          priority={index === 0}
                         />
 
                         {/* Loading state overlay */}
