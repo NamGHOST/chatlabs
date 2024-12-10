@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Textarea } from "../ui/textarea"
@@ -72,20 +72,13 @@ import { FileUploader } from "../ui/file-uploader"
 import { Canvas } from "../ui/canvas"
 import { ReactSketchCanvasRef } from "react-sketch-canvas"
 import { uploadMaskToStorage } from "@/lib/storage/image-processing"
+import { useInView } from "react-intersection-observer"
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
-
-export const SD3_MODELS = {
-  "sd3.5-large": "SD 3.5 Large (Best Quality)",
-  "sd3.5-large-turbo": "SD 3.5 Large Turbo (Faster)",
-  "sd3.5-medium": "SD 3.5 Medium (Balanced)",
-  "sd3-large": "SD 3 Large (Legacy)",
-  "sd3-large-turbo": "SD 3 Large Turbo (Legacy)",
-  "sd3-medium": "SD 3 Medium (Legacy)"
-} as const
 
 interface TextToImageGeneratorProps {
   user: {
@@ -103,6 +96,12 @@ interface ImageToImageParams {
   steps: number
   imageUrl?: string
   maskUrl?: string
+}
+
+interface ImageHistoryResponse {
+  data: GeneratedImage[]
+  hasMore: boolean
+  nextPage: number
 }
 
 const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
@@ -189,6 +188,41 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
   const [activeTab, setActiveTab] = useState<"text" | "image">("text")
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const canvasRef = useRef<ReactSketchCanvasRef>(null)
+  const [page, setPage] = useState(0)
+  const { ref: loadMoreRef, inView } = useInView()
+
+  // Replace the existing image history loading with useInfiniteQuery
+  const {
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteQuery<ImageHistoryResponse>({
+    queryKey: ["imageHistory", user.id],
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await getImageHistory(user.id, pageParam as number)
+      return {
+        data: response.data,
+        hasMore: response.hasMore,
+        nextPage: (pageParam as number) + 1
+      }
+    },
+    getNextPageParam: lastPage =>
+      lastPage.hasMore ? lastPage.nextPage : undefined,
+    initialPageParam: 0
+  })
+
+  // Update the generatedImages state with proper type assertion
+  const allImages = useMemo(() => {
+    return infiniteData?.pages.flatMap(page => page.data) ?? []
+  }, [infiniteData])
+
+  // Add effect for infinite scrolling
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage()
+    }
+  }, [inView, fetchNextPage, hasNextPage])
 
   // Load history on mount
   useEffect(() => {
@@ -196,7 +230,7 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
       setIsHistoryLoading(true)
       try {
         const history = await getImageHistory(user.id)
-        setGeneratedImages(history)
+        setGeneratedImages(history.data)
       } catch (error) {
         console.error("Error loading image history:", error)
         toast.error("Failed to load image history")
@@ -231,6 +265,9 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
   const isValidRecraftStyle = (value: string): value is RecraftStyle => {
     return recraftStyles.some(style => style.value === value)
   }
+
+  // Get queryClient instance
+  const queryClient = useQueryClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -287,6 +324,7 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
       }
 
       await saveImageToHistory(newImage, user.id)
+      await queryClient.invalidateQueries({ queryKey: ["imageHistory"] })
       setGeneratedImages(prev => [newImage, ...prev])
       toast.success("Image generated successfully!")
       await refreshCounts()
@@ -375,11 +413,7 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
     setIsDeleting(true)
     try {
       await deleteImageFromHistory(imageToDelete, user.id)
-
-      setGeneratedImages(prevImages =>
-        prevImages.filter(img => img.timestamp !== imageToDelete.timestamp)
-      )
-
+      await queryClient.invalidateQueries({ queryKey: ["imageHistory"] })
       setShowDeleteDialog(false)
       setImageToDelete(null)
       toast.success("Image deleted successfully")
@@ -577,9 +611,6 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                   className="space-y-4 md:sticky md:top-6 md:space-y-6"
                 >
                   <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold md:text-3xl">
-                      Text to Image Generator
-                    </h1>
                     {/* Optional: Collapsible form on mobile */}
                     <Button
                       variant="ghost"
@@ -883,8 +914,8 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                       </TabsContent>
 
                       <TabsContent value="history">
-                        <div className="grid max-h-60 grid-cols-3 gap-2 overflow-y-auto p-2">
-                          {generatedImages.map(img => (
+                        <div className="grid max-h-[60vh] grid-cols-3 gap-2 overflow-y-auto p-2">
+                          {allImages.map(img => (
                             <div
                               key={img.timestamp}
                               className={cn(
@@ -909,9 +940,28 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                                 width={100}
                                 height={100}
                                 className="aspect-square h-auto w-full object-cover"
+                                loading="lazy"
                               />
                             </div>
                           ))}
+
+                          {/* Load more trigger */}
+                          {hasNextPage && (
+                            <div
+                              ref={loadMoreRef}
+                              className="col-span-full py-4"
+                            >
+                              {isFetchingNextPage ? (
+                                <div className="flex justify-center">
+                                  <Loader2 className="size-6 animate-spin" />
+                                </div>
+                              ) : (
+                                <div className="text-muted-foreground text-center text-sm">
+                                  Scroll to load more
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </TabsContent>
                     </Tabs>
@@ -1311,11 +1361,11 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                   className={cn(
                     "transition-all duration-300",
                     isDrawerOpen
-                      ? "grid grid-cols-2 gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8"
+                      ? "grid max-h-[60vh] grid-cols-2 gap-4 overflow-y-auto sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8"
                       : "flex h-24 gap-4 overflow-x-auto pb-2"
                   )}
                 >
-                  {generatedImages.map((image, index) => (
+                  {allImages.map((image, index) => (
                     <div
                       key={image.timestamp}
                       className={cn(
@@ -1327,30 +1377,30 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                         setShowImagePreview(true)
                       }}
                     >
-                      <div className="relative size-full">
-                        <Image
-                          src={image.url}
-                          alt={image.prompt}
-                          className="size-full rounded-md object-cover"
-                          width={96}
-                          height={96}
-                          unoptimized
-                          priority={index === 0}
-                        />
-
-                        {/* Loading state overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
-                          <p className="p-2 text-center text-xs text-white">
-                            {new Date(image.timestamp).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
+                      <Image
+                        src={image.url}
+                        alt={image.prompt}
+                        className="size-full rounded-md object-cover"
+                        width={96}
+                        height={96}
+                        loading={index > 20 ? "lazy" : "eager"}
+                        unoptimized
+                      />
                     </div>
                   ))}
 
-                  {generatedImages.length === 0 && (
-                    <div className="text-muted-foreground flex w-full items-center justify-center py-8">
-                      <p>No generated images yet</p>
+                  {/* Load more trigger */}
+                  {hasNextPage && (
+                    <div ref={loadMoreRef} className="col-span-full py-4">
+                      {isFetchingNextPage ? (
+                        <div className="flex justify-center">
+                          <Loader2 className="size-6 animate-spin" />
+                        </div>
+                      ) : (
+                        <div className="text-muted-foreground text-center text-sm">
+                          Scroll to load more
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

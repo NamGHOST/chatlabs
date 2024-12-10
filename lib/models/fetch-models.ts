@@ -41,6 +41,10 @@ const KNOWN_MODEL_NAMES: {
   "meta-llama/llama-3.2-11b-vision-instruct": {
     provider: "meta",
     modelName: "Meta Llama 3.2 11B"
+  },
+  "meta-llama/llama-3.3-70b-instruct": {
+    provider: "meta",
+    modelName: "Meta Llama 3.3 70B"
   }
   ///"google/gemini-pro-1.5": {
   //provider: "google",
@@ -135,10 +139,14 @@ function parseSupportedModelsFromEnv() {
     "mythic/mythomax-13b",
     "perplexity/llama-3.1-sonar-large-128k-online",
     "x-ai/grok-beta",
-    "liquid/lfm-40b",
     "nvidia/llama-3.1-nemotron-70b-instruct",
     "qwen/qwen-2.5-coder-32b-instruct",
-    "mistralai/pixtral-large-2411"
+    "mistralai/pixtral-large-2411",
+    "meta-llama/llama-3.3-70b-instruct",
+    "amazon/nova-lite-v1",
+    "amazon/nova-micro-v1",
+    "amazon/nova-pro-v1",
+    "eva-unit-01/eva-qwen-2.5-72b"
   ]
 
   if (process.env.NEXT_PUBLIC_OPENROUTER_MODELS) {

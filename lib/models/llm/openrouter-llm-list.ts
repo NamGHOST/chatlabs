@@ -351,18 +351,6 @@ const GROK: LLM = {
   new: true
 }
 
-const LIQUID_LFM_40B: LLM = {
-  modelId: "liquid/lfm-40b",
-  modelName: "Liquid 40B",
-  provider: "openrouter",
-  hostedId: "liquid-40b",
-  platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: false,
-  tools: false,
-  supportsStreaming: true,
-  tier: "free" as LLMTier
-}
-
 const NVIDIA_LLAMA_31_NEMOTRON_70B: LLM = {
   modelId: "nvidia/llama-3.1-nemotron-70b-instruct",
   modelName: "Nvidia Llama 3.1 Nemotron 70B",
@@ -415,6 +403,70 @@ const PIXTRAL_LARGE_2411: LLM = {
   new: true
 }
 
+const META_LLAMA_3_3_70B_INSTRUCT: LLM = {
+  modelId: "meta-llama/llama-3.3-70b-instruct",
+  modelName: "Meta Llama 3.3 70B Instruct",
+  provider: "openrouter",
+  hostedId: "llama-3.3-70b-instruct",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true
+}
+
+const AMAZON_NOVA_LITE_V1: LLM = {
+  modelId: "amazon/nova-lite-v1",
+  modelName: "Amazon Nova Lite v1",
+  provider: "openrouter",
+  hostedId: "nova-lite-v1",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: true,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true
+}
+
+const AMAZON_NOVA_MICRO_V1: LLM = {
+  modelId: "amazon/nova-micro-v1",
+  modelName: "Amazon Nova Micro v1",
+  provider: "openrouter",
+  hostedId: "nova-micro-v1",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true
+}
+
+const AMAZON_NOVA_PRO_V1: LLM = {
+  modelId: "amazon/nova-pro-v1",
+  modelName: "Amazon Nova Pro v1",
+  provider: "openrouter",
+  hostedId: "nova-pro-v1",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: true,
+  tools: false,
+  supportsStreaming: true,
+  tier: "pro" as LLMTier,
+  new: true
+}
+
+const EVA_QWEN_2_5_72B: LLM = {
+  modelId: "eva-unit-01/eva-qwen-2.5-72b",
+  modelName: "Eva Qwen 2.5 72B",
+  provider: "openrouter",
+  hostedId: "eva-qwen-2.5-72b",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier
+}
+
 export const OPENROUTER_LLM_LIST: LLM[] = [
   O1_MINI,
   O1_PREVIEW,
@@ -443,11 +495,15 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   MYTHOMAX_13B,
   LLAMA_31_SONAR_LARGE_128K_ONLINE,
   GROK,
-  LIQUID_LFM_40B,
   NVIDIA_LLAMA_31_NEMOTRON_70B,
   GEMINI_EXP_1114,
   QWEN_25_CODER_32B,
-  PIXTRAL_LARGE_2411
+  PIXTRAL_LARGE_2411,
+  META_LLAMA_3_3_70B_INSTRUCT,
+  AMAZON_NOVA_LITE_V1,
+  AMAZON_NOVA_MICRO_V1,
+  AMAZON_NOVA_PRO_V1,
+  EVA_QWEN_2_5_72B
 ]
 
 //- openai/gpt-4o-2024-08-06

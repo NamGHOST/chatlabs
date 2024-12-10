@@ -79,25 +79,6 @@ const META_LLAMA_3_70B_8192: LLM = {
     "Meta's latest class of model (Llama 3) launched with a variety of sizes & flavors. This 8B instruct-tuned version is fast and efficient."
 }
 
-const LLAMA3_GROQ_70B_VERSATILE: LLM = {
-  modelId: "llama-3.1-70b-versatile",
-  modelName: "Llama 3.1 70B (Preview)",
-  provider: "groq",
-  hostedId: "llama-3.1-70b-versatile",
-  platformLink: GROQ_PLATORM_LINK,
-  imageInput: false,
-  tools: false,
-  supportsStreaming: true,
-  pricing: {
-    currency: "USD",
-    unit: "1M tokens",
-    inputCost: 0.59,
-    outputCost: 0.79
-  },
-  categories: [CATEGORIES.TECHNOLOGY, CATEGORIES.PROGRAMMING],
-  description: "Versatile 70B parameter model optimized for general use"
-}
-
 const LLAMA3_GROQ_70B_8192_TOOL_USE_PREVIEW: LLM = {
   modelId: "llama3-groq-70b-8192-tool-use-preview",
   modelName: "Meta LLama 3 70B Tool Use Preview",
@@ -115,25 +96,6 @@ const LLAMA3_GROQ_70B_8192_TOOL_USE_PREVIEW: LLM = {
   },
   categories: [CATEGORIES.TECHNOLOGY, CATEGORIES.PROGRAMMING, CATEGORIES.TOOLS],
   description: "70B parameter model optimized for tool use and function calling"
-}
-
-const LLAMA_3_2_11B_TEXT: LLM = {
-  modelId: "llama-3.2-11b-text-preview",
-  modelName: "Llama 3.2 11B Text",
-  provider: "groq",
-  hostedId: "llama-3.2-11b-text-preview",
-  platformLink: GROQ_PLATORM_LINK,
-  imageInput: false,
-  tools: false,
-  supportsStreaming: true,
-  pricing: {
-    currency: "USD",
-    unit: "1M tokens",
-    inputCost: 0.2,
-    outputCost: 0.3
-  },
-  categories: [CATEGORIES.TECHNOLOGY, CATEGORIES.PROGRAMMING],
-  description: "Preview of Llama 3.2 11B optimized for text generation"
 }
 
 const LLAMA_3_2_11B_VISION: LLM = {
@@ -194,29 +156,6 @@ const LLAMA_3_2_3B: LLM = {
   description: "Efficient 3B parameter preview model from Llama 3.2 series"
 }
 
-const LLAMA_3_2_90B_TEXT: LLM = {
-  modelId: "llama-3.2-90b-text-preview",
-  modelName: "Llama 3.2 90B Text",
-  provider: "groq",
-  hostedId: "llama-3.2-90b-text-preview",
-  platformLink: GROQ_PLATORM_LINK,
-  imageInput: false,
-  tools: false,
-  supportsStreaming: true,
-  pricing: {
-    currency: "USD",
-    unit: "1M tokens",
-    inputCost: 0.7,
-    outputCost: 0.9
-  },
-  categories: [
-    CATEGORIES.TECHNOLOGY,
-    CATEGORIES.PROGRAMMING,
-    CATEGORIES.ANALYSIS
-  ],
-  description: "Large 90B parameter preview model optimized for text generation"
-}
-
 const LLAMA_3_2_90B_VISION: LLM = {
   modelId: "llama-3.2-90b-vision-preview",
   modelName: "Llama 3.2 90B Vision",
@@ -237,16 +176,73 @@ const LLAMA_3_2_90B_VISION: LLM = {
     "Large 90B parameter preview model with vision capabilities(can only read images in links)"
 }
 
+const GEMMA_2_9B: LLM = {
+  modelId: "gemma2-9b-it",
+  modelName: "Gemma 2 9B",
+  provider: "groq",
+  hostedId: "gemma2-9b-it",
+  platformLink: GROQ_PLATORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  pricing: {
+    currency: "USD",
+    unit: "1M tokens",
+    inputCost: 0.1,
+    outputCost: 0.2
+  },
+  categories: [CATEGORIES.TECHNOLOGY, CATEGORIES.PROGRAMMING],
+  description: "Google's Gemma 2 9B instruction-tuned model"
+}
+
+const GEMMA_7B: LLM = {
+  modelId: "gemma-7b-it",
+  modelName: "Gemma 7B",
+  provider: "groq",
+  hostedId: "gemma-7b-it",
+  platformLink: GROQ_PLATORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  pricing: {
+    currency: "USD",
+    unit: "1M tokens",
+    inputCost: 0.1,
+    outputCost: 0.2
+  },
+  categories: [CATEGORIES.TECHNOLOGY, CATEGORIES.PROGRAMMING],
+  description: "Google's Gemma 7B instruction-tuned model"
+}
+
+const LLAMA_3_3_70B_VERSATILE: LLM = {
+  modelId: "llama-3.3-70b-versatile",
+  modelName: "Llama 3.3 70B Versatile",
+  provider: "groq",
+  hostedId: "llama-3.3-70b-versatile",
+  platformLink: GROQ_PLATORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  pricing: {
+    currency: "USD",
+    unit: "1M tokens",
+    inputCost: 0.7,
+    outputCost: 0.9
+  },
+  categories: [CATEGORIES.TECHNOLOGY, CATEGORIES.PROGRAMMING],
+  description: "Meta's Llama 3.3 70B versatile model with 128k context window"
+}
+
 export const GROQ_LLM_LIST: LLM[] = [
   MIXTRAL_8X7B,
+  GEMMA_2_9B,
+  GEMMA_7B,
+  LLAMA_3_3_70B_VERSATILE,
   META_LLAMA_3_8B_8192,
   META_LLAMA_3_70B_8192,
-  LLAMA3_GROQ_70B_VERSATILE,
   LLAMA3_GROQ_70B_8192_TOOL_USE_PREVIEW,
-  LLAMA_3_2_11B_TEXT,
   LLAMA_3_2_11B_VISION,
   LLAMA_3_2_1B,
   LLAMA_3_2_3B,
-  LLAMA_3_2_90B_TEXT,
   LLAMA_3_2_90B_VISION
 ]
