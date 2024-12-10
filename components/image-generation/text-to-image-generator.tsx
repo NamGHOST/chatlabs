@@ -914,7 +914,7 @@ const TextToImageGenerator: React.FC<TextToImageGeneratorProps> = ({
                       </TabsContent>
 
                       <TabsContent value="history">
-                        <div className="grid max-h-[60vh] grid-cols-3 gap-2 overflow-y-auto p-2">
+                        <div className="grid max-h-[40vh] grid-cols-4 gap-2 overflow-y-auto p-2">
                           {allImages.map(img => (
                             <div
                               key={img.timestamp}
