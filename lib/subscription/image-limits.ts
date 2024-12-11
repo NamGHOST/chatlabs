@@ -4,6 +4,7 @@ export type ImageModelId =
   | "flux-1.1-pro-ultra"
   | "stable-diffusion-3.5-large-turbo"
   | "recraft-v3"
+  | "flux-fill-pro"
 
 export type ModelTier = "standard" | "pro"
 
@@ -34,7 +35,8 @@ export const IMAGE_GENERATION_LIMITS: Record<PlanType, PlanLimits> = {
       "flux-1.1-pro",
       "flux-1.1-pro-ultra",
       "stable-diffusion-3.5-large-turbo",
-      "recraft-v3"
+      "recraft-v3",
+      "flux-fill-pro"
     ]
   }
 } as const
@@ -44,7 +46,8 @@ export const IMAGE_MODEL_TIERS: Record<ImageModelId, ModelTier> = {
   "flux-1.1-pro": "pro",
   "flux-1.1-pro-ultra": "pro",
   "stable-diffusion-3.5-large-turbo": "pro",
-  "recraft-v3": "pro"
+  "recraft-v3": "pro",
+  "flux-fill-pro": "pro"
 } as const
 
 export const MODEL_DISPLAY_NAMES: Record<ImageModelId, string> = {
@@ -52,5 +55,6 @@ export const MODEL_DISPLAY_NAMES: Record<ImageModelId, string> = {
   "flux-1.1-pro": "FLUX 1.1 Pro (Quality)",
   "flux-1.1-pro-ultra": "FLUX 1.1 Pro Ultra (Realistic)",
   "stable-diffusion-3.5-large-turbo": "Stable Diffusion 3.5 Turbo (Realistic)",
-  "recraft-v3": "Recraft v3 (Realistic)"
+  "recraft-v3": "Recraft v3 (Realistic)",
+  "flux-fill-pro": "FLUX Fill Pro (Image-to-Image)"
 } as const

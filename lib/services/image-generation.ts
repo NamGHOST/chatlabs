@@ -1,29 +1,9 @@
 import { ImageGenerationParams } from "@/types/image-generation"
+import { RecraftStyle } from "@/types/image-generation"
 import Replicate from "replicate"
 import { aspectRatios } from "@/lib/config/image-generation"
 import { ImageModelId } from "@/lib/subscription/image-limits"
 import { recraftStyles } from "@/components/image-generation/AdvancedParametersPanel"
-
-type RecraftStyle =
-  | "any"
-  | "realistic_image"
-  | "digital_illustration"
-  | "digital_illustration/pixel_art"
-  | "digital_illustration/hand_drawn"
-  | "digital_illustration/grain"
-  | "digital_illustration/infantile_sketch"
-  | "digital_illustration/2d_art_poster"
-  | "digital_illustration/handmade_3d"
-  | "digital_illustration/hand_drawn_outline"
-  | "digital_illustration/engraving_color"
-  | "digital_illustration/2d_art_poster_2"
-  | "realistic_image/b_and_w"
-  | "realistic_image/hard_flash"
-  | "realistic_image/hdr"
-  | "realistic_image/natural_light"
-  | "realistic_image/studio_portrait"
-  | "realistic_image/enterprise"
-  | "realistic_image/motion_blur"
 
 interface ModelConfig {
   model: `${string}/${string}` | `${string}/${string}:${string}`
@@ -38,10 +18,13 @@ interface ModelConfig {
     safety_tolerance?: number
     interval?: number
     style?: RecraftStyle
+    output_format?: string
+    prompt_upsampling?: boolean
   }
+  isImageToImage?: boolean
 }
 
-const MODEL_CONFIGS: Record<ImageModelId, ModelConfig> = {
+export const MODEL_CONFIGS: Record<ImageModelId, ModelConfig> = {
   "flux-schnell": {
     model: "black-forest-labs/flux-schnell",
     useAspectRatio: true,
@@ -85,14 +68,57 @@ const MODEL_CONFIGS: Record<ImageModelId, ModelConfig> = {
       guidanceScale: "guidance_scale"
     },
     extraParams: {
-      style: recraftStyles[0].value as RecraftStyle
+      // Remove default style to allow user selection
+      // style: recraftStyles[0].value as RecraftStyle
     }
+  },
+  "flux-fill-pro": {
+    model: "black-forest-labs/flux-fill-pro",
+    useAspectRatio: false,
+    defaultSteps: 50,
+    paramMapping: {
+      steps: "steps",
+      guidanceScale: "guidance"
+    },
+    extraParams: {
+      output_format: "jpg",
+      safety_tolerance: 2,
+      prompt_upsampling: true
+    },
+    isImageToImage: true
   }
 } as const
 
-export async function generateImage(params: ImageGenerationParams) {
-  const { prompt, style, aspectRatio } = params
+interface ImageToImageParams {
+  mode: "image-to-image"
+  image: File | null
+  mask?: File | null
+  prompt: string
+  negativePrompt?: string
+  guidanceScale?: number
+  steps?: number
+  style: ImageModelId
+  imageUrl?: string
+}
 
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = error => reject(error)
+  })
+}
+
+function isTextToImageParams(
+  params: ImageToImageParams | ImageGenerationParams
+): params is ImageGenerationParams {
+  return !("mode" in params)
+}
+
+export async function generateImage(
+  params: ImageGenerationParams | ImageToImageParams
+) {
   if (!process.env.REPLICATE_API_TOKEN) {
     throw new Error("Replicate API token is required")
   }
@@ -101,71 +127,134 @@ export async function generateImage(params: ImageGenerationParams) {
     auth: process.env.REPLICATE_API_TOKEN
   })
 
-  const modelConfig = MODEL_CONFIGS[style as ImageModelId]
-  if (!modelConfig) {
-    throw new Error(`Unsupported model: ${style}`)
-  }
+  // Handle text-to-image generation
+  if (isTextToImageParams(params)) {
+    const modelConfig = MODEL_CONFIGS[params.style as ImageModelId]
+    if (!modelConfig) {
+      throw new Error(`Unsupported model: ${params.style}`)
+    }
 
-  const input: {
-    prompt: string
-    width?: number
-    height?: number
-    size?: string
-    aspect_ratio?: string
-    style?: RecraftStyle
-    [key: string]: number | string | boolean | undefined
-  } = {
-    prompt,
-    ...modelConfig.extraParams
-  }
+    // For Flux Schnell model
+    if (modelConfig.model === "black-forest-labs/flux-schnell") {
+      // Simplify input for Flux Schnell
+      const fluxInput = {
+        prompt: params.prompt,
+        negative_prompt: params.negativePrompt || "",
+        safety_tolerance: 2,
+        interval: 2
+      }
 
-  // Handle aspect ratio for different models
-  if (modelConfig.useAspectRatio) {
-    const selectedRatio = aspectRatios.find(r => r.value === aspectRatio)
-    if (selectedRatio) {
-      if (modelConfig.model === "recraft-ai/recraft-v3") {
-        // Recraft uses a size parameter in format "WxH"
-        input.size = `${selectedRatio.width}x${selectedRatio.height}`
-        input.style = params.recraftStyle as RecraftStyle
-        delete input.width
-        delete input.height
+      console.log("Sending to Flux Schnell:", fluxInput)
+      try {
+        const output = await replicate.run(modelConfig.model, {
+          input: fluxInput
+        })
+        console.log("Flux Schnell response:", output)
+
+        // Flux Schnell returns an array with one image URL
+        if (Array.isArray(output) && output.length > 0) {
+          return output[0]
+        }
+
+        throw new Error("Invalid response format from Flux Schnell")
+      } catch (error) {
+        console.error("Flux Schnell error:", error)
+        throw error
+      }
+    } else {
+      // Handle other models...
+      const input: { [key: string]: any } = {
+        prompt: params.prompt,
+        negative_prompt: params.negativePrompt || "",
+        ...modelConfig.extraParams
+      }
+
+      // Add model-specific parameters
+      if (modelConfig.paramMapping) {
+        input[modelConfig.paramMapping.steps] =
+          params.steps || modelConfig.defaultSteps
+        input[modelConfig.paramMapping.guidanceScale] =
+          params.guidanceScale || 7.5
       } else {
-        // Other models use aspect_ratio parameter
-        input.aspect_ratio = selectedRatio.value
+        input.num_inference_steps = params.steps || modelConfig.defaultSteps
+        input.guidance_scale = params.guidanceScale || 7.5
+      }
+
+      // Handle aspect ratio
+      if (modelConfig.useAspectRatio) {
+        const selectedRatio = aspectRatios.find(
+          r => r.value === params.aspectRatio
+        )
+        if (selectedRatio) {
+          if (modelConfig.model === "recraft-ai/recraft-v3") {
+            input.size = `${selectedRatio.width}x${selectedRatio.height}`
+          } else {
+            input.aspect_ratio = params.aspectRatio
+          }
+        }
+      }
+
+      console.log("Sending to Replicate:", { model: modelConfig.model, input })
+
+      try {
+        const output = await replicate.run(modelConfig.model, { input })
+        console.log("Replicate response:", output)
+        return handleReplicateResponse(output)
+      } catch (error) {
+        console.error("Replicate API error:", error)
+        throw error
       }
     }
   }
 
-  try {
-    console.log("Sending request with input:", input)
-    const output = await replicate.run(modelConfig.model, { input })
-    console.log("Received response:", output)
+  // Handle image-to-image generation
+  if ("mode" in params && params.mode === "image-to-image") {
+    let imageBase64: string | null = null
 
-    // Handle different response formats
-    if (output === null || output === undefined) {
-      throw new Error("Empty response from API")
+    if (params.image) {
+      imageBase64 = await fileToBase64(params.image)
+    } else if (params.imageUrl) {
+      const response = await fetch(params.imageUrl)
+      const blob = await response.blob()
+      imageBase64 = await fileToBase64(
+        new File([blob], "image.png", { type: "image/png" })
+      )
     }
 
-    if (typeof output === "string") {
-      return output
+    if (!imageBase64) {
+      throw new Error("Image is required for image-to-image generation")
     }
 
-    if (Array.isArray(output)) {
-      return output[0]
-    }
+    const maskBase64 = params.mask ? await fileToBase64(params.mask) : null
+    const modelConfig = MODEL_CONFIGS[params.style]
 
-    if (typeof output === "object") {
-      if ("output" in output) {
-        return output.output
+    const output = await replicate.run(modelConfig.model, {
+      input: {
+        image: imageBase64,
+        mask: maskBase64,
+        prompt: params.prompt,
+        negative_prompt: params.negativePrompt,
+        num_inference_steps: params.steps || 20,
+        guidance_scale: params.guidanceScale || 7.5,
+        scheduler: "K_EULER_ANCESTRAL",
+        control_guidance_start: 0,
+        control_guidance_end: 1
       }
-      if ("image" in output) {
-        return output.image
-      }
-    }
+    })
 
-    throw new Error(`Unexpected API response format: ${JSON.stringify(output)}`)
-  } catch (error) {
-    console.error("Replicate API error:", error)
-    throw error
+    return handleReplicateResponse(output)
   }
+}
+
+function handleReplicateResponse(output: any) {
+  if (!output) throw new Error("Empty response from API")
+
+  if (typeof output === "string") return output
+  if (Array.isArray(output)) return output[0]
+  if (typeof output === "object") {
+    if ("output" in output) return output.output
+    if ("image" in output) return output.image
+  }
+
+  throw new Error(`Unexpected API response format: ${JSON.stringify(output)}`)
 }
