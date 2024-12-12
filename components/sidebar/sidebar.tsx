@@ -25,7 +25,8 @@ import {
   IconWorldSearch,
   IconPhoto,
   IconPhotoAi,
-  IconBrandYoutube
+  IconBrandYoutube,
+  IconFileAnalytics
 } from "@tabler/icons-react"
 import { ChatbotUIContext } from "@/context/context"
 import { Button } from "../ui/button"
@@ -384,6 +385,14 @@ export const Sidebar: FC = () => {
                   icon={<IconLayoutColumns {...iconProps} />}
                   label={t("Split view")}
                   onClick={() => {}} // This onClick is now optional
+                  isCollapsed={isCollapsed}
+                />
+              </Link>
+              <Link href="/memo-draw" target="_blank" passHref>
+                <SidebarItem
+                  icon={<IconFileAnalytics {...iconProps} />}
+                  label={t("Memo draw")}
+                  onClick={() => {}}
                   isCollapsed={isCollapsed}
                 />
               </Link>
