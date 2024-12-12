@@ -68,24 +68,31 @@ export const saveImageToHistory = async (
 }
 
 export const getImageHistory = async (
-  userId: string
-): Promise<GeneratedImage[]> => {
+  userId: string,
+  page: number = 0,
+  pageSize: number = 50
+): Promise<{ data: GeneratedImage[]; hasMore: boolean }> => {
   try {
+    // Get total count first
+    const { count } = await supabase
+      .from("image_history")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+
+    // Fetch paginated data
     const { data, error } = await supabase
       .from("image_history")
       .select("url, timestamp, prompt, params, storage_path")
       .eq("user_id", userId)
       .order("timestamp", { ascending: false })
-      .limit(50)
+      .range(page * pageSize, (page + 1) * pageSize - 1)
 
     if (error) throw error
 
-    // Process each record to get proper URLs
     const processedData = await Promise.all(
       (data || []).map(async record => {
         let imageUrl = record.url
 
-        // If there's a storage path, get the signed URL
         if (record.storage_path) {
           try {
             const signedUrl = await getGeneratedImageFromStorage(
@@ -109,10 +116,13 @@ export const getImageHistory = async (
       })
     )
 
-    return processedData
+    return {
+      data: processedData,
+      hasMore: count ? (page + 1) * pageSize < count : false
+    }
   } catch (error) {
     console.error("Error getting image history:", error)
-    return []
+    return { data: [], hasMore: false }
   }
 }
 

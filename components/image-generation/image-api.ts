@@ -2,8 +2,8 @@ import { RecraftStyle } from "@/types/image-generation"
 
 export interface GenerateImageParams {
   prompt: string
-  aspectRatio: string
   style: string
+  aspectRatio?: string
   recraftStyle?: RecraftStyle
   guidanceScale?: number
   negativePrompt?: string
@@ -14,6 +14,11 @@ export interface GenerateImageParams {
   batchCount?: number
   clipSkip?: number
   tiling?: boolean
+  mode?: "image-to-image"
+  image?: File | null
+  mask?: File | null
+  imageUrl?: string
+  maskUrl?: string
 }
 
 export const generateImage = async (
@@ -31,8 +36,8 @@ export const generateImage = async (
       throw new Error(error.error || "Image generation failed")
     }
 
-    const { imageUrl } = await response.json()
-    return imageUrl
+    const data = await response.json()
+    return data.imageUrl
   } catch (error: any) {
     console.error("Error in generateImage:", error)
     throw error

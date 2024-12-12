@@ -48,22 +48,20 @@ export type MistralLLMID =
 
 export type GroqLLMID =
   | "mixtral-8x7b-32768" // Mixtral-8x7b
-  | "llama3-70b-8192" // LLaMA3-70b
-  | "llama-3.1-70b-versatile" // LLaMA3.1-70b
-  | "llama3-8b-8192" // LLaMA3-8b
-  | "llama3-groq-70b-8192-tool-use-preview" // LLaMA3-70b Tool Use
   | "gemma-7b-it" // Gemma 7B
   | "gemma2-9b-it" // Gemma 2 9B
+  | "llama-3.3-70b-versatile" // Llama 3.3 70B
+  | "llama-3.1-70b-versatile" // Llama 3.1 70B (DEPRECATED)
   | "llama-3.1-8b-instant" // Llama 3.1 8B Instant
-  | "llama-3.2-11b-text-preview" // Llama 3.2 11B Text
-  | "llama-3.2-11b-vision-preview" // Llama 3.2 11B Vision
-  | "llama-3.2-1b-preview" // Llama 3.2 1B
-  | "llama-3.2-3b-preview" // Llama 3.2 3B
-  | "llama-3.2-90b-text-preview" // Llama 3.2 90B Text
-  | "llama-3.2-90b-vision-preview" // Llama 3.2 90B Vision
   | "llama-guard-3-8b" // Llama Guard 3 8B
-  | "llama3-groq-8b-8192-tool-use-preview" // Llama 3 8B Tool Use
-  | "llava-v1.5-7b-4096-preview" // Llava v1.5 7B
+  | "llama3-70b-8192" // LLaMA3 70B
+  | "llama3-8b-8192" // LLaMA3 8B
+  | "llama3-groq-70b-8192-tool-use-preview" // LLaMA3 70B Tool Use Preview
+  | "llama3-groq-8b-8192-tool-use-preview" // LLaMA3 8B Tool Use Preview
+  | "llama-3.2-1b-preview" // Llama 3.2 1B Preview
+  | "llama-3.2-3b-preview" // Llama 3.2 3B Preview
+  | "llama-3.2-11b-vision-preview" // Llama 3.2 11B Vision Preview
+  | "llama-3.2-90b-vision-preview" // Llama 3.2 90B Vision Preview
 
 // Perplexity Models (UPDATED 1/31/24)
 
@@ -120,11 +118,15 @@ export type OpenRouterLLMID =
   | "mythic/mythomax-13b"
   | "perplexity/llama-3.1-sonar-large-128k-online"
   | "x-ai/grok-beta"
-  | "liquid/lfm-40b"
   | "nvidia/llama-3.1-nemotron-70b-instruct"
   | "google/gemini-exp-1114"
   | "qwen/qwen-2.5-coder-32b-instruct"
   | "mistralai/pixtral-large-2411"
+  | "meta-llama/llama-3.3-70b-instruct"
+  | "amazon/nova-lite-v1"
+  | "amazon/nova-micro-v1"
+  | "amazon/nova-pro-v1"
+  | "eva-unit-01/eva-qwen-2.5-72b"
 
 export interface LLM {
   modelId: LLMID
