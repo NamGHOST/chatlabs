@@ -476,8 +476,8 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
 
               <PlanColumn
                 title={t("Pro Plan")}
-                monthlyPrice="20"
-                yearlyPrice="16.8"
+                monthlyPrice="24"
+                yearlyPrice="20"
                 features={proFeatures}
                 planPrefix={PRO_PLAN_PREFIX}
               />
