@@ -3,6 +3,7 @@ import useHotkey from "@/lib/hooks/use-hotkey"
 import { LLM_LIST } from "@/lib/models/llm/llm-list"
 import { cn } from "@/lib/utils"
 import { Tables } from "@/supabase/types"
+import { updateProfile } from "@/db/profile"
 import {
   IconSearch,
   IconBrain,
@@ -80,6 +81,7 @@ export const ChatInput: FC<ChatInputProps> = ({
     isFilePickerOpen,
     setFocusFile,
     profile,
+    setProfile,
     selectedWorkspace,
     tools,
     selectedTools,
@@ -326,6 +328,17 @@ export const ChatInput: FC<ChatInputProps> = ({
     promptHandleInputChange(value)
   }
 
+  const handleToggleCodeEditor = async () => {
+    if (!profile) return
+
+    const updatedProfile = await updateProfile(profile.id, {
+      ...profile,
+      experimental_code_editor: !profile.experimental_code_editor
+    })
+
+    setProfile(updatedProfile)
+  }
+
   return (
     <div className="relative">
       <ChatFilesDisplay />
@@ -388,7 +401,13 @@ export const ChatInput: FC<ChatInputProps> = ({
 
               <div className="border-border/50 mx-2 h-6 border-l" />
 
-              <button className="hover:bg-accent flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors">
+              <button
+                className={cn(
+                  "hover:bg-accent flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors",
+                  profile?.experimental_code_editor && "bg-accent"
+                )}
+                onClick={handleToggleCodeEditor}
+              >
                 <IconCode size={18} className="text-muted-foreground" />
                 <span className="text-muted-foreground text-sm font-medium">
                   Code
