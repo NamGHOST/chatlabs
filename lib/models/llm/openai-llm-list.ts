@@ -133,10 +133,10 @@ const GPT4O_Mini: LLM = {
 }
 
 const O1_Preview: LLM = {
-  modelId: "o1-preview",
-  modelName: "O1 Preview",
+  modelId: "o1",
+  modelName: "O1",
   provider: "openai",
-  hostedId: "o1-preview",
+  hostedId: "o1",
   platformLink: OPENAI_PLATORM_LINK,
   imageInput: false,
   tools: false,

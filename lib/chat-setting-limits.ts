@@ -246,7 +246,7 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 4096,
     MAX_CONTEXT_LENGTH: 8192
   },
-  "o1-preview": {
+  o1: {
     MIN_TEMPERATURE: 0.0,
     MAX_TEMPERATURE: 2.0,
     MAX_TOKEN_OUTPUT_LENGTH: 16384,
@@ -348,7 +348,7 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 65536,
     MAX_CONTEXT_LENGTH: 128000
   },
-  "openai/o1-preview": {
+  "openai/o1": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
     MAX_TOKEN_OUTPUT_LENGTH: 32768,

@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         [x.modelId, x.hostedId].includes(chatSettings.model)
       )?.imageInput || false
 
-    const isO1 = ["o1-mini", "o1-preview"].includes(chatSettings.model)
+    const isO1 = ["o1-mini", "o1"].includes(chatSettings.model)
     const cleanedMessages = isO1 ? dropSystemMessage(messages) : messages
     const temperature = isO1 ? 1 : chatSettings.temperature
 

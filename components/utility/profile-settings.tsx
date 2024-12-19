@@ -748,7 +748,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                       [PLAN_FREE]:
                         "Upgrade to paid plan to unlock all models, plugins and image generation.",
                       [PLAN_PRO]:
-                        "Upgrade to Ultimate to get access to OpenAI o1-preview and Claude 3 Opus",
+                        "Upgrade to Ultimate to get access to OpenAI o1.",
                       [PLAN_ULTIMATE]:
                         "You're on the Ultimate plan! Enjoy your access to all models, plugins and image generation."
                     }[profile.plan.split("_")[0]]

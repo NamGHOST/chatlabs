@@ -110,7 +110,7 @@ export function parseOpenRouterModelName(modelId: string): Partial<LLM> {
 function parseSupportedModelsFromEnv() {
   let SUPPORTED_OPENROUTER_MODELS = [
     "openai/o1-mini",
-    "openai/o1-preview",
+    "openai/o1",
     "openai/gpt-4o-2024-08-06",
     "openai/gpt-4o-mini",
 
