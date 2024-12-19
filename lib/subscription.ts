@@ -9,7 +9,10 @@ import {
 } from "@/lib/stripe/config"
 import { getEnvInt } from "@/lib/env"
 
-export const FREE_MESSAGE_DAILY_LIMIT = getEnvInt("FREE_MESSAGE_DAILY_LIMIT", 5)
+export const FREE_MESSAGE_DAILY_LIMIT = getEnvInt(
+  "FREE_MESSAGE_DAILY_LIMIT",
+  10
+)
 
 export const LITE_MESSAGE_DAILY_LIMIT = getEnvInt(
   "LITE_MESSAGE_DAILY_LIMIT",
@@ -70,32 +73,52 @@ export function validatePlanForModel(
   profile: Tables<"profiles"> | null,
   model?: LLMID
 ) {
-  if (!model) return false
-  if (profile?.plan.startsWith("byok")) return true
+  if (!model) {
+    return false
+  }
+
+  // openrouter models are always allowed
+  ///if (model.includes("/")) {
+  ///  return false
+  ///}
+
+  if (profile?.plan.startsWith("byok")) {
+    return true
+  }
 
   const modelData = LLM_LIST.find(
     x => x.modelId === model || x.hostedId === model
   )
-  if (!modelData) return false
+
+  if (!modelData) {
+    return false
+  }
 
   // Allow explicitly allowed models
-  if (ALLOWED_MODELS.includes(model)) return true
+  if (ALLOWED_MODELS.includes(model)) {
+    console.log("ALLOWED MODELS. Skipping plan check.", model)
+    return true
+  }
 
   // Free tier models
-  if (modelData.tier === "free" || modelData.tier === undefined) return true
+  if (modelData.tier === "free" || modelData.tier === undefined) {
+    return true
+  }
 
-  if (!profile) return false
+  if (!profile) {
+    return false
+  }
 
   const userPlan = profile.plan.split("_")[0]
 
-  // Add specific tier validation
-  if (modelData.tier === "ultimate" && userPlan === PLAN_LITE) return false
-
-  return (
+  if (
     userPlan === PLAN_ULTIMATE ||
     userPlan === PLAN_PRO ||
     userPlan === PLAN_LITE
   )
+    return true
+
+  return false
 }
 
 export function validatePlanForAssistant(
