@@ -2,17 +2,18 @@ import { ChatbotUIContext } from "@/context/context"
 import useHotkey from "@/lib/hooks/use-hotkey"
 import { LLM_LIST } from "@/lib/models/llm/llm-list"
 import { cn } from "@/lib/utils"
+import { Tables } from "@/supabase/types"
 import {
+  IconSearch,
+  IconBrain,
+  IconCode,
   IconPaperclip,
   IconPlayerStopFilled,
-  IconX,
+  IconSend,
   IconMicrophone,
   IconPlayerRecordFilled,
-  IconSend,
-  IconArrowUp,
-  IconPrompt,
-  IconPlus,
-  IconBulb
+  IconX,
+  IconTools
 } from "@tabler/icons-react"
 import { IconAiSVG } from "@/components/icons/AI-icon-svg"
 import { FC, useContext, useEffect, useRef, useState } from "react"
@@ -30,13 +31,15 @@ import { ChatbotUIChatContext } from "@/context/chat"
 import { ChatSelectedHtmlElements } from "@/components/chat/chat-selected-html-elements"
 import { ChatMessage } from "@/types"
 import { useTranslation } from "react-i18next"
+import { WebBrowseToggle } from "./web-browse-toggle"
 
 interface ChatInputProps {
   showAssistant: boolean
   handleSendMessage?: (
     message: string,
     chatMessages: ChatMessage[],
-    isUserMessage: boolean
+    isUserMessage: boolean,
+    systemPrompt?: string
   ) => void
 }
 
@@ -70,13 +73,18 @@ export const ChatInput: FC<ChatInputProps> = ({
     focusTool,
     setFocusTool,
     isToolPickerOpen,
+    setIsToolPickerOpen,
     isPromptPickerOpen,
     setIsFilePickerOpen,
     setIsPromptPickerOpen,
     isFilePickerOpen,
     setFocusFile,
     profile,
-    selectedWorkspace
+    selectedWorkspace,
+    tools,
+    selectedTools,
+    setSelectedTools,
+    allModels
   } = useContext(ChatbotUIContext)
 
   const { userInput, setUserInput, chatMessages, isGenerating, chatSettings } =
@@ -319,63 +327,31 @@ export const ChatInput: FC<ChatInputProps> = ({
   }
 
   return (
-    <div className={"relative"}>
+    <div className="relative">
       <ChatFilesDisplay />
       <ChatCommandInput />
       <ChatSelectedHtmlElements />
-      <div className="border-input bg-background flex w-full flex-col justify-end overflow-hidden rounded-xl border px-4 py-2">
+      <div className="border-input bg-background/80 flex w-full flex-col justify-end overflow-hidden rounded-xl border shadow-sm backdrop-blur-sm">
         {showAssistant && selectedAssistant && (
-          <div className="bg-accent border-input flex items-center justify-between space-x-2 border-b p-2 pl-4 pr-3">
-            <div className={"flex items-center space-x-2"}>
+          <div className="bg-accent/50 border-input flex items-center justify-between space-x-2 border-b px-4 py-2 backdrop-blur-sm">
+            <div className="flex items-center space-x-2">
               <AssistantIcon assistant={selectedAssistant} size={24} />
-              <div className="text-sm font-semibold">
-                Talking to {selectedAssistant.name}
-              </div>
+              <span className="text-sm font-medium">
+                {selectedAssistant.name}
+              </span>
             </div>
-
             <IconX
-              stroke={1.5}
+              className="hover:bg-background/10 cursor-pointer rounded p-1 transition-colors"
+              size={20}
               onClick={() => setSelectedAssistant(null)}
-              className={
-                "hover:text-foreground/50 flex size-4 cursor-pointer items-center justify-center text-[10px]"
-              }
             />
           </div>
         )}
-        <div className="flex items-end justify-between p-2">
-          <div className={"flex"}>
-            <span className="flex items-end" title="Upload/attach files">
-              <IconPaperclip
-                onClick={() => fileInputRef.current?.click()}
-                stroke={1.5}
-                className="m-1 cursor-pointer p-0.5 hover:opacity-50"
-                size={24}
-              />
-            </span>
-            <span className="flex items-end" title="AI Assistant">
-              <IconAiSVG
-                onClick={handleAiIconClick}
-                stroke={1.5}
-                className="m-1 cursor-pointer p-0.5 hover:opacity-50"
-                size={24}
-              />
-            </span>
-            <Input
-              ref={fileInputRef}
-              className="hidden"
-              type="file"
-              onChange={e => {
-                if (!e.target.files) return
-                handleSelectDeviceFile(e.target.files[0])
-              }}
-              accept={filesToAccept}
-            />
-          </div>
+
+        <div className="flex w-full flex-col">
           <TextareaAutosize
             textareaRef={chatInputRef}
-            className={`ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring grow resize-none rounded-full border-none bg-transparent p-1.5 px-2 transition-all duration-200 ease-in-out focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
-              rowCount > 3 ? "rounded-md" : "rounded-none"
-            }`}
+            className="w-full resize-none bg-transparent px-4 py-3 focus:outline-none"
             placeholder={t("Ask anything...")}
             onValueChange={handleCustomInputChange}
             value={userInput}
@@ -386,52 +362,82 @@ export const ChatInput: FC<ChatInputProps> = ({
             onCompositionStart={() => setIsTyping(true)}
             onCompositionEnd={() => setIsTyping(false)}
           />
-          <div className="flex cursor-pointer items-end justify-end space-x-2">
-            <div className="flex flex-nowrap items-end overflow-hidden">
+
+          <div className="border-border/50 flex items-center justify-between border-t p-2">
+            <div className="flex items-center gap-1">
+              <button
+                className="hover:bg-accent rounded-lg p-2 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <IconPaperclip size={20} className="text-muted-foreground" />
+              </button>
+
+              <WebBrowseToggle />
+
+              <button
+                className="hover:bg-accent rounded-lg p-2 transition-colors"
+                onClick={handleAiIconClick}
+              >
+                <IconBrain size={20} className="text-muted-foreground" />
+              </button>
+
+              <div className="border-border/50 mx-2 h-6 border-l" />
+
+              <button className="hover:bg-accent flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors">
+                <IconCode size={18} className="text-muted-foreground" />
+                <span className="text-muted-foreground text-sm font-medium">
+                  Code
+                </span>
+              </button>
+
               {recognition && (
-                <button onClick={listening ? stopListening : restartListening}>
+                <button
+                  onClick={listening ? stopListening : restartListening}
+                  className="hover:bg-accent rounded-lg p-2 transition-colors"
+                >
                   {listening ? (
                     <IconPlayerRecordFilled
-                      stroke={1.5}
-                      className={"animate-pulse text-red-500"}
-                      size={24}
+                      size={20}
+                      className="text-destructive animate-pulse"
                     />
                   ) : (
                     <IconMicrophone
-                      className={"m-1 cursor-pointer p-0.5 hover:opacity-50"}
-                      stroke={1.5}
-                      size={24}
+                      size={20}
+                      className="text-muted-foreground"
                     />
                   )}
                 </button>
               )}
-              {isGenerating ? (
-                <IconPlayerStopFilled
-                  className="hover:bg-background m-1 animate-pulse rounded bg-transparent p-0.5 hover:opacity-50"
-                  onClick={handleStopMessage}
-                  stroke={1.5}
-                  size={24}
-                />
-              ) : (
-                <IconSend
-                  className={cn(
-                    "bg-primary text-secondary m-1 rounded-lg p-0.5 hover:opacity-50",
-                    (!userInput || isUploading) &&
-                      "cursor-not-allowed opacity-50"
-                  )}
-                  onClick={() => {
-                    if (!userInput || isUploading) return
-                    handleSendMessage!(userInput, chatMessages, false)
-                    setTranscript("")
-                    setUserInputBeforeRecording("")
-                  }}
-                  stroke={1.5}
-                  size={24}
-                />
-              )}
             </div>
+
+            <button
+              className={cn(
+                "rounded-lg p-2 transition-colors",
+                userInput && !isUploading
+                  ? "text-primary hover:bg-primary/10"
+                  : "text-muted-foreground/50 cursor-not-allowed"
+              )}
+              onClick={() => handleSendMessage!(userInput, chatMessages, false)}
+            >
+              {isGenerating ? (
+                <IconPlayerStopFilled size={20} className="animate-pulse" />
+              ) : (
+                <IconSend size={20} />
+              )}
+            </button>
           </div>
         </div>
+
+        <Input
+          ref={fileInputRef}
+          className="hidden"
+          type="file"
+          onChange={e => {
+            if (!e.target.files) return
+            handleSelectDeviceFile(e.target.files[0])
+          }}
+          accept={filesToAccept}
+        />
       </div>
     </div>
   )
