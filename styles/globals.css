@@ -88,4 +88,17 @@
     background-color: hsl(var(--secondary));
     border-radius: 3px;
   }
+}
+
+/* Rainbow border input area animation */
+@keyframes rainbow-border {
+  0% { border-color: rgb(138, 42, 74); }  /* Pink */
+  33% { border-color: #119cb4; } /* Purple */
+  66% { border-color: #6132fc; } /* Blue */
+  100% { border-color: #dd25ce; } /* Back to Pink */
+}
+
+.animate-rainbow-border {
+  animation: rainbow-border 2s linear infinite;
+  border-width: 2px;
 } 

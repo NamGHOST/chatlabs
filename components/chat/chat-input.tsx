@@ -331,7 +331,12 @@ export const ChatInput: FC<ChatInputProps> = ({
       <ChatFilesDisplay />
       <ChatCommandInput />
       <ChatSelectedHtmlElements />
-      <div className="border-input bg-background/80 flex w-full flex-col justify-end overflow-hidden rounded-xl border shadow-sm backdrop-blur-sm">
+      <div
+        className={cn(
+          "border-input bg-background/80 flex w-full flex-col justify-end overflow-hidden rounded-xl border shadow-sm backdrop-blur-sm",
+          isGenerating && "animate-rainbow-border"
+        )}
+      >
         {showAssistant && selectedAssistant && (
           <div className="bg-accent/50 border-input flex items-center justify-between space-x-2 border-b px-4 py-2 backdrop-blur-sm">
             <div className="flex items-center space-x-2">

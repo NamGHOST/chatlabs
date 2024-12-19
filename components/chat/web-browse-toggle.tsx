@@ -44,12 +44,19 @@ export const WebBrowseToggle: FC = () => {
       onClick={handleToggle}
       className={cn(
         "hover:bg-accent rounded-lg p-2 transition-colors",
-        isWebBrowsingEnabled && "text-primary bg-primary/10"
+        isWebBrowsingEnabled && "bg-purple-500/10"
       )}
       variant="ghost"
       size="sm"
     >
-      <IconWorld size={20} />
+      <IconWorld
+        size={20}
+        className={cn(
+          "text-muted-foreground",
+          isWebBrowsingEnabled && "text-purple-500"
+        )}
+        stroke={2}
+      />
     </Button>
   )
 }
