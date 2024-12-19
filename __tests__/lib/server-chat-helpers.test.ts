@@ -28,8 +28,8 @@ describe("validateMessageCount", () => {
   const date = new Date()
   const freeModel: LLMID = "gpt-4o-mini"
   const proModel: LLMID = "gpt-4o"
-  const ultimateModelGrandfathered: LLMID = "o1-preview"
-  const ultimateModel: LLMID = "o1-preview"
+  const ultimateModelGrandfathered: LLMID = "o1"
+  const ultimateModel: LLMID = "o1"
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -455,11 +455,13 @@ describe("validateMessageCount", () => {
     ).rejects.toThrow(
       `You have reached monthly message limit for Pro plan for ${proModel}`
     )
-  }) 
+  })
 
-
-
-
-
-
+  test("Lite user cannot use ultimate model", async () => {
+    const profile = { plan: `${PLAN_LITE}_monthly` } as Tables<"profiles">
+    
+    await expect(
+      validateMessageCount(profile, ultimateModel, date, mockSupabaseClient as any)
+    ).rejects.toThrow("Ultimate plan required to use this model")
+  })
 })

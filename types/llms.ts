@@ -22,7 +22,7 @@ export type OpenAILLMID =
   | "gpt-4o-mini" // GPT-4 Vision
   | "gpt-4o-2024-08-06" // GPT-4o (updated 8/6/24)
   | "o1-mini" // O1 Mini
-  | "o1-preview" // O1 Mini Latest
+  | "o1" // O1
 
 // Google Models
 export type GoogleLLMID =
@@ -91,7 +91,7 @@ export type LLMTier = "free" | "pro" | "ultimate"
 // Update the LLM interface to include categories
 export type OpenRouterLLMID =
   | "openai/o1-mini"
-  | "openai/o1-preview"
+  | "openai/o1"
   | "openai/gpt-4o-2024-08-06"
   | "openai/gpt-4-vision-preview"
   | "openai/gpt-4o-mini"

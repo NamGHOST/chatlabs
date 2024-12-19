@@ -18,12 +18,12 @@ const O1_MINI: LLM = {
 }
 
 const O1_PREVIEW: LLM = {
-  modelId: "openai/o1-preview",
-  modelName: "O1 Preview",
+  modelId: "openai/o1",
+  modelName: "O1",
   provider: "openrouter",
-  hostedId: "o1-preview",
+  hostedId: "o1",
   platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: false,
+  imageInput: true,
   tools: false,
   supportsStreaming: true,
   tier: "ultimate" as LLMTier
@@ -519,6 +519,6 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
 //- meta-llama/llama-3.1-405b-instruct
 //- deepseek/deepseek-chat
 //- openai/o1-mini
-//- openai/o1-preview
+//- openai/o1
 //- google/gemini-pro-1.5-exp
 //- google/gemini-flash-1.5-exp

@@ -35,7 +35,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "gpt-4o-mini": true,
   "gpt-4o-2024-08-06": true,
   "o1-mini": false,
-  "o1-preview": false,
+  o1: false,
   "claude-3-haiku-20240307": true,
   "claude-3-sonnet-20240229": false,
   "claude-3-5-sonnet-20240620": true,
@@ -75,7 +75,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
 
   //openrouter models
   "openai/o1-mini": false,
-  "openai/o1-preview": false,
+  "openai/o1": false,
   "openai/gpt-4o-2024-08-06": false,
   "openai/gpt-4o-mini": true,
   "openai/gpt-4-vision-preview": false,

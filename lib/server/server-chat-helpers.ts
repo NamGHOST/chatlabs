@@ -136,10 +136,26 @@ function isTierModel(model: LLMID, tier: keyof typeof TIER_MODELS) {
 }
 
 export async function validateModel(profile: Tables<"profiles">, model: LLMID) {
+  const userPlan = profile.plan.split("_")[0]
+  const modelData = LLM_LIST.find(
+    x => x.modelId === model || x.hostedId === model
+  )
+
+  // Add specific plan validation
+  if (modelData?.tier === "ultimate") {
+    if (userPlan === PLAN_LITE) {
+      throw new SubscriptionRequiredError(
+        "Ultimate models are only available with Ultimate plan. Please upgrade to access these models."
+      )
+    }
+    if (userPlan === PLAN_PRO && profile.created_at > "2024-09-16") {
+      throw new SubscriptionRequiredError(
+        "Ultimate models require an Ultimate plan subscription. Please upgrade to access these models."
+      )
+    }
+  }
+
   if (!validatePlanForModel(profile, model)) {
-    const modelData = LLM_LIST.find(
-      x => x.modelId === model || x.hostedId === model
-    )
     const requiredPlan = modelData?.tier === "ultimate" ? "Ultimate" : "Pro"
     throw new SubscriptionRequiredError(
       `${requiredPlan} plan required to use this model`
@@ -175,6 +191,12 @@ export async function validateMessageCount(
 
   if (userPlan.startsWith("byok")) {
     return
+  }
+
+  if (userPlan === PLAN_LITE && isTierModel(model, PLAN_ULTIMATE)) {
+    throw new SubscriptionRequiredError(
+      `Ultimate plan required to use this model`
+    )
   }
 
   // Check if free or premium user is trying to use a non-free model
