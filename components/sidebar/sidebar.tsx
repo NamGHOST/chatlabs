@@ -304,7 +304,7 @@ export const Sidebar: FC = () => {
         >
           <div
             className={cn(
-              "flex items-start border-b p-2",
+              "relative flex items-center border-b p-2",
               isCollapsed ? "flex-col" : "justify-between"
             )}
           >
@@ -325,30 +325,32 @@ export const Sidebar: FC = () => {
               side="right"
             />
             {!isCollapsed && (
-              <div className="align-center flex h-0 items-center justify-center">
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 font-medium">
                 {activeSubmenu && getSubmenuTitle(activeSubmenu)}
               </div>
             )}
-            <WithTooltip
-              asChild
-              display={<div>{isCollapsed ? "Expand" : "Collapse"}</div>}
-              trigger={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleCollapseOrSubmenu}
-                  className="hidden w-10 shrink-0 md:flex"
-                >
-                  {isCollapsed ? (
-                    <IconChevronRight {...iconProps} />
-                  ) : (
-                    <IconChevronLeft {...iconProps} />
-                  )}
-                </Button>
-              }
-              side="right"
-            />
           </div>
+
+          {/* Floating Collapse Button */}
+          <WithTooltip
+            asChild
+            display={<div>{isCollapsed ? "Expand" : "Collapse"}</div>}
+            trigger={
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleCollapseOrSubmenu}
+                className={cn(
+                  "h-50 absolute -right-[12px] top-1/2 z-50 hidden w-4 -translate-y-1/2 md:block",
+                  "bg-border hover:bg-foreground/30 rounded-full transition-colors",
+                  "before:absolute before:left-1/2 before:top-1/2 before:-translate-x-1/2 before:-translate-y-1/2",
+                  "before:text-foreground/50 before:opacity-0 before:transition-opacity hover:before:opacity-100",
+                  isCollapsed ? "before:content-['>']" : "before:content-['<']"
+                )}
+              />
+            }
+            side="right"
+          />
 
           <div className="flex grow flex-col overflow-y-auto">
             <div className="p-2">
