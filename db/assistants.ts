@@ -3,17 +3,17 @@ import { Tables, TablesInsert, TablesUpdate } from "@/supabase/types"
 import { SupabaseClient } from "@supabase/supabase-js"
 
 export const getAssistantById = async (
-  assistantId: string,
-  client: SupabaseClient = supabase
-) => {
-  const { data: assistant, error } = await client
+  assistantId: string
+): Promise<Tables<"assistants"> | null> => {
+  const { data: assistant, error } = await supabase
     .from("assistants")
-    .select("*, messages (count)")
+    .select("*")
     .eq("id", assistantId)
     .single()
 
-  if (!assistant) {
-    throw new Error(error?.message)
+  if (error) {
+    console.error(error)
+    return null
   }
 
   return assistant

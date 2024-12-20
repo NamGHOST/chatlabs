@@ -1,5 +1,6 @@
 import { Tables } from "@/supabase/types"
 import { AssistantIcon } from "./assistant-icon"
+import { IconLock, IconWorld } from "@tabler/icons-react"
 
 interface AssistantCardProps {
   assistant: Tables<"assistants">
@@ -9,23 +10,28 @@ interface AssistantCardProps {
 export function AssistantCard({ assistant, onClick }: AssistantCardProps) {
   return (
     <div
-      className="hover:bg-accent flex cursor-pointer flex-col space-y-3 rounded-lg border p-4 transition-colors"
+      className="bg-background hover:bg-muted group relative flex cursor-pointer items-start gap-4 rounded-xl border p-4 transition-all duration-300"
       onClick={onClick}
     >
-      <div className="flex items-center space-x-3">
-        <AssistantIcon assistant={assistant} size={40} />
-        <div className="flex flex-col">
-          <div className="font-semibold">{assistant.name}</div>
-          <div className="text-muted-foreground line-clamp-1 text-sm">
-            {assistant.description}
+      <AssistantIcon assistant={assistant} size={55} />
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-foreground truncate text-base font-semibold">
+            {assistant.name}
+          </div>
+          <div className="text-muted-foreground shrink-0">
+            {assistant.sharing === "public" ? (
+              <IconWorld size={16} />
+            ) : (
+              <IconLock size={16} />
+            )}
           </div>
         </div>
-      </div>
 
-      <div className="text-muted-foreground flex items-center space-x-2 text-xs">
-        <div>{assistant.model}</div>
-        <div>•</div>
-        <div>{assistant.sharing}</div>
+        <div className="text-muted-foreground mt-1 line-clamp-3 text-[13px]">
+          {assistant.description}
+        </div>
       </div>
     </div>
   )

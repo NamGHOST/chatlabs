@@ -49,6 +49,7 @@ import { motion, AnimatePresence } from "framer-motion" // Add this import
 import { cn } from "@/lib/utils"
 import { ModelIcon } from "../models/model-icon"
 import { AssistantCard } from "@/components/assistants/assistant-card" // Add this import
+import { useRouter } from "next/navigation"
 
 interface ChatUIProps {
   chatId?: string
@@ -133,7 +134,6 @@ export const ChatUI: React.FC<ChatUIProps> = ({
       return
     }
     ;(async () => {
-      // New async function
       try {
         await fetchChatData()
       } catch (error) {
@@ -142,6 +142,18 @@ export const ChatUI: React.FC<ChatUIProps> = ({
       }
     })()
   }, [params, chatId, assistant])
+
+  useEffect(() => {
+    const assistantHashId = searchParams?.get("assistant")
+    if (assistantHashId) {
+      const selectedAssistant = assistants.find(
+        a => a.hashid === assistantHashId
+      )
+      if (selectedAssistant) {
+        handleSelectAssistant(selectedAssistant).catch(console.error)
+      }
+    }
+  }, [searchParams, assistants])
 
   useEffect(() => {
     handleSearchParams()
@@ -388,12 +400,7 @@ ${content}
   )
 
   return (
-    <div
-      ref={scrollRef}
-      onScroll={handleScroll}
-      className="relative flex h-full flex-1 shrink-0 flex-col overflow-hidden overflow-y-auto"
-    >
-      {/* Header */}
+    <div className="relative flex h-full flex-1 shrink-0 flex-col overflow-hidden overflow-y-auto">
       {showChatSettings && (
         <div className="bg-background sticky top-0 z-20 flex h-14 w-full shrink-0 justify-between p-2">
           <div className="flex items-center">
@@ -407,7 +414,12 @@ ${content}
         {loading ? (
           <Loading />
         ) : (
-          <div className="relative mx-auto flex size-full max-w-2xl flex-1 flex-col">
+          <div
+            className={cn(
+              "relative mx-auto flex w-full flex-1 flex-col px-2",
+              chatMessages?.length === 0 ? "max-w-none" : "max-w-2xl"
+            )}
+          >
             {chatMessages?.length === 0 ? (
               <EmptyChatView
                 model={model!}
@@ -422,36 +434,30 @@ ${content}
                   isExperimentalCodeEditor={isExperimentalCodeEditor}
                 />
                 <div ref={messagesEndRef} className="min-h-20 flex-1" />
-
-                <div className="sticky bottom-16 mx-auto flex min-h-8">
-                  {!isAtBottom && (
-                    <Button
-                      size={"icon"}
-                      variant={"outline"}
-                      className={cn(
-                        "bg-background/80 size-8 rounded-full transition-colors duration-200"
-                      )}
-                      onClick={scrollToBottom}
-                    >
-                      <IconArrowDown size={20} stroke={2} />
-                    </Button>
-                  )}
-                </div>
               </>
             )}
-            <div className="sticky bottom-0 mx-2 items-end bg-transparent pb-2 backdrop-blur-sm">
-              {chatMessages?.length === 0 && (
-                <ConversationStarters
-                  values={selectedAssistant?.conversation_starters}
-                  onSelect={(value: string) =>
-                    handleSendMessage(value, chatMessages, false)
-                  }
-                />
-              )}
-              <ChatInput
-                showAssistant={showAssistantSelector && !selectedAssistant}
-                handleSendMessage={handleSendMessage}
-              />
+            <div className="sticky inset-x-0 bottom-0">
+              <div className="mx-auto max-w-2xl p-4">
+                {chatMessages?.length === 0 && (
+                  <ConversationStarters
+                    values={selectedAssistant?.conversation_starters}
+                    onSelect={(value: string) =>
+                      handleSendMessage(value, chatMessages, false)
+                    }
+                  />
+                )}
+                <div className="relative">
+                  <div className="absolute inset-0 backdrop-blur-sm" />
+                  <div className="relative">
+                    <ChatInput
+                      showAssistant={
+                        showAssistantSelector && !selectedAssistant
+                      }
+                      handleSendMessage={handleSendMessage}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -471,26 +477,74 @@ const EmptyChatView: React.FC<EmptyChatViewProps> = ({
   selectedAssistant,
   theme
 }) => {
-  const { assistants } = useContext(ChatbotUIContext)
+  const { assistants, setSelectedAssistant } = useContext(ChatbotUIContext)
+  const router = useRouter()
 
   const handleAssistantClick = async (assistant: Tables<"assistants">) => {
     const searchParams = new URLSearchParams(window.location.search)
-    searchParams.set("assistant", assistant.id)
+    searchParams.set("assistant", assistant.hashid)
     window.history.replaceState(null, "", `?${searchParams.toString()}`)
   }
 
-  return (
-    <div className="center flex w-full flex-1 flex-col items-center justify-center transition-[height]">
-      <Brand theme={theme === "dark" ? "dark" : "light"} />
+  const handleClearAssistant = () => {
+    setSelectedAssistant(null)
+    const searchParams = new URLSearchParams(window.location.search)
+    searchParams.delete("assistant")
+    window.history.replaceState(
+      null,
+      "",
+      searchParams.toString()
+        ? `?${searchParams.toString()}`
+        : window.location.pathname
+    )
+  }
 
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {assistants.map(assistant => (
-          <AssistantCard
-            key={assistant.id}
-            assistant={assistant}
-            onClick={() => handleAssistantClick(assistant)}
-          />
-        ))}
+  if (selectedAssistant) {
+    return (
+      <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-center">
+            <div className="flex justify-center">
+              <AssistantIcon
+                assistant={selectedAssistant}
+                size={80}
+                className="rounded-full"
+              />
+            </div>
+            <div className="mt-4 text-2xl font-bold">
+              {selectedAssistant.name}
+            </div>
+            <div className="text-muted-foreground mt-2 max-w-xl px-4">
+              {selectedAssistant.description}
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleClearAssistant}
+              className="mt-6"
+            >
+              Change Assistant
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col items-center justify-center">
+        <Brand theme={theme === "dark" ? "dark" : "light"} />
+        <div className="mt-12 w-full max-w-[1200px] px-8">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {assistants.map(assistant => (
+              <AssistantCard
+                key={assistant.id}
+                assistant={assistant}
+                onClick={() => handleAssistantClick(assistant)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )

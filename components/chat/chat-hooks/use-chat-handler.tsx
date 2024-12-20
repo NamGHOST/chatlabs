@@ -8,7 +8,7 @@ import { deleteMessagesIncludingAndAfter } from "@/db/messages"
 import { Tables } from "@/supabase/types"
 import { ChatMessage, ChatPayload, LLMID } from "@/types"
 import { redirect, useRouter } from "next/navigation"
-import { useContext, useEffect, useRef } from "react"
+import { useContext, useEffect, useRef, useCallback } from "react"
 import {
   createTempMessages,
   handleCreateChat,
@@ -63,7 +63,8 @@ export const useChatHandler = ({
     isPromptPickerOpen,
     isFilePickerOpen,
     isToolPickerOpen,
-    setIsPaywallOpen
+    setIsPaywallOpen,
+    setSelectedAssistant
   } = useContext(ChatbotUIContext)
 
   const {
@@ -99,104 +100,115 @@ export const useChatHandler = ({
     }
   }, [isPromptPickerOpen, isFilePickerOpen, isToolPickerOpen])
 
-  const handleNewChat = async (
-    redirectTo = "",
-    chatMessages: ChatMessage[] = []
-  ) => {
-    try {
-      if (!selectedWorkspace) return
+  const handleNewChat = useCallback(
+    async (name?: string, initialMessages?: ChatMessage[]) => {
+      setSelectedAssistant(null)
+      const searchParams = new URLSearchParams(window.location.search)
+      searchParams.delete("assistant")
+      window.history.replaceState(
+        null,
+        "",
+        searchParams.toString()
+          ? `?${searchParams.toString()}`
+          : window.location.pathname
+      )
 
-      setUserInput("")
-      setChatMessages(chatMessages)
-      setSelectedChat(null)
-      setChatFileItems([])
+      try {
+        if (!selectedWorkspace) return
 
-      setIsGenerating(false)
-      setFirstTokenReceived(false)
+        setUserInput("")
+        setChatMessages(initialMessages || [])
+        setSelectedChat(null)
+        setChatFileItems([])
 
-      setChatFiles([])
-      setChatImages([])
-      setNewMessageFiles([])
-      setNewMessageImages([])
-      setShowFilesDisplay(false)
-      setIsPromptPickerOpen(false)
-      setIsFilePickerOpen(false)
-      setSelectedHtmlElements([])
+        setIsGenerating(false)
+        setFirstTokenReceived(false)
 
-      // setSelectedTools([])
-      setToolInUse("none")
+        setChatFiles([])
+        setChatImages([])
+        setNewMessageFiles([])
+        setNewMessageImages([])
+        setShowFilesDisplay(false)
+        setIsPromptPickerOpen(false)
+        setIsFilePickerOpen(false)
+        setSelectedHtmlElements([])
 
-      if (selectedAssistant) {
-        setChatSettings({
-          model: selectedAssistant.model as LLMID,
-          prompt: selectedAssistant.prompt,
-          temperature: selectedAssistant.temperature,
-          contextLength: selectedAssistant.context_length,
-          includeProfileContext: selectedAssistant.include_profile_context,
-          includeWorkspaceInstructions:
-            selectedAssistant.include_workspace_instructions,
-          embeddingsProvider: selectedAssistant.embeddings_provider as
-            | "jina"
-            | "openai"
-            | "local"
-        })
+        // setSelectedTools([])
+        setToolInUse("none")
 
-        let allFiles = []
+        if (selectedAssistant) {
+          setChatSettings({
+            model: selectedAssistant.model as LLMID,
+            prompt: selectedAssistant.prompt,
+            temperature: selectedAssistant.temperature,
+            contextLength: selectedAssistant.context_length,
+            includeProfileContext: selectedAssistant.include_profile_context,
+            includeWorkspaceInstructions:
+              selectedAssistant.include_workspace_instructions,
+            embeddingsProvider: selectedAssistant.embeddings_provider as
+              | "jina"
+              | "openai"
+              | "local"
+          })
 
-        const assistantFiles = (
-          await getAssistantFilesByAssistantId(selectedAssistant.id)
-        ).files
-        allFiles = [...assistantFiles]
-        const assistantCollections = (
-          await getAssistantCollectionsByAssistantId(selectedAssistant.id)
-        ).collections
-        for (const collection of assistantCollections) {
-          const collectionFiles = (
-            await getCollectionFilesByCollectionId(collection.id)
+          let allFiles = []
+
+          const assistantFiles = (
+            await getAssistantFilesByAssistantId(selectedAssistant.id)
           ).files
-          allFiles = [...allFiles, ...collectionFiles]
+          allFiles = [...assistantFiles]
+          const assistantCollections = (
+            await getAssistantCollectionsByAssistantId(selectedAssistant.id)
+          ).collections
+          for (const collection of assistantCollections) {
+            const collectionFiles = (
+              await getCollectionFilesByCollectionId(collection.id)
+            ).files
+            allFiles = [...allFiles, ...collectionFiles]
+          }
+          const assistantTools = (
+            await getAssistantToolsByAssistantId(selectedAssistant.id)
+          ).tools
+
+          setSelectedTools(assistantTools)
+          setChatFiles(
+            allFiles.map(file => ({
+              id: file.id,
+              name: file.name,
+              type: file.type,
+              file: null
+            }))
+          )
+
+          if (allFiles.length > 0) setShowFilesDisplay(true)
+        } else if (selectedPreset) {
+          setChatSettings({
+            model: selectedPreset.model as LLMID,
+            prompt: selectedPreset.prompt,
+            temperature: selectedPreset.temperature,
+            contextLength: selectedPreset.context_length,
+            includeProfileContext: selectedPreset.include_profile_context,
+            includeWorkspaceInstructions:
+              selectedPreset.include_workspace_instructions,
+            embeddingsProvider: selectedPreset.embeddings_provider as
+              | "jina"
+              | "openai"
+              | "local"
+          })
         }
-        const assistantTools = (
-          await getAssistantToolsByAssistantId(selectedAssistant.id)
-        ).tools
 
-        setSelectedTools(assistantTools)
-        setChatFiles(
-          allFiles.map(file => ({
-            id: file.id,
-            name: file.name,
-            type: file.type,
-            file: null
-          }))
-        )
-
-        if (allFiles.length > 0) setShowFilesDisplay(true)
-      } else if (selectedPreset) {
-        setChatSettings({
-          model: selectedPreset.model as LLMID,
-          prompt: selectedPreset.prompt,
-          temperature: selectedPreset.temperature,
-          contextLength: selectedPreset.context_length,
-          includeProfileContext: selectedPreset.include_profile_context,
-          includeWorkspaceInstructions:
-            selectedPreset.include_workspace_instructions,
-          embeddingsProvider: selectedPreset.embeddings_provider as
-            | "jina"
-            | "openai"
-            | "local"
-        })
+        if (name) {
+          return router.push(name)
+        } else {
+          router.push(`/chat`)
+        }
+      } catch (error) {
+        console.error(error)
+        toast.error(t("Something went wrong. Please try again."))
       }
-
-      if (redirectTo) {
-        return router.push(redirectTo)
-      } else {
-        router.push(`/chat`)
-      }
-    } catch (error) {
-      console.error(error)
-      toast.error(t("Something went wrong. Please try again."))
-    }
-  }
+    },
+    [selectedWorkspace, selectedAssistant, selectedPreset, router]
+  )
 
   const handleFocusChatInput = () => {
     if (isMobileScreen()) {

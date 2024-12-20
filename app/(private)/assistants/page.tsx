@@ -6,8 +6,7 @@ import { ChatbotUIChatProvider } from "@/context/chat"
 export default function AssistantsPage() {
   return (
     <ChatbotUIChatProvider id="assistants">
-      <div className="flex h-full flex-col space-y-4 p-4">
-        <h1 className="text-2xl font-bold">Assistants</h1>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/30 dark:from-black/50 dark:to-black/80">
         <AssistantGrid />
       </div>
     </ChatbotUIChatProvider>
