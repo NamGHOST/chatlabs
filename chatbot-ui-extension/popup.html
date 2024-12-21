@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Chat Extension</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="mode-selector">
+                <button id="chatMode" class="mode-button active">Chat</button>
+                <button id="featuresMode" class="mode-button">Features</button>
+            </div>
+        </div>
+        <div class="chat-container" id="chatContainer">
+            <!-- Chat messages will be displayed here -->
+        </div>
+        <div class="features-panel" id="featuresPanel">
+            <div class="feature-group">
+                <h3>AI Tools</h3>
+                <button class="feature-button" data-feature="prompts">
+                    <span class="icon">💡</span>
+                    Prompts
+                </button>
+                <button class="feature-button" data-feature="assistants">
+                    <span class="icon">🤖</span>
+                    Assistants
+                </button>
+                <button class="feature-button" data-feature="files">
+                    <span class="icon">📁</span>
+                    Files
+                </button>
+                <button class="feature-button" data-feature="plugins">
+                    <span class="icon">🧩</span>
+                    Plugins
+                </button>
+            </div>
+            <div class="feature-group">
+                <h3>Special Features</h3>
+                <button class="feature-button" data-feature="splitview">
+                    <span class="icon">⚡</span>
+                    Split View
+                </button>
+                <button class="feature-button" data-feature="memodraw">
+                    <span class="icon">📝</span>
+                    Memo Draw
+                </button>
+                <button class="feature-button" data-feature="texttoimage">
+                    <span class="icon">🎨</span>
+                    Text to Image
+                </button>
+                <button class="feature-button" data-feature="youtube">
+                    <span class="icon">▶️</span>
+                    YouTube Summarizer
+                </button>
+            </div>
+        </div>
+        <div class="input-container">
+            <textarea id="userInput" placeholder="Type your message..."></textarea>
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html> 

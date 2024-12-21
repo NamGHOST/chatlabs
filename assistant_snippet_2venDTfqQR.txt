@@ -1,0 +1,1 @@
+1|Type 'hello' in the textarea and click the send button 
