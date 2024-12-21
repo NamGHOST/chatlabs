@@ -1,6 +1,9 @@
 // Store session context
 let sessionContext = {};
 
+// Add task management
+let currentTask = null;
+
 // Update the system prompt and agent capabilities
 const SYSTEM_PROMPT = `You are an AI assistant with computer control capabilities on Windows. Current date: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
 
@@ -21,29 +24,34 @@ Available Actions:
    EXECUTE:{"type": "navigate", "url": "url"}
 
 When analyzing a screenshot:
-1. First describe what you see
-2. Identify clickable elements and their coordinates
-3. Suggest possible actions based on the task
+1. First describe what you see.
+2. Identify clickable elements and their coordinates.
+3. Suggest possible actions based on the task.
 
 Always execute one command at a time and wait for the result before proceeding.
-Describe what you're doing at each step.`;
+Describe what you're doing at each step.
 
-// Update handleTaskLoop function
-async function handleTaskLoop(initialMessage, settings = {}) {
+If you have no further actions to execute, kindly indicate that the task is complete.`;
+
+// Define the handler function
+async function handler(initialMessage, settings = {}, signal) {
     const messages = [];
     let loopCount = 0;
     const MAX_LOOPS = 5;
 
+    // Add the system prompt to messages
+    messages.push({
+        role: 'system',
+        content: SYSTEM_PROMPT
+    });
+
     try {
         let currentMessage = initialMessage;
-        messages.push({
-            role: 'system',
-            content: SYSTEM_PROMPT
-        });
 
-        while (loopCount < MAX_LOOPS) {
+        while (loopCount < MAX_LOOPS && !signal.aborted) {
             console.log(`Task loop ${loopCount + 1} starting...`);
-            
+
+            // Add only user-generated messages
             messages.push({
                 role: 'user',
                 content: currentMessage
@@ -61,8 +69,13 @@ async function handleTaskLoop(initialMessage, settings = {}) {
                     chatSettings: settings,
                     messages: messages,
                     provider: 'openrouter'
-                })
+                }),
+                signal // Pass the abort signal to fetch
             });
+
+            if (signal.aborted) {
+                throw new Error('Task cancelled');
+            }
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -80,10 +93,18 @@ async function handleTaskLoop(initialMessage, settings = {}) {
             const responseText = responseData.message?.content || 'No response generated';
             console.log('Response text:', responseText);
 
+            // Add assistant's response to messages
             messages.push({
                 role: 'assistant',
                 content: responseText
             });
+
+            // Check for termination conditions
+            if (responseText.toLowerCase().includes('task complete') || 
+                responseText.toLowerCase().includes('finished') ||
+                responseText.toLowerCase().includes('done')) {
+                return responseText;
+            }
 
             // Execute commands if present
             if (responseText.includes('EXECUTE:')) {
@@ -117,49 +138,165 @@ async function handleTaskLoop(initialMessage, settings = {}) {
                         });
                     }
                 }
-                continue; // Continue the main loop to process the new content
+                // Continue the loop to process new commands
+                loopCount++;
+                continue;
             }
 
-            // Check if task is complete
-            if (responseText.toLowerCase().includes('task complete') || 
-                responseText.toLowerCase().includes('finished') ||
-                responseText.toLowerCase().includes('done')) {
-                return responseText;
-            }
+            // If no commands and no termination keywords, terminate the loop
+            console.log('No commands to execute and no termination keywords found. Terminating loop.');
+            return responseText;
 
+            // Increment loop counter
             loopCount++;
-            if (loopCount >= MAX_LOOPS) {
-                return `Task loop limit reached (${MAX_LOOPS} iterations). Current status: ${responseText}`;
-            }
-
-            // If no commands were executed, use the response as the next message
-            currentMessage = responseText;
         }
 
         return 'Task completed.';
     } catch (error) {
+        if (error.message === 'Task cancelled') {
+            return 'Task cancelled by user.';
+        }
         console.error('Task loop error:', error);
         throw error;
     }
 }
 
-// Update the message handler to use the task loop for complex tasks
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.type === 'SEND_MESSAGE') {
-        // Check if this is a complex task that needs the loop
-        const needsLoop = request.message.toLowerCase().includes('search') || 
-                         request.message.toLowerCase().includes('find') ||
-                         request.message.toLowerCase().includes('research');
+// Execute automation action
+async function executeAction(action) {
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab) {
+            throw new Error('No active tab found');
+        }
 
-        const handler = needsLoop ? handleTaskLoop : handleMessage;
+        // Request permissions if needed
+        const permissions = {
+            permissions: ['activeTab', 'scripting'],
+            origins: [tab.url]
+        };
+
+        const hasPermission = await chrome.permissions.contains(permissions);
+        if (!hasPermission) {
+            const granted = await chrome.permissions.request(permissions);
+            if (!granted) {
+                throw new Error('Required permissions not granted');
+            }
+        }
+
+        switch (action.type) {
+            case 'click':
+                await chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    func: (x, y) => {
+                        const element = document.elementFromPoint(x, y);
+                        if (element) {
+                            element.click();
+                            return { success: true, element: element.tagName };
+                        }
+                        return { success: false, error: 'No element found at coordinates' };
+                    },
+                    args: [action.x, action.y]
+                });
+                break;
+
+            case 'screenshot':
+                const dataUrl = await chrome.tabs.captureVisibleTab(null, { format: 'png' });
+                return { success: true, screenshot: dataUrl };
+
+            case 'search':
+                const searchUrl = action.engine === 'perplexity' 
+                    ? `https://www.perplexity.ai/?q=${encodeURIComponent(action.query)}`
+                    : `https://www.google.com/search?q=${encodeURIComponent(action.query)}`;
+                
+                await chrome.tabs.update(tab.id, { url: searchUrl });
+                await new Promise((resolve) => {
+                    chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+                        if (tabId === tab.id && info.status === 'complete') {
+                            chrome.tabs.onUpdated.removeListener(listener);
+                            setTimeout(resolve, 2000);
+                        }
+                    });
+                });
+                break;
+
+            case 'extract':
+                await injectContentScript(tab.id);
+                const results = await chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    func: () => {
+                        const content = document.body.innerText;
+                        const links = Array.from(document.querySelectorAll('a')).map(a => ({
+                            text: a.innerText.trim(),
+                            href: a.href
+                        })).filter(link => link.text && link.href);
+                        
+                        return {
+                            title: document.title,
+                            url: window.location.href,
+                            content: content.substring(0, 5000),
+                            links: links.slice(0, 10)
+                        };
+                    }
+                });
+
+                return { success: true, data: results[0].result };
+
+            case 'navigate':
+                await chrome.tabs.update(tab.id, { url: action.url });
+                await new Promise((resolve) => {
+                    chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+                        if (tabId === tab.id && info.status === 'complete') {
+                            chrome.tabs.onUpdated.removeListener(listener);
+                            setTimeout(resolve, 2000);
+                        }
+                    });
+                });
+                break;
+
+            default:
+                throw new Error(`Unknown action type: ${action.type}`);
+        }
         
-        handler(request.message, request.settings)
-            .then(response => sendResponse({ reply: response }))
+        return { success: true };
+    } catch (error) {
+        console.error('Action error:', error);
+        throw error;
+    }
+}
+
+// Handle message from popup.js
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('Received message in background:', request);
+    if (request.type === 'SEND_MESSAGE') {
+        // Initialize AbortController for the current task
+        currentTask = new AbortController();
+        const { signal } = currentTask;
+
+        // Handler function to process the message
+        handler(request.message, request.settings, signal)
+            .then(response => {
+                if (currentTask && !currentTask.signal.aborted) {
+                    console.log('Sending response back to popup:', response);
+                    sendResponse({ reply: response });
+                } else {
+                    console.warn('Current task was aborted. Not sending response.');
+                }
+            })
             .catch(error => {
-                console.error('Message handling error:', error);
-                sendResponse({ error: error.message });
+                if (currentTask && !currentTask.signal.aborted) {
+                    console.error('Error in handler:', error);
+                    sendResponse({ error: error.message });
+                } else {
+                    console.warn('Current task was aborted. Not sending error response.');
+                }
+            })
+            .finally(() => {
+                // Clean up after task completion
+                console.log('Task completed. Cleaning up currentTask.');
+                currentTask = null;
             });
-        return true;
+        
+        return true; // Keeps the message channel open for async response
     } else if (request.type === 'TAKE_SCREENSHOT') {
         takeScreenshot().then(dataUrl => sendResponse({ screenshot: dataUrl }))
             .catch(error => {
@@ -313,250 +450,6 @@ async function extractPageContent() {
     }
 }
 
-// Execute automation action
-async function executeAction(action) {
-    try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tab) {
-            throw new Error('No active tab found');
-        }
-
-        // Request permissions if needed
-        const permissions = {
-            permissions: ['activeTab', 'scripting'],
-            origins: [tab.url]
-        };
-
-        const hasPermission = await chrome.permissions.contains(permissions);
-        if (!hasPermission) {
-            const granted = await chrome.permissions.request(permissions);
-            if (!granted) {
-                throw new Error('Required permissions not granted');
-            }
-        }
-
-        switch (action.type) {
-            case 'click':
-                await chrome.scripting.executeScript({
-                    target: { tabId: tab.id },
-                    func: (x, y) => {
-                        const element = document.elementFromPoint(x, y);
-                        if (element) {
-                            element.click();
-                            return { success: true, element: element.tagName };
-                        }
-                        return { success: false, error: 'No element found at coordinates' };
-                    },
-                    args: [action.x, action.y]
-                });
-                break;
-
-            case 'screenshot':
-                const dataUrl = await chrome.tabs.captureVisibleTab(null, { format: 'png' });
-                return { success: true, screenshot: dataUrl };
-
-            case 'search':
-                const searchUrl = action.engine === 'perplexity' 
-                    ? `https://www.perplexity.ai/?q=${encodeURIComponent(action.query)}`
-                    : `https://www.google.com/search?q=${encodeURIComponent(action.query)}`;
-                
-                await chrome.tabs.update(tab.id, { url: searchUrl });
-                await new Promise((resolve) => {
-                    chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-                        if (tabId === tab.id && info.status === 'complete') {
-                            chrome.tabs.onUpdated.removeListener(listener);
-                            setTimeout(resolve, 2000);
-                        }
-                    });
-                });
-                break;
-
-            case 'extract':
-                await injectContentScript(tab.id);
-                const results = await chrome.scripting.executeScript({
-                    target: { tabId: tab.id },
-                    func: () => {
-                        const content = document.body.innerText;
-                        const links = Array.from(document.querySelectorAll('a')).map(a => ({
-                            text: a.innerText.trim(),
-                            href: a.href
-                        })).filter(link => link.text && link.href);
-                        
-                        return {
-                            title: document.title,
-                            url: window.location.href,
-                            content: content.substring(0, 5000),
-                            links: links.slice(0, 10)
-                        };
-                    }
-                });
-
-                return { success: true, data: results[0].result };
-
-            case 'navigate':
-                await chrome.tabs.update(tab.id, { url: action.url });
-                await new Promise((resolve) => {
-                    chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-                        if (tabId === tab.id && info.status === 'complete') {
-                            chrome.tabs.onUpdated.removeListener(listener);
-                            setTimeout(resolve, 2000);
-                        }
-                    });
-                });
-                break;
-
-            default:
-                throw new Error(`Unknown action type: ${action.type}`);
-        }
-        
-        return { success: true };
-    } catch (error) {
-        console.error('Action error:', error);
-        throw error;
-    }
-}
-
-// Handle the message by sending it to your chat app
-async function handleMessage(message, settings = {}) {
-    try {
-        console.log('Processing message:', message);
-        
-        // Take screenshot if needed for context
-        let screenshot = null;
-        if (message.toLowerCase().includes('click') || 
-            message.toLowerCase().includes('find') || 
-            message.toLowerCase().includes('look') ||
-            message.toLowerCase().includes('where')) {
-            try {
-                screenshot = await takeScreenshot();
-                console.log('Screenshot taken for context');
-            } catch (error) {
-                console.error('Screenshot error:', error);
-            }
-        }
-
-        const defaultSettings = {
-            model: 'openai/gpt-3.5-turbo',
-            temperature: 0.7,
-            stream: false,
-            systemPrompt: SYSTEM_PROMPT
-        };
-
-        const finalSettings = { ...defaultSettings, ...settings };
-        
-        // Prepare messages with screenshot if available
-        const messages = [
-            {
-                role: 'system',
-                content: finalSettings.systemPrompt
-            },
-            {
-                role: 'user',
-                content: screenshot ? [
-                    { type: 'text', text: message },
-                    { type: 'image_url', image_url: screenshot }
-                ] : message
-            }
-        ];
-
-        console.log('Sending request to API:', {
-            model: finalSettings.model,
-            messages: messages
-        });
-
-        const response = await fetch('http://localhost:3000/api/chat/public', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Extension-Version': '1.0',
-                'X-Extension-ID': chrome.runtime.id
-            },
-            body: JSON.stringify({
-                chatSettings: {
-                    model: finalSettings.model,
-                    temperature: finalSettings.temperature,
-                    stream: false
-                },
-                messages: messages,
-                provider: 'openrouter'
-            })
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('API error:', {
-                status: response.status,
-                statusText: response.statusText,
-                body: errorText
-            });
-            throw new Error(`API error: ${response.status} - ${errorText}`);
-        }
-
-        const responseData = await response.json();
-        console.log('API response:', responseData);
-
-        // Extract the message content
-        const messageContent = responseData.message?.content || responseData.content || responseData;
-        const responseText = typeof messageContent === 'string' ? messageContent : JSON.stringify(messageContent);
-
-        // Execute any commands in the response
-        if (responseText.includes('EXECUTE:')) {
-            const commands = responseText.split('EXECUTE:').slice(1);
-            for (const commandText of commands) {
-                try {
-                    const command = JSON.parse(commandText.split('\n')[0]);
-                    console.log('Executing command:', command);
-                    const result = await executeAction(command);
-                    console.log('Command result:', result);
-
-                    // If the command generated a screenshot, include it in the next message
-                    if (result?.screenshot) {
-                        messages.push({
-                            role: 'assistant',
-                            content: responseText
-                        });
-                        messages.push({
-                            role: 'user',
-                            content: [
-                                { type: 'text', text: 'Here is the screenshot you requested. What do you see?' },
-                                { type: 'image_url', image_url: result.screenshot }
-                            ]
-                        });
-                        
-                        // Get AI's analysis of the screenshot
-                        const analysisResponse = await fetch('http://localhost:3000/api/chat/public', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Extension-Version': '1.0',
-                                'X-Extension-ID': chrome.runtime.id
-                            },
-                            body: JSON.stringify({
-                                chatSettings: finalSettings,
-                                messages: messages,
-                                provider: 'openrouter'
-                            })
-                        });
-
-                        if (analysisResponse.ok) {
-                            const analysisData = await analysisResponse.json();
-                            return analysisData.message?.content || 'Screenshot taken and analyzed.';
-                        }
-                    }
-                } catch (error) {
-                    console.error('Command execution error:', error);
-                }
-            }
-        }
-
-        return responseText;
-
-    } catch (error) {
-        console.error('Message handling error:', error);
-        throw error;
-    }
-}
-
 // Initialize session context with available models
 chrome.runtime.onInstalled.addListener(() => {
     sessionContext = {
@@ -574,3 +467,5 @@ chrome.runtime.onInstalled.addListener(() => {
         }
     };
 });
+
+const tasks = new Map(); // Map to track multiple tasks

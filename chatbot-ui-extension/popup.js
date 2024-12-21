@@ -1,11 +1,17 @@
+// Initialize state variables at the top level
+let isAgentWorking = false;
+let currentTaskController = null;
+let chatContainer, featuresPanel, userInput, sendButton, chatMode, featuresMode, modelSelector;
+
 document.addEventListener('DOMContentLoaded', () => {
-    const chatContainer = document.getElementById('chatContainer');
-    const featuresPanel = document.getElementById('featuresPanel');
-    const userInput = document.getElementById('userInput');
-    const sendButton = document.getElementById('sendButton');
-    const chatMode = document.getElementById('chatMode');
-    const featuresMode = document.getElementById('featuresMode');
-    const modelSelector = document.getElementById('modelSelector');
+    // Initialize DOM elements
+    chatContainer = document.getElementById('chatContainer');
+    featuresPanel = document.getElementById('featuresPanel');
+    userInput = document.getElementById('userInput');
+    sendButton = document.getElementById('sendButton');
+    chatMode = document.getElementById('chatMode');
+    featuresMode = document.getElementById('featuresMode');
+    modelSelector = document.getElementById('modelSelector');
 
     // Initialize model selector
     const models = [
@@ -16,11 +22,58 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'google/gemini-pro-1.5', name: 'Gemini Pro' }
     ];
 
+    // Initialize feature buttons
+    const features = [
+        { id: 'screenshot', name: 'Take Screenshot', action: 'Take a screenshot' },
+        { id: 'click', name: 'Click Element', action: 'Click an element' },
+        { id: 'switch-tab', name: 'Switch Tab', action: 'Switch to another tab' },
+        { id: 'navigate', name: 'Navigate', action: 'Navigate to URL' },
+        { id: 'system-info', name: 'System Info', action: 'Show system info' },
+        { id: 'cpu-usage', name: 'CPU Usage', action: 'Show CPU usage' },
+        { id: 'memory', name: 'Memory Usage', action: 'Show memory usage' },
+        { id: 'processes', name: 'Processes', action: 'List processes' }
+    ];
+
+    // Initialize features panel
+    featuresPanel.innerHTML = features.map(feature => `
+        <button class="feature-button" data-action="${feature.action}">
+            ${feature.name}
+        </button>
+    `).join('');
+
+    // Add feature button click handlers
+    document.querySelectorAll('.feature-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const action = button.dataset.action;
+            if (action) {
+                chatMode.click(); // Switch to chat mode
+                sendMessage(action); // Send the action as a message
+            }
+        });
+    });
+
+    // Initialize models dropdown
     models.forEach(model => {
         const option = document.createElement('option');
         option.value = model.id;
         option.textContent = model.name;
         modelSelector.appendChild(option);
+    });
+
+    // Event listeners
+    sendButton.addEventListener('click', () => {
+        if (isAgentWorking && currentTaskController) {
+            currentTaskController.abort();
+        } else {
+            sendMessage();
+        }
+    });
+
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
     });
 
     // Mode switching
@@ -35,255 +88,194 @@ document.addEventListener('DOMContentLoaded', () => {
         featuresMode.classList.add('active');
         chatMode.classList.remove('active');
         chatContainer.style.display = 'none';
-        featuresPanel.style.display = 'flex';
+        featuresPanel.style.display = 'grid';
     });
 
-    // Handle feature buttons
-    document.querySelectorAll('.feature-button').forEach(button => {
-        button.addEventListener('click', async () => {
-            const feature = button.dataset.feature;
-            
-            // Add computer control specific features
-            if (feature === 'computer-control') {
-                const message = `I want to ${button.dataset.action} my computer`;
-                await sendMessage(message, true);
-                return;
-            }
+    // Focus input on popup open
+    userInput.focus();
 
-            if (feature === 'screenshot') {
-                const screenshot = await takeScreenshot();
-                if (screenshot) {
-                    appendMessage('Screenshot taken!', 'bot');
-                    const imgElement = document.createElement('img');
-                    imgElement.src = screenshot;
-                    imgElement.style.maxWidth = '100%';
-                    imgElement.style.borderRadius = '8px';
-                    imgElement.style.marginTop = '8px';
-                    const messageDiv = appendMessage('', 'bot');
-                    messageDiv.appendChild(imgElement);
-                }
-                return;
-            }
+    console.log('Popup initialized successfully.');
+});
 
-            chrome.runtime.sendMessage(
-                { type: 'OPEN_FEATURE', feature },
-                response => {
-                    if (response.error) {
-                        appendMessage(`Error: ${response.error}`, 'error');
-                    } else {
-                        appendMessage(`Opening ${feature}...`, 'bot');
-                    }
-                }
-            );
+// Update sendMessage function with logging
+async function sendMessage(customMessage = null) {
+    if (!userInput || !sendButton) {
+        console.error('User input or send button not found.');
+        return;
+    }
+    
+    const message = customMessage || userInput.value.trim();
+    if (!message) {
+        console.warn('Empty message. Aborting sendMessage.');
+        return;
+    }
+
+    console.log('Sending message:', message);
+
+    // Add user message to chat
+    appendMessage(message, 'user');
+    if (!customMessage) {
+        userInput.value = '';
+    }
+
+    try {
+        // Update UI state
+        isAgentWorking = true;
+        sendButton.textContent = 'Stop';
+        sendButton.classList.add('stop');
+        userInput.disabled = true;
+
+        // Add loading message
+        const loadingMessage = appendMessage('Agent is working ...', 'system', true);
+        console.log('Loading message appended.');
+
+        console.log('Sending message to background:', message);
+
+        // Send message to background script
+        const response = await chrome.runtime.sendMessage({
+            type: 'SEND_MESSAGE',
+            message: message,
+            settings: {
+                model: modelSelector.value,
+                stream: false
+            }
         });
-    });
 
-    // Take screenshot function
-    async function takeScreenshot() {
-        try {
-            const response = await chrome.runtime.sendMessage({ type: 'TAKE_SCREENSHOT' });
-            return response.screenshot;
-        } catch (error) {
-            console.error('Screenshot error:', error);
-            appendMessage('Failed to take screenshot', 'error');
-            return null;
+        console.log('Received response from background:', response);
+
+        // Remove loading message
+        if (loadingMessage) {
+            loadingMessage.remove();
+            console.log('Loading message removed.');
         }
-    }
 
-    // Execute automation action
-    async function executeAction(action) {
-        try {
-            const response = await chrome.runtime.sendMessage({
-                type: 'EXECUTE_ACTION',
-                action: action
-            });
-            return response.result;
-        } catch (error) {
-            console.error('Action error:', error);
-            appendMessage('Failed to execute action', 'error');
-            return null;
+        // Handle the response
+        if (response.error) {
+            throw new Error(response.error);
         }
-    }
 
-    // Send message function
-    const sendMessage = async (customMessage = null) => {
-        const messageInput = document.getElementById('userInput');
-        const sendButton = document.getElementById('sendButton');
-        const message = customMessage || messageInput.value.trim();
-        
-        if (!message) return;
+        let replyText = '';
 
-        // Disable input and button while processing
-        messageInput.disabled = true;
-        sendButton.disabled = true;
-        sendButton.textContent = '...';
+        if (typeof response === 'string') {
+            replyText = response;
+        } else if (response.reply) {
+            replyText = response.reply;
+        } else if (response.choices?.[0]?.message?.content) {
+            replyText = response.choices[0].message.content;
+        } else if (response.message?.content) {
+            replyText = response.message.content;
+        }
 
-        try {
-            // Take screenshot if requested
-            let screenshot = null;
-            if (message.toLowerCase().includes('screenshot')) {
-                try {
-                    const response = await chrome.runtime.sendMessage({ type: 'TAKE_SCREENSHOT' });
-                    if (response && response.screenshot) {
-                        screenshot = response.screenshot;
-                        // Show the screenshot in chat
-                        const imgElement = document.createElement('img');
-                        imgElement.src = screenshot;
-                        imgElement.style.maxWidth = '100%';
-                        imgElement.style.borderRadius = '8px';
-                        imgElement.style.marginTop = '8px';
-                        const messageDiv = appendMessage('Screenshot taken:', 'bot');
-                        messageDiv.appendChild(imgElement);
-                    }
-                } catch (error) {
-                    console.error('Screenshot error:', error);
-                    appendMessage('Failed to take screenshot: ' + error.message, 'error');
-                }
-            }
+        console.log('Extracted replyText:', replyText);
 
-            // Add user message to chat
-            appendMessage(message, 'user');
+        if (replyText) {
+            // Format and display the response
+            const formattedResponse = formatResponse(replyText);
+            appendMessage(formattedResponse, 'bot');
+            console.log('Bot message appended.');
             
-            // Clear input if it's not a custom message
-            if (!customMessage) {
-                messageInput.value = '';
-            }
-
-            // Get selected model
-            const modelSelect = document.getElementById('modelSelector');
-            const selectedModel = modelSelect.value;
-
-            // Send message to background script
-            const response = await chrome.runtime.sendMessage({
-                type: 'SEND_MESSAGE',
-                message: message,
-                settings: {
-                    model: selectedModel,
-                    temperature: 0.7,
-                    stream: false,
-                    screenshot: screenshot
-                }
-            });
-
-            if (response.error) {
-                throw new Error(response.error);
-            }
-
-            // Handle the response
-            appendMessage(response.reply, 'bot');
-
-            // Check for automation commands
-            if (response.reply.includes('EXECUTE:')) {
-                const commands = response.reply.split('EXECUTE:').slice(1);
+            // Handle automation commands if any
+            if (replyText.includes('EXECUTE:')) {
+                const commands = replyText.split('EXECUTE:').slice(1);
                 for (const commandText of commands) {
                     try {
                         const command = JSON.parse(commandText.split('\n')[0]);
                         const result = await executeAction(command);
                         if (result && result.success) {
-                            appendMessage(`Action executed: ${command.type}`, 'bot');
+                            appendMessage(`✅ Action completed: ${command.type}`, 'system');
                         }
                     } catch (error) {
                         console.error('Command execution error:', error);
-                        appendMessage(`Failed to execute command: ${error.message}`, 'error');
+                        appendMessage(`❌ Failed to execute command: ${error.message}`, 'error');
                     }
                 }
             }
-
-        } catch (error) {
-            console.error('Error:', error);
-            appendMessage(`Error: ${error.message}`, 'error');
-        } finally {
-            // Re-enable input and button
-            messageInput.disabled = false;
-            sendButton.disabled = false;
-            sendButton.textContent = 'Send';
-            messageInput.focus();
-        }
-    };
-
-    // Format message with code blocks
-    const formatMessageWithCodeBlocks = (text) => {
-        const parts = text.split('```');
-        let formatted = '';
-        
-        for (let i = 0; i < parts.length; i++) {
-            if (i % 2 === 0) {
-                // Regular text
-                formatted += `<span>${escapeHtml(parts[i])}</span>`;
-            } else {
-                // Code block
-                formatted += `<pre><code>${escapeHtml(parts[i])}</code></pre>`;
-            }
-        }
-        
-        return formatted;
-    };
-
-    // Escape HTML to prevent XSS
-    const escapeHtml = (unsafe) => {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    };
-
-    // Append message to chat container
-    const appendMessage = (text, type, isTemp = false) => {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', `${type}-message`);
-        if (isTemp) {
-            messageDiv.classList.add('temp-message');
-        }
-        messageDiv.textContent = text;
-        chatContainer.appendChild(messageDiv);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-        return messageDiv;
-    };
-
-    // Event listeners
-    sendButton.addEventListener('click', () => sendMessage());
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    // Focus input on popup open
-    userInput.focus();
-});
-
-async function handleUserInput(message, settings = {}) {
-    try {
-        // Send message to background script with settings
-        const response = await chrome.runtime.sendMessage({
-            type: 'SEND_MESSAGE',
-            message: message,
-            settings: settings
-        });
-        
-        if (response.error) {
-            throw new Error(response.error);
+        } else {
+            throw new Error('No response content found');
         }
 
-        return response.reply;
     } catch (error) {
-        console.error('Error handling user input:', error);
-        throw error;
+        console.error('Error during sendMessage:', error);
+        appendMessage(`❌ Error: ${error.message}`, 'error');
+    } finally {
+        // Reset UI state
+        isAgentWorking = false;
+        currentTaskController = null;
+        sendButton.textContent = 'Send';
+        sendButton.classList.remove('stop');
+        userInput.disabled = false;
+        userInput.focus();
+        console.log('UI state reset.');
     }
 }
 
-async function handleScreenshotCommand(message) {
-    try {
-        const screenshotResult = await chrome.runtime.sendMessage({ type: 'TAKE_SCREENSHOT' });
-        if (screenshotResult.error) {
-            throw new Error(screenshotResult.error);
-        }
-        return screenshotResult.screenshot;
-    } catch (error) {
-        console.error('Screenshot error:', error);
-        return null;
+// Helper function to format response
+function formatResponse(text) {
+    // Split into content and commands if present
+    if (text.includes('EXECUTE:')) {
+        const parts = text.split('EXECUTE:');
+        return parts[0].trim(); // Return only the text content
     }
+    return text;
+}
+
+// Update appendMessage function
+function appendMessage(text, type, isTemp = false) {
+    if (!chatContainer) return null;
+
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', `${type}-message`);
+    
+    if (isTemp) {
+        messageDiv.classList.add('temp-message');
+        messageDiv.innerHTML = text; // Allow emoji rendering
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        return messageDiv;
+    }
+
+    const contentDiv = document.createElement('div');
+    contentDiv.classList.add('message-content');
+
+    // Handle different message types
+    switch (type) {
+        case 'bot':
+            // Format bot messages with markdown-like styling
+            contentDiv.innerHTML = text
+                .split('\n')
+                .map(line => {
+                    if (line.startsWith('###')) {
+                        return `<h3>${line.replace('###', '').trim()}</h3>`;
+                    }
+                    if (line.includes('**')) {
+                        return line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    }
+                    if (/^\d+\./.test(line)) {
+                        return `<div class="list-item">${line}</div>`;
+                    }
+                    return line;
+                })
+                .join('<br>');
+            break;
+        case 'system':
+            // System messages with emoji
+            contentDiv.innerHTML = text;
+            break;
+        default:
+            // User and error messages as plain text
+            contentDiv.textContent = text;
+    }
+
+    messageDiv.appendChild(contentDiv);
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    return messageDiv;
+}
+
+// Execute action function
+async function executeAction(command) {
+    return await chrome.runtime.sendMessage({
+        type: 'EXECUTE_ACTION',
+        action: command
+    });
 } 
