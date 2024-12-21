@@ -1,18 +1,28 @@
 {
     "manifest_version": 3,
-    "name": "Agent UI Extension",
+    "name": "AI Assistant",
     "version": "1.0",
-    "description": "Chrome extension for interacting with the Cursor AI agent",
+    "description": "AI Assistant for web automation and research",
     "permissions": [
         "activeTab",
         "scripting",
-        "storage",
         "tabs",
-        "cookies"
+        "desktopCapture"
     ],
     "host_permissions": [
-        "http://localhost:3000/*"
+        "http://localhost:3000/*",
+        "https://*.perplexity.ai/*",
+        "https://*.google.com/*",
+        "<all_urls>"
     ],
+    "externally_connectable": {
+        "matches": [
+            "http://localhost:3000/*"
+        ]
+    },
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:3000 https://*.perplexity.ai https://*.google.com https://docs.googleapis.com"
+    },
     "action": {
         "default_popup": "popup.html",
         "default_icon": {
@@ -20,7 +30,8 @@
         }
     },
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "background.js",
+        "type": "module"
     },
     "content_scripts": [
         {
