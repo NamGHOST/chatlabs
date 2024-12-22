@@ -1,0 +1,24 @@
+{
+    "platforms": {
+        "thread.net": {
+            "replySelector": ".reply-button",
+            "commentTextarea": "#comment-field",
+            "submitButton": ".submit-comment"
+        },
+        "facebook.com": {
+            "replySelector": ".comment-reply",
+            "commentTextarea": "textarea[name='comment'], textarea.inputtext",
+            "submitButton": "button[type='submit'], button._1mf7"
+        },
+        "twitter.com": {
+            "replySelector": ".reply-button",
+            "commentTextarea": "div.DraftEditor-root div[contenteditable='true']",
+            "submitButton": "div[data-testid='tweetButtonInline']"
+        },
+        "linkedin.com": {
+            "replySelector": ".reply-button-selector",
+            "commentTextarea": "textarea.comment-textarea",
+            "submitButton": "button.submit-comment"
+        }
+    }
+} 

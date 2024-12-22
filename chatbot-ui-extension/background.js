@@ -5,39 +5,42 @@ let sessionContext = {};
 let currentTask = null;
 
 // Update the system prompt and agent capabilities
-const SYSTEM_PROMPT = `You are an AI assistant with computer control capabilities on Windows. Current date: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
+const SYSTEM_PROMPT = `You are an AI research assistant that helps users gather and organize information. Current date: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
 
 Available Actions:
-1. CLICK: Click on screen coordinates
-   EXECUTE:{"type": "click", "x": number, "y": number}
-
-2. SEARCH: Search on web platforms
+1. SEARCH: Search on web platforms
    EXECUTE:{"type": "search", "engine": "perplexity|google", "query": "search query"}
 
-3. EXTRACT: Extract content from current page
+2. EXTRACT: Extract content from current page
    EXECUTE:{"type": "extract"}
 
-4. SCREENSHOT: Take screenshot of current page
-   EXECUTE:{"type": "screenshot"}
+3. COPY_TO_DOC: Copy content to document
+   EXECUTE:{"type": "copyToDoc", "content": "text to copy", "format": "markdown|text", "section": "optional section name"}
 
-5. NAVIGATE: Navigate to URL
-   EXECUTE:{"type": "navigate", "url": "url"}
+4. SWITCH_TAB: Switch to a tab with specific URL pattern
+   EXECUTE:{"type": "switchTab", "urlPattern": "domain-pattern"}
 
-When analyzing a screenshot:
-1. First describe what you see.
-2. Identify clickable elements and their coordinates.
-3. Suggest possible actions based on the task.
+For research tasks:
+1. I will search relevant information using both Perplexity and Google
+2. For each useful page:
+   - Extract key information
+   - Copy important content to the document
+3. Organize information in a structured way
+4. Provide a summary at the end
 
-Always execute one command at a time and wait for the result before proceeding.
-Describe what you're doing at each step.
-
-If you have no further actions to execute, kindly indicate that the task is complete.`;
+I will work with existing tabs and maintain a professional writing style.
+I will execute one action at a time and wait for the result before proceeding.`;
 
 // Define the handler function
 async function handler(initialMessage, settings = {}, signal) {
     const messages = [];
     let loopCount = 0;
     const MAX_LOOPS = 5;
+    let searchContext = {
+        lastSearchQuery: '',
+        searchResults: [],
+        extractedContent: []
+    };
 
     // Add the system prompt to messages
     messages.push({
@@ -48,8 +51,20 @@ async function handler(initialMessage, settings = {}, signal) {
     try {
         let currentMessage = initialMessage;
 
+        // Update side panel with initial task
+        await updateSidePanel({
+            type: 'task_start',
+            message: initialMessage
+        });
+
         while (loopCount < MAX_LOOPS && !signal.aborted) {
             console.log(`Task loop ${loopCount + 1} starting...`);
+
+            // Update side panel with current status
+            await updateSidePanel({
+                type: 'status',
+                message: `Processing step ${loopCount + 1}...`
+            });
 
             // Add only user-generated messages
             messages.push({
@@ -114,45 +129,98 @@ async function handler(initialMessage, settings = {}, signal) {
                         const command = JSON.parse(commandText.split('\n')[0]);
                         console.log('Executing command:', command);
                         
+                        // Update side panel with current action
+                        await updateSidePanel({
+                            type: 'action',
+                            action: command
+                        });
+
                         // Execute the command
                         const result = await executeAction(command);
                         console.log('Command result:', result);
 
-                        // If it was a search command, extract the content
-                        if (command.type === 'search') {
-                            // Wait for page to load
-                            await new Promise(resolve => setTimeout(resolve, 3000));
+                        // Update side panel with result
+                        await updateSidePanel({
+                            type: 'result',
+                            action: command,
+                            result: result
+                        });
+
+                        // Handle search results
+                        if (command.type === 'search' && result?.searchResults) {
+                            searchContext.lastSearchQuery = command.query;
+                            searchContext.searchResults.push({
+                                query: command.query,
+                                engine: command.engine,
+                                results: result.searchResults
+                            });
+
+                            // Format the results for the AI
+                            const formattedResults = result.searchResults.summary || 
+                                `Search results for "${command.query}":\n${JSON.stringify(result.searchResults, null, 2)}`;
                             
-                            // Extract content
-                            const extractResult = await executeAction({ type: 'extract' });
-                            if (extractResult?.data) {
-                                currentMessage = `I searched for "${command.query}" and found this content:\n\nTitle: ${extractResult.data.title}\n\nContent: ${extractResult.data.content}\n\nPlease analyze this information and suggest next steps.`;
-                                break; // Break the command loop to process this content
-                            }
+                            // Update side panel with formatted results
+                            await updateSidePanel({
+                                type: 'search_results',
+                                query: command.query,
+                                results: formattedResults
+                            });
+
+                            currentMessage = `I searched for "${command.query}" and found:\n\n${formattedResults}\n\nPlease analyze these results and suggest next steps.`;
+                            break;
+                        }
+
+                        // Handle extracted content
+                        if (command.type === 'extract' && result?.data) {
+                            searchContext.extractedContent.push({
+                                url: result.data.url,
+                                content: result.data.summary || result.data.content
+                            });
+
+                            // Update side panel with extracted content
+                            await updateSidePanel({
+                                type: 'extracted_content',
+                                url: result.data.url,
+                                content: result.data.summary || result.data.content
+                            });
+
+                            currentMessage = `I extracted the following content:\n\n${result.data.summary || result.data.content}\n\nPlease analyze this information and suggest next steps.`;
+                            break;
                         }
                     } catch (error) {
                         console.error('Command execution error:', error);
+                        // Update side panel with error
+                        await updateSidePanel({
+                            type: 'error',
+                            error: error.message
+                        });
                         messages.push({
                             role: 'system',
                             content: `Error executing command: ${error.message}`
                         });
                     }
                 }
-                // Continue the loop to process new commands
                 loopCount++;
                 continue;
             }
 
-            // If no commands and no termination keywords, terminate the loop
-            console.log('No commands to execute and no termination keywords found. Terminating loop.');
-            return responseText;
+            // Update side panel with completion
+            await updateSidePanel({
+                type: 'complete',
+                message: responseText
+            });
 
-            // Increment loop counter
-            loopCount++;
+            return responseText;
         }
 
         return 'Task completed.';
     } catch (error) {
+        // Update side panel with error
+        await updateSidePanel({
+            type: 'error',
+            error: error.message
+        });
+        
         if (error.message === 'Task cancelled') {
             return 'Task cancelled by user.';
         }
@@ -164,15 +232,108 @@ async function handler(initialMessage, settings = {}, signal) {
 // Execute automation action
 async function executeAction(action) {
     try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tab) {
+        // Get all tabs first
+        const tabs = await chrome.tabs.query({});
+        let targetTab = null;
+
+        if (action.type === 'switchTab') {
+            // Find tab matching the pattern
+            targetTab = tabs.find(tab => tab.url && tab.url.includes(action.urlPattern));
+            if (targetTab) {
+                await chrome.tabs.update(targetTab.id, { active: true });
+                // Wait for tab to be fully active and loaded
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return { success: true, message: `Switched to tab with ${action.urlPattern}` };
+            }
+            return { success: false, error: 'No matching tab found' };
+        }
+
+        if (action.type === 'search') {
+            // Find existing search tab (Google or Perplexity)
+            const searchDomain = action.engine === 'perplexity' ? 'perplexity.ai' : 'google.com';
+            targetTab = tabs.find(tab => tab.url && tab.url.includes(searchDomain));
+            
+            if (!targetTab) {
+                // If no search tab exists, create one
+                const searchUrl = action.engine === 'perplexity' 
+                    ? `https://www.perplexity.ai/?q=${encodeURIComponent(action.query)}`
+                    : `https://www.google.com/search?q=${encodeURIComponent(action.query)}`;
+                targetTab = await chrome.tabs.create({ url: searchUrl, active: true });
+            } else {
+                // Update existing search tab
+                const searchUrl = action.engine === 'perplexity' 
+                    ? `https://www.perplexity.ai/?q=${encodeURIComponent(action.query)}`
+                    : `https://www.google.com/search?q=${encodeURIComponent(action.query)}`;
+                await chrome.tabs.update(targetTab.id, { 
+                    active: true,
+                    url: searchUrl 
+                });
+            }
+
+            // Wait for the page to load and render
+            await new Promise((resolve) => {
+                let attempts = 0;
+                const checkContent = async () => {
+                    if (attempts >= 10) { // Max 10 attempts (20 seconds)
+                        resolve();
+                        return;
+                    }
+
+                    try {
+                        const result = await chrome.scripting.executeScript({
+                            target: { tabId: targetTab.id },
+                            func: () => {
+                                if (window.location.href.includes('google.com')) {
+                                    return document.querySelectorAll('#search .g').length > 0;
+                                } else if (window.location.href.includes('perplexity.ai')) {
+                                    return document.querySelector('.prose') !== null;
+                                }
+                                return false;
+                            }
+                        });
+
+                        if (result[0].result) {
+                            // Additional wait for dynamic content
+                            setTimeout(resolve, 2000);
+                        } else {
+                            attempts++;
+                            setTimeout(checkContent, 2000);
+                        }
+                    } catch (error) {
+                        attempts++;
+                        setTimeout(checkContent, 2000);
+                    }
+                };
+
+                chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+                    if (tabId === targetTab.id && info.status === 'complete') {
+                        chrome.tabs.onUpdated.removeListener(listener);
+                        checkContent();
+                    }
+                });
+            });
+
+            // After loading, extract the content immediately
+            const extractResult = await executeAction({ type: 'extract' });
+            return {
+                success: true,
+                message: `Searched for ${action.query}`,
+                searchResults: extractResult?.data?.searchResults
+            };
+        }
+
+        // For other actions, use the current active tab
+        const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        targetTab = currentTab;
+
+        if (!targetTab) {
             throw new Error('No active tab found');
         }
 
         // Request permissions if needed
         const permissions = {
             permissions: ['activeTab', 'scripting'],
-            origins: [tab.url]
+            origins: [targetTab.url]
         };
 
         const hasPermission = await chrome.permissions.contains(permissions);
@@ -183,84 +344,25 @@ async function executeAction(action) {
             }
         }
 
-        switch (action.type) {
-            case 'click':
-                await chrome.scripting.executeScript({
-                    target: { tabId: tab.id },
-                    func: (x, y) => {
-                        const element = document.elementFromPoint(x, y);
-                        if (element) {
-                            element.click();
-                            return { success: true, element: element.tagName };
-                        }
-                        return { success: false, error: 'No element found at coordinates' };
-                    },
-                    args: [action.x, action.y]
-                });
-                break;
-
-            case 'screenshot':
-                const dataUrl = await chrome.tabs.captureVisibleTab(null, { format: 'png' });
-                return { success: true, screenshot: dataUrl };
-
-            case 'search':
-                const searchUrl = action.engine === 'perplexity' 
-                    ? `https://www.perplexity.ai/?q=${encodeURIComponent(action.query)}`
-                    : `https://www.google.com/search?q=${encodeURIComponent(action.query)}`;
-                
-                await chrome.tabs.update(tab.id, { url: searchUrl });
-                await new Promise((resolve) => {
-                    chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-                        if (tabId === tab.id && info.status === 'complete') {
-                            chrome.tabs.onUpdated.removeListener(listener);
-                            setTimeout(resolve, 2000);
-                        }
-                    });
-                });
-                break;
-
-            case 'extract':
-                await injectContentScript(tab.id);
-                const results = await chrome.scripting.executeScript({
-                    target: { tabId: tab.id },
-                    func: () => {
-                        const content = document.body.innerText;
-                        const links = Array.from(document.querySelectorAll('a')).map(a => ({
-                            text: a.innerText.trim(),
-                            href: a.href
-                        })).filter(link => link.text && link.href);
-                        
-                        return {
-                            title: document.title,
-                            url: window.location.href,
-                            content: content.substring(0, 5000),
-                            links: links.slice(0, 10)
-                        };
-                    }
-                });
-
-                return { success: true, data: results[0].result };
-
-            case 'navigate':
-                await chrome.tabs.update(tab.id, { url: action.url });
-                await new Promise((resolve) => {
-                    chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-                        if (tabId === tab.id && info.status === 'complete') {
-                            chrome.tabs.onUpdated.removeListener(listener);
-                            setTimeout(resolve, 2000);
-                        }
-                    });
-                });
-                break;
-
-            default:
-                throw new Error(`Unknown action type: ${action.type}`);
-        }
+        // Forward all other actions to content script
+        console.log('[executeAction] Forwarding to content script:', action);
+        await injectContentScript(targetTab.id);
         
-        return { success: true };
+        const response = await chrome.scripting.executeScript({
+            target: { tabId: targetTab.id },
+            func: (actionObject) => {
+                return window.__universalAction?.(actionObject) ?? {
+                    success: false,
+                    error: 'No universalAction function found on window.'
+                };
+            },
+            args: [action]
+        });
+
+        return { success: true, data: response[0].result };
     } catch (error) {
-        console.error('Action error:', error);
-        throw error;
+        console.error('Action execution error:', error);
+        return { success: false, error: error.message };
     }
 }
 
@@ -469,3 +571,56 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 const tasks = new Map(); // Map to track multiple tasks
+
+// Helper to find or create a tab with given URL
+async function ensureTab(url) {
+    // If no URL specified, just return the currently active tab
+    if (!url) {
+        const data = await chrome.tabs.query({ active: true, currentWindow: true });
+        return data.length ? [data[0]] : [];
+    }
+    
+    // Check if any existing tab has that domain
+    const domain = new URL(url).hostname.replace('www.', '');
+    const tabs = await chrome.tabs.query({});
+    let candidateTab = tabs.find(t => t.url && t.url.includes(domain));
+    if (!candidateTab) {
+        candidateTab = await chrome.tabs.create({ url });
+        // Wait for load
+        await new Promise((resolve) => {
+            chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+                if (tabId === candidateTab.id && info.status === 'complete') {
+                    chrome.tabs.onUpdated.removeListener(listener);
+                    // Give page a little time to settle
+                    setTimeout(resolve, 1500);
+                }
+            });
+        });
+    } else {
+        // Switch to the found tab
+        await chrome.tabs.update(candidateTab.id, { active: true });
+        // Wait in case it hasn’t fully loaded
+        await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+    return [candidateTab];
+}
+
+// Function to update the side panel
+async function updateSidePanel(update) {
+    try {
+        // Send update to all side panel instances
+        chrome.runtime.sendMessage({
+            type: 'SIDEBAR_UPDATE',
+            data: update
+        });
+    } catch (error) {
+        console.error('Error updating side panel:', error);
+    }
+}
+
+// Listen for side panel toggle command
+chrome.commands.onCommand.addListener((command) => {
+    if (command === 'toggle_sidebar') {
+        chrome.sidePanel.toggle();
+    }
+});

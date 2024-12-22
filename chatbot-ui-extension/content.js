@@ -1,6 +1,163 @@
 // Content script for page interactions
 console.log('Content script loaded');
 
+// Universal action handler
+window.__universalAction = async function(action) {
+    try {
+        console.log('Universal action received:', action);
+        
+        switch (action.type) {
+            case 'navigate':
+                window.location.href = action.url;
+                return { success: true, message: `Navigating to ${action.url}` };
+
+            case 'click':
+                if (action.x != null && action.y != null) {
+                    return clickElement(action.x, action.y);
+                } else if (action.selector) {
+                    const element = document.querySelector(action.selector);
+                    if (element) {
+                        element.click();
+                        return { success: true, message: 'Clicked element by selector' };
+                    }
+                    return { success: false, error: 'No element found for selector' };
+                }
+                return { success: false, error: 'No coordinates or selector provided' };
+
+            case 'search':
+                const searchUrl = action.engine === 'perplexity' 
+                    ? `https://www.perplexity.ai/?q=${encodeURIComponent(action.query)}`
+                    : `https://www.google.com/search?q=${encodeURIComponent(action.query)}`;
+                window.location.href = searchUrl;
+                return { success: true, message: `Searching for ${action.query}` };
+
+            case 'extract':
+                const content = extractPageContent();
+                // If this is a search result page, enhance the extraction
+                if (window.location.href.includes('google.com/search') || 
+                    window.location.href.includes('perplexity.ai')) {
+                    const searchResults = extractSearchResults();
+                    return {
+                        ...content,
+                        searchResults
+                    };
+                }
+                return content;
+
+            case 'likePosts':
+                let count = 0;
+                const numPosts = action.numPosts || 5;
+                
+                for (let round = 0; round < 5; round++) {
+                    const likeButtons = document.querySelectorAll('button, a');
+                    for (const btn of likeButtons) {
+                        const label = (btn.innerText || btn.getAttribute('aria-label') || '').toLowerCase();
+                        if (label.includes('like')) {
+                            btn.click();
+                            count++;
+                            if (count >= numPosts) break;
+                        }
+                    }
+                    if (count >= numPosts) break;
+                    window.scrollBy(0, window.innerHeight);
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+                return { success: true, liked: count };
+
+            case 'scroll':
+                if (action.selector) {
+                    const element = document.querySelector(action.selector);
+                    if (element) {
+                        return scrollToElement(element);
+                    }
+                    return { success: false, error: 'Element not found' };
+                } else if (action.position) {
+                    window.scrollTo(0, action.position);
+                    return { success: true };
+                }
+                return { success: false, error: 'No scroll target specified' };
+
+            case 'wait':
+                try {
+                    const element = await waitForElement(action.selector, action.timeout);
+                    return { success: true, found: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+
+            case 'switchTab':
+                // This will be handled by background script
+                return { success: true, message: `Switching to tab matching ${action.urlPattern}` };
+
+            case 'copyToDoc':
+                try {
+                    // Check if we're on a Google Doc or Notion page
+                    const isGoogleDoc = window.location.href.includes('docs.google.com');
+                    const isNotion = window.location.href.includes('notion.so');
+                    
+                    if (!isGoogleDoc && !isNotion) {
+                        return { success: false, error: 'Not in a supported document editor' };
+                    }
+
+                    if (isGoogleDoc) {
+                        // For Google Docs
+                        const content = action.content;
+                        // Find the editor
+                        const editor = document.querySelector('.kix-appview-editor');
+                        if (!editor) {
+                            return { success: false, error: 'Google Docs editor not found' };
+                        }
+                        
+                        // Create a temporary textarea to handle the paste
+                        const textarea = document.createElement('textarea');
+                        textarea.value = content;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        
+                        // Focus the editor and paste
+                        editor.focus();
+                        document.execCommand('paste');
+                        
+                        return { success: true, message: 'Content copied to Google Doc' };
+                    }
+                    
+                    if (isNotion) {
+                        // For Notion
+                        const content = action.content;
+                        // Find the editor
+                        const editor = document.querySelector('[contenteditable="true"]');
+                        if (!editor) {
+                            return { success: false, error: 'Notion editor not found' };
+                        }
+                        
+                        // Create and dispatch paste event
+                        const pasteEvent = new ClipboardEvent('paste', {
+                            bubbles: true,
+                            cancelable: true,
+                            clipboardData: new DataTransfer()
+                        });
+                        
+                        // Set the content
+                        pasteEvent.clipboardData.setData('text/plain', content);
+                        editor.dispatchEvent(pasteEvent);
+                        
+                        return { success: true, message: 'Content copied to Notion' };
+                    }
+                } catch (error) {
+                    return { success: false, error: `Failed to copy content: ${error.message}` };
+                }
+
+            default:
+                return { success: false, error: `Unknown action type: ${action.type}` };
+        }
+    } catch (err) {
+        console.error('Error in universalAction:', err);
+        return { success: false, error: err.message };
+    }
+};
+
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     try {
@@ -38,6 +195,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 .then(element => sendResponse({ success: true, found: true }))
                 .catch(error => sendResponse({ success: false, error: error.message }));
             return true;
+        }
+
+        if (request.type === 'REPLY') {
+            const { comment } = request;
+            performReply(comment);
+            sendResponse({ success: true });
+        }
+
+        if (request.type === 'EXECUTE_ACTION') {
+            const { action } = request;
+            if (action.type === 'reply') {
+                performReply(action.comment);
+                sendResponse({ success: true });
+            }
+            // Handle other action types...
         }
     } catch (error) {
         console.error('Content script error:', error);
@@ -166,3 +338,255 @@ function waitForElement(selector, timeout = 5000) {
         }, timeout);
     });
 }
+// Function to find reply buttons dynamically
+function findReplyButtons() {
+    const possibleSelectors = [
+        '.reply-button',        // Common class
+        'button:contains("Reply")', // Button with text 'Reply'
+        '.comment-reply',       // Alternative class
+        'button.reply',         // Another possible class
+        // Add more as needed
+    ];
+
+    for (const selector of possibleSelectors) {
+        const buttons = Array.from(document.querySelectorAll(selector));
+        if (buttons.length > 0) return buttons;
+    }
+
+    return [];
+}
+
+let currentPlatformConfig = {};
+
+// Load platform configuration based on hostname
+function loadPlatformConfig() {
+    const hostname = window.location.hostname.replace('www.', '');
+    chrome.runtime.sendMessage({ type: 'GET_PLATFORM_CONFIG', hostname: hostname }, (response) => {
+        if (response && response.config) {
+            currentPlatformConfig = response.config;
+            console.log('Loaded platform config:', currentPlatformConfig);
+            // Optionally, you can initiate other setups here
+        } else {
+            console.warn('No configuration found for this platform.');
+        }
+    });
+}
+
+loadPlatformConfig();
+
+// Example function to perform reply
+function performReply(commentText) {
+    const replyButtons = document.querySelectorAll(currentPlatformConfig.replySelector);
+    replyButtons.forEach(button => button.click());
+
+    setTimeout(() => {
+        const textarea = document.querySelector(currentPlatformConfig.commentTextarea);
+        const submitButton = document.querySelector(currentPlatformConfig.submitButton);
+
+        if (textarea && submitButton) {
+            textarea.value = commentText;
+            submitButton.click();
+            console.log('Replied with:', commentText);
+        } else {
+            console.warn('Textarea or submit button not found.');
+        }
+    }, 1000); // Adjust timeout as needed
+}
+
+// Example function using the configuration
+function replyToPost() {
+    const replyButtons = document.querySelectorAll(currentPlatformConfig.replySelector);
+    replyButtons.forEach(button => button.click());
+
+    // Similar usage for textarea and submit button
+}
+
+// Add new helper function for extracting search results
+function extractSearchResults() {
+    try {
+        if (window.location.href.includes('google.com/search')) {
+            // Extract Google search results more thoroughly
+            const results = [];
+            const searchItems = document.querySelectorAll('#search .g');
+            
+            for (const item of searchItems) {
+                const titleEl = item.querySelector('h3');
+                const linkEl = item.querySelector('a');
+                const snippetEl = item.querySelector('.VwiC3b, .st');
+                const dateEl = item.querySelector('.MUxGbd.wuQ4Ob');
+                
+                if (titleEl && linkEl) {
+                    results.push({
+                        title: titleEl.textContent.trim(),
+                        link: linkEl.href,
+                        snippet: snippetEl ? snippetEl.textContent.trim() : '',
+                        date: dateEl ? dateEl.textContent.trim() : '',
+                        isNews: item.closest('#rso') && item.closest('#rso').querySelector('.AxoYTd') !== null
+                    });
+                }
+            }
+
+            // Also extract "Top stories" if present
+            const topStories = document.querySelectorAll('.yJa8yd');
+            if (topStories.length > 0) {
+                for (const story of topStories) {
+                    const titleEl = story.querySelector('.n0jPhd');
+                    const linkEl = story.querySelector('a');
+                    const sourceEl = story.querySelector('.MgUUmf');
+                    const timeEl = story.querySelector('.OSrXXb');
+
+                    if (titleEl && linkEl) {
+                        results.push({
+                            title: titleEl.textContent.trim(),
+                            link: linkEl.href,
+                            source: sourceEl ? sourceEl.textContent.trim() : '',
+                            time: timeEl ? timeEl.textContent.trim() : '',
+                            isTopStory: true
+                        });
+                    }
+                }
+            }
+
+            return { 
+                type: 'google', 
+                results,
+                summary: formatSearchResults(results)
+            };
+        }
+        
+        if (window.location.href.includes('perplexity.ai')) {
+            // Extract Perplexity results
+            const answer = document.querySelector('.prose')?.textContent || '';
+            const sources = Array.from(document.querySelectorAll('a[href^="http"]')).map(link => ({
+                title: link.textContent,
+                link: link.href
+            }));
+
+            // Format the answer and sources
+            const formattedAnswer = `
+## Perplexity AI Answer
+
+${answer}
+
+### Sources
+${sources.map(s => `- [${s.title}](${s.link})`).join('\n')}
+`;
+
+            return { 
+                type: 'perplexity', 
+                answer, 
+                sources,
+                summary: formattedAnswer
+            };
+        }
+
+        // If we're on a news article page, extract the article content
+        if (document.querySelector('article') || document.querySelector('[role="article"]')) {
+            return extractArticleContent();
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Error extracting search results:', error);
+        return null;
+    }
+}
+
+// Helper function to format search results into markdown
+function formatSearchResults(results) {
+    let markdown = '## Search Results\n\n';
+    
+    // Format top stories if any
+    const topStories = results.filter(r => r.isTopStory);
+    if (topStories.length > 0) {
+        markdown += '### Top Stories\n\n';
+        for (const story of topStories) {
+            markdown += `- [${story.title}](${story.link})\n`;
+            if (story.source || story.time) {
+                markdown += `  - ${story.source} ${story.time}\n`;
+            }
+        }
+        markdown += '\n';
+    }
+
+    // Format news results
+    const newsResults = results.filter(r => r.isNews && !r.isTopStory);
+    if (newsResults.length > 0) {
+        markdown += '### News Articles\n\n';
+        for (const result of newsResults) {
+            markdown += `- [${result.title}](${result.link})\n`;
+            if (result.date) {
+                markdown += `  - ${result.date}\n`;
+            }
+            if (result.snippet) {
+                markdown += `  > ${result.snippet}\n`;
+            }
+            markdown += '\n';
+        }
+    }
+
+    // Format other results
+    const otherResults = results.filter(r => !r.isNews && !r.isTopStory);
+    if (otherResults.length > 0) {
+        markdown += '### Other Results\n\n';
+        for (const result of otherResults) {
+            markdown += `- [${result.title}](${result.link})\n`;
+            if (result.snippet) {
+                markdown += `  > ${result.snippet}\n`;
+            }
+            markdown += '\n';
+        }
+    }
+
+    return markdown;
+}
+
+// Helper function to extract article content
+function extractArticleContent() {
+    try {
+        // Find the article container
+        const article = document.querySelector('article') || document.querySelector('[role="article"]');
+        if (!article) return null;
+
+        // Get the title
+        const title = document.querySelector('h1')?.textContent || document.title;
+
+        // Get the date if available
+        const dateEl = article.querySelector('time') || 
+                      article.querySelector('[datetime]') ||
+                      article.querySelector('.date') ||
+                      article.querySelector('.timestamp');
+        const date = dateEl ? dateEl.textContent.trim() : '';
+
+        // Get the main content
+        const contentEls = article.querySelectorAll('p');
+        const content = Array.from(contentEls)
+            .map(p => p.textContent.trim())
+            .filter(text => text.length > 0)
+            .join('\n\n');
+
+        // Format as markdown
+        const markdown = `
+# ${title}
+${date ? `\n*${date}*\n` : ''}
+
+${content}
+
+---
+Source: ${window.location.href}
+`;
+
+        return {
+            type: 'article',
+            title,
+            date,
+            content,
+            url: window.location.href,
+            summary: markdown
+        };
+    } catch (error) {
+        console.error('Error extracting article:', error);
+        return null;
+    }
+}
+
