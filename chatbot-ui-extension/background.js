@@ -1,5 +1,26 @@
 // Store session context
-let sessionContext = {};
+let sessionContext = {
+    messages: [],
+    searchContext: {
+        lastSearchQuery: '',
+        searchResults: [],
+        extractedContent: []
+    },
+    currentTask: null
+};
+
+// Initialize or reset session context
+function initializeSessionContext() {
+    sessionContext = {
+        messages: [],
+        searchContext: {
+            lastSearchQuery: '',
+            searchResults: [],
+            extractedContent: []
+        },
+        currentTask: null
+    };
+}
 
 // Add task management
 let currentTask = null;
@@ -33,31 +54,45 @@ I will execute one action at a time and wait for the result before proceeding.`;
 
 // Define the handler function
 async function handler(initialMessage, settings = {}, signal) {
-    const messages = [];
-    let loopCount = 0;
     const MAX_LOOPS = 5;
-    let searchContext = {
-        lastSearchQuery: '',
-        searchResults: [],
-        extractedContent: []
-    };
-
-    // Add the system prompt to messages
-    messages.push({
-        role: 'system',
-        content: SYSTEM_PROMPT
-    });
+    let loopCount = 0;
 
     try {
+        // Ensure sessionContext is properly initialized
+        if (!sessionContext || !Array.isArray(sessionContext.messages)) {
+            initializeSessionContext();
+        }
+
+        // If this is a new task, add the system prompt
+        if (sessionContext.messages.length === 0) {
+            sessionContext.messages.push({
+                role: 'system',
+                content: SYSTEM_PROMPT
+            });
+        }
+
+        // Add the new message to history
+        if (initialMessage) {
+            sessionContext.messages.push({
+                role: 'user',
+                content: initialMessage
+            });
+        }
+
         let currentMessage = initialMessage;
 
         // Update side panel with initial task
         await updateSidePanel({
             type: 'task_start',
-            message: initialMessage
+            message: initialMessage || 'Starting new task...'
         });
 
         while (loopCount < MAX_LOOPS && !signal.aborted) {
+            if (!currentMessage) {
+                console.warn('No current message to process');
+                break;
+            }
+
             console.log(`Task loop ${loopCount + 1} starting...`);
 
             // Update side panel with current status
@@ -66,11 +101,11 @@ async function handler(initialMessage, settings = {}, signal) {
                 message: `Processing step ${loopCount + 1}...`
             });
 
-            // Add only user-generated messages
-            messages.push({
-                role: 'user',
-                content: currentMessage
-            });
+            // Ensure messages array is valid before making API call
+            if (!Array.isArray(sessionContext.messages)) {
+                console.error('Invalid messages array');
+                throw new Error('Invalid session context');
+            }
 
             // Get AI response
             const response = await fetch('http://localhost:3000/api/chat/public', {
@@ -82,10 +117,10 @@ async function handler(initialMessage, settings = {}, signal) {
                 },
                 body: JSON.stringify({
                     chatSettings: settings,
-                    messages: messages,
+                    messages: sessionContext.messages,
                     provider: 'openrouter'
                 }),
-                signal // Pass the abort signal to fetch
+                signal
             });
 
             if (signal.aborted) {
@@ -109,7 +144,7 @@ async function handler(initialMessage, settings = {}, signal) {
             console.log('Response text:', responseText);
 
             // Add assistant's response to messages
-            messages.push({
+            sessionContext.messages.push({
                 role: 'assistant',
                 content: responseText
             });
@@ -148,8 +183,8 @@ async function handler(initialMessage, settings = {}, signal) {
 
                         // Handle search results
                         if (command.type === 'search' && result?.searchResults) {
-                            searchContext.lastSearchQuery = command.query;
-                            searchContext.searchResults.push({
+                            sessionContext.searchContext.lastSearchQuery = command.query;
+                            sessionContext.searchContext.searchResults.push({
                                 query: command.query,
                                 engine: command.engine,
                                 results: result.searchResults
@@ -172,7 +207,7 @@ async function handler(initialMessage, settings = {}, signal) {
 
                         // Handle extracted content
                         if (command.type === 'extract' && result?.data) {
-                            searchContext.extractedContent.push({
+                            sessionContext.searchContext.extractedContent.push({
                                 url: result.data.url,
                                 content: result.data.summary || result.data.content
                             });
@@ -194,7 +229,7 @@ async function handler(initialMessage, settings = {}, signal) {
                             type: 'error',
                             error: error.message
                         });
-                        messages.push({
+                        sessionContext.messages.push({
                             role: 'system',
                             content: `Error executing command: ${error.message}`
                         });
@@ -237,89 +272,108 @@ async function executeAction(action) {
         let targetTab = null;
 
         if (action.type === 'switchTab') {
-            // Find tab matching the pattern
-            targetTab = tabs.find(tab => tab.url && tab.url.includes(action.urlPattern));
-            if (targetTab) {
-                await chrome.tabs.update(targetTab.id, { active: true });
-                // Wait for tab to be fully active and loaded
-                await new Promise(resolve => setTimeout(resolve, 1000));
+            try {
+                // First try to find an existing tab
+                const tabs = await chrome.tabs.query({});
+                let targetTab = tabs.find(tab => tab.url && tab.url.includes(action.urlPattern));
+                
+                if (targetTab) {
+                    // If tab exists, switch to it
+                    await chrome.tabs.update(targetTab.id, { active: true });
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for tab to be active
+                } else {
+                    // If tab doesn't exist, create it
+                    const url = action.urlPattern.startsWith('http') ? 
+                        action.urlPattern : 
+                        `https://${action.urlPattern}`;
+                    targetTab = await chrome.tabs.create({ url, active: true });
+                    // Wait for the new tab to load
+                    await new Promise((resolve) => {
+                        chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+                            if (tabId === targetTab.id && info.status === 'complete') {
+                                chrome.tabs.onUpdated.removeListener(listener);
+                                setTimeout(resolve, 1000); // Additional wait for dynamic content
+                            }
+                        });
+                    });
+                }
                 return { success: true, message: `Switched to tab with ${action.urlPattern}` };
+            } catch (error) {
+                console.error('Error in switchTab:', error);
+                return { success: false, error: error.message };
             }
-            return { success: false, error: 'No matching tab found' };
         }
 
         if (action.type === 'search') {
-            // Find existing search tab (Google or Perplexity)
-            const searchDomain = action.engine === 'perplexity' ? 'perplexity.ai' : 'google.com';
-            targetTab = tabs.find(tab => tab.url && tab.url.includes(searchDomain));
-            
-            if (!targetTab) {
-                // If no search tab exists, create one
+            try {
+                // Find existing search tab (Google or Perplexity)
+                const searchDomain = action.engine === 'perplexity' ? 'perplexity.ai' : 'google.com';
+                let targetTab = tabs.find(tab => tab.url && tab.url.includes(searchDomain));
+                
+                // Construct search URL
                 const searchUrl = action.engine === 'perplexity' 
                     ? `https://www.perplexity.ai/?q=${encodeURIComponent(action.query)}`
                     : `https://www.google.com/search?q=${encodeURIComponent(action.query)}`;
-                targetTab = await chrome.tabs.create({ url: searchUrl, active: true });
-            } else {
-                // Update existing search tab
-                const searchUrl = action.engine === 'perplexity' 
-                    ? `https://www.perplexity.ai/?q=${encodeURIComponent(action.query)}`
-                    : `https://www.google.com/search?q=${encodeURIComponent(action.query)}`;
-                await chrome.tabs.update(targetTab.id, { 
-                    active: true,
-                    url: searchUrl 
-                });
-            }
 
-            // Wait for the page to load and render
-            await new Promise((resolve) => {
-                let attempts = 0;
-                const checkContent = async () => {
-                    if (attempts >= 10) { // Max 10 attempts (20 seconds)
-                        resolve();
-                        return;
-                    }
+                if (targetTab) {
+                    // Update existing tab
+                    await chrome.tabs.update(targetTab.id, { 
+                        active: true,
+                        url: searchUrl 
+                    });
+                } else {
+                    // Create new tab
+                    targetTab = await chrome.tabs.create({ 
+                        url: searchUrl,
+                        active: true 
+                    });
+                }
 
-                    try {
-                        const result = await chrome.scripting.executeScript({
-                            target: { tabId: targetTab.id },
-                            func: () => {
-                                if (window.location.href.includes('google.com')) {
-                                    return document.querySelectorAll('#search .g').length > 0;
-                                } else if (window.location.href.includes('perplexity.ai')) {
-                                    return document.querySelector('.prose') !== null;
+                // Wait for the page to load and render
+                await new Promise((resolve) => {
+                    const checkContent = async () => {
+                        try {
+                            const result = await chrome.scripting.executeScript({
+                                target: { tabId: targetTab.id },
+                                func: () => {
+                                    if (window.location.href.includes('google.com')) {
+                                        return document.querySelectorAll('#search .g').length > 0;
+                                    } else if (window.location.href.includes('perplexity.ai')) {
+                                        return document.querySelector('.prose') !== null;
+                                    }
+                                    return false;
                                 }
-                                return false;
+                            });
+
+                            if (result[0].result) {
+                                setTimeout(resolve, 2000); // Additional wait for dynamic content
+                            } else {
+                                setTimeout(checkContent, 500);
                             }
-                        });
-
-                        if (result[0].result) {
-                            // Additional wait for dynamic content
-                            setTimeout(resolve, 2000);
-                        } else {
-                            attempts++;
-                            setTimeout(checkContent, 2000);
+                        } catch (error) {
+                            setTimeout(checkContent, 500);
                         }
-                    } catch (error) {
-                        attempts++;
-                        setTimeout(checkContent, 2000);
-                    }
-                };
+                    };
 
-                chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-                    if (tabId === targetTab.id && info.status === 'complete') {
-                        chrome.tabs.onUpdated.removeListener(listener);
-                        checkContent();
-                    }
+                    chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+                        if (tabId === targetTab.id && info.status === 'complete') {
+                            chrome.tabs.onUpdated.removeListener(listener);
+                            checkContent();
+                        }
+                    });
                 });
-            });
 
-            // After loading, extract the content immediately
-            const extractResult = await executeAction({ type: 'extract' });
-            return {
-                success: true,
-                message: `Searched for ${action.query}`,
-                searchResults: extractResult?.data?.searchResults
-            };
+                // After loading, extract the content immediately
+                const extractResult = await executeAction({ type: 'extract' });
+                return {
+                    success: true,
+                    message: `Searched for ${action.query}`,
+                    searchResults: extractResult?.data?.searchResults
+                };
+            } catch (error) {
+                console.error('Error in search:', error);
+                return { success: false, error: error.message };
+            }
         }
 
         // For other actions, use the current active tab

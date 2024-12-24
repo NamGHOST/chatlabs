@@ -455,29 +455,94 @@ function extractSearchResults() {
         }
         
         if (window.location.href.includes('perplexity.ai')) {
-            // Extract Perplexity results
-            const answer = document.querySelector('.prose')?.textContent || '';
-            const sources = Array.from(document.querySelectorAll('a[href^="http"]')).map(link => ({
-                title: link.textContent,
-                link: link.href
-            }));
+            try {
+                // Extract main content
+                const mainContent = document.querySelector('.prose');
+                if (!mainContent) {
+                    console.warn('Prose element not found');
+                    return null;
+                }
 
-            // Format the answer and sources
-            const formattedAnswer = `
-## Perplexity AI Answer
+                // Extract answer and metadata
+                const answer = mainContent.textContent || '';
+                const stockPrice = document.querySelector('[data-price]')?.textContent;
+                const updateTime = document.querySelector('[data-update-time]')?.textContent;
 
-${answer}
+                // Extract sources more reliably
+                const sources = Array.from(document.querySelectorAll('a[href^="http"]'))
+                    .filter(link => !link.href.includes('perplexity.ai'))
+                    .map(link => ({
+                        title: link.textContent.trim(),
+                        link: link.href,
+                        domain: new URL(link.href).hostname
+                    }))
+                    .filter(source => source.title && source.link);
 
-### Sources
-${sources.map(s => `- [${s.title}](${s.link})`).join('\n')}
-`;
+                // Format the answer with improved structure
+                const sections = answer.split('\n\n').filter(section => section.trim());
+                let formattedAnswer = '';
 
-            return { 
-                type: 'perplexity', 
-                answer, 
-                sources,
-                summary: formattedAnswer
-            };
+                // Add header with stock info if available
+                if (stockPrice && updateTime) {
+                    formattedAnswer += `# NVIDIA (NVDA) - ${stockPrice}\n`;
+                    formattedAnswer += `*Last Updated: ${updateTime}*\n\n`;
+                }
+
+                // Process sections with better formatting
+                sections.forEach((section, index) => {
+                    const trimmedSection = section.trim();
+                    if (index === 0 && !stockPrice) {
+                        // Use first section as title if no stock price
+                        formattedAnswer += `# ${trimmedSection}\n\n`;
+                    } else if (trimmedSection.includes(':')) {
+                        // Handle section headers
+                        const [title, ...content] = trimmedSection.split(':');
+                        formattedAnswer += `## ${title.trim()}\n${content.join(':').trim()}\n\n`;
+                    } else if (trimmedSection.length > 0) {
+                        // Regular paragraphs
+                        formattedAnswer += `${trimmedSection}\n\n`;
+                    }
+                });
+
+                // Add sources section with better organization
+                if (sources.length > 0) {
+                    formattedAnswer += `## Sources\n\n`;
+                    // Group sources by domain
+                    const sourcesByDomain = sources.reduce((acc, source) => {
+                        if (!acc[source.domain]) {
+                            acc[source.domain] = [];
+                        }
+                        acc[source.domain].push(source);
+                        return acc;
+                    }, {});
+
+                    // Output sources grouped by domain
+                    Object.entries(sourcesByDomain).forEach(([domain, domainSources]) => {
+                        formattedAnswer += `### ${domain}\n`;
+                        domainSources.forEach(source => {
+                            formattedAnswer += `- [${source.title}](${source.link})\n`;
+                        });
+                        formattedAnswer += '\n';
+                    });
+                }
+
+                return {
+                    type: 'perplexity',
+                    answer,
+                    sources,
+                    stockPrice,
+                    updateTime,
+                    summary: formattedAnswer,
+                    success: true
+                };
+            } catch (error) {
+                console.error('Error extracting Perplexity content:', error);
+                return {
+                    type: 'perplexity',
+                    error: error.message,
+                    success: false
+                };
+            }
         }
 
         // If we're on a news article page, extract the article content

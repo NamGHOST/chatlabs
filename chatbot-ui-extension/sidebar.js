@@ -109,10 +109,118 @@ function handleUpdate(update) {
         case 'search_results':
             const searchDiv = document.createElement('div');
             searchDiv.className = 'search-results';
-            searchDiv.innerHTML = `
-                <h3>Search Results for: ${escapeHtml(update.query)}</h3>
-                <div class="markdown">${markdownToHtml(update.results)}</div>
+            
+            // Create header with search query and timestamp
+            const header = document.createElement('div');
+            header.className = 'search-header';
+            const timestamp = new Date().toLocaleString();
+            header.innerHTML = `
+                <h3 class="section-title">Search Results: ${escapeHtml(update.query)}</h3>
+                <span class="search-timestamp">As of ${timestamp}</span>
             `;
+            searchDiv.appendChild(header);
+
+            // Create container for results
+            const resultsContainer = document.createElement('div');
+            resultsContainer.className = 'search-results-container';
+
+            if (update.results) {
+                try {
+                    // Parse markdown content
+                    const markdownContent = update.results;
+                    const sections = markdownContent.split('\n#').filter(Boolean);
+
+                    // Process each section
+                    sections.forEach(section => {
+                        const [sectionTitle, ...sectionContent] = section.split('\n');
+                        const sectionDiv = document.createElement('div');
+                        sectionDiv.className = 'search-result-item';
+
+                        // Handle section title
+                        if (sectionTitle) {
+                            const titleEl = document.createElement('div');
+                            titleEl.className = 'result-title';
+                            // Remove markdown header symbols and trim
+                            titleEl.textContent = sectionTitle.replace(/^#+\s*/, '').trim();
+                            sectionDiv.appendChild(titleEl);
+                        }
+
+                        // Create section content with proper formatting
+                        const contentEl = document.createElement('div');
+                        contentEl.className = 'result-content';
+
+                        // Process content with enhanced markdown parsing
+                        const processedContent = sectionContent
+                            .join('\n')
+                            .split('\n')
+                            .map(line => {
+                                // Handle different types of content
+                                if (line.startsWith('###')) {
+                                    return `<h3 class="subsection-title">${line.replace(/^###\s*/, '')}</h3>`;
+                                } else if (line.startsWith('##')) {
+                                    return `<h2 class="section-subtitle">${line.replace(/^##\s*/, '')}</h2>`;
+                                } else if (line.startsWith('-')) {
+                                    return `<div class="list-item">${line.substring(1)}</div>`;
+                                } else if (line.trim().startsWith('*') && line.trim().endsWith('*')) {
+                                    return `<div class="emphasis">${line.trim().slice(1, -1)}</div>`;
+                                } else if (line.includes('|')) {
+                                    // Handle table-like data
+                                    const [key, value] = line.split('|').map(s => s.trim());
+                                    return `<div class="data-row"><span class="data-label">${key}:</span><span class="data-value">${value}</span></div>`;
+                                }
+                                return `<p>${line}</p>`;
+                            })
+                            .join('');
+
+                        contentEl.innerHTML = processedContent;
+
+                        // Handle links specially
+                        const links = contentEl.querySelectorAll('a');
+                        links.forEach(link => {
+                            if (link.href) {
+                                const linkContainer = document.createElement('div');
+                                linkContainer.className = 'source-link';
+                                
+                                // Add favicon
+                                const favicon = document.createElement('img');
+                                favicon.className = 'source-favicon';
+                                favicon.src = `https://www.google.com/s2/favicons?domain=${new URL(link.href).hostname}`;
+                                favicon.onerror = () => {
+                                    favicon.style.display = 'none';
+                                };
+                                linkContainer.appendChild(favicon);
+                                
+                                // Add link with domain
+                                const domain = new URL(link.href).hostname;
+                                link.innerHTML += ` <span class="link-domain">(${domain})</span>`;
+                                linkContainer.appendChild(link);
+                                
+                                // Replace original link with container
+                                link.parentNode.replaceChild(linkContainer, link);
+                            }
+                        });
+
+                        sectionDiv.appendChild(contentEl);
+                        resultsContainer.appendChild(sectionDiv);
+                    });
+
+                    // Add error handling for empty results
+                    if (resultsContainer.children.length === 0) {
+                        const noResultsDiv = document.createElement('div');
+                        noResultsDiv.className = 'no-results';
+                        noResultsDiv.textContent = 'No results found for this search.';
+                        resultsContainer.appendChild(noResultsDiv);
+                    }
+                } catch (error) {
+                    console.error('Error processing search results:', error);
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    errorDiv.textContent = 'Error processing search results. Please try again.';
+                    resultsContainer.appendChild(errorDiv);
+                }
+            }
+
+            searchDiv.appendChild(resultsContainer);
             content.appendChild(searchDiv);
             content.scrollTop = content.scrollHeight;
             break;
@@ -199,6 +307,17 @@ async function sendMessage() {
         sendButton.disabled = false;
         userInput.focus();
     }
+}
+
+// Helper function to convert markdown to HTML
+function marked(markdown) {
+    // Simple markdown to HTML conversion
+    return markdown
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
+        .replace(/\n\n/g, '<br><br>')
+        .trim();
 }
 
 // Initialize when DOM is loaded

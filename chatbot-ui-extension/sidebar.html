@@ -87,50 +87,157 @@
             font-weight: 500;
         }
 
-        .search-results-container {
-            padding: 10px;
+        .search-header {
             background: #fff;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 2px solid #e8eaed;
+            margin-bottom: 0;
+        }
+
+        .search-timestamp {
+            color: #666;
+            font-size: 0.85em;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .search-results-container {
+            padding: 15px;
+            background: #fff;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin: 0 0 15px 0;
         }
 
         .search-result-item {
-            padding: 12px;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #eee;
-            transition: background-color 0.2s;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 3px solid #1a73e8;
+            transition: all 0.2s ease;
         }
 
         .search-result-item:last-child {
-            border-bottom: none;
+            margin-bottom: 0;
         }
 
         .search-result-item:hover {
-            background-color: #f8f9fa;
+            background-color: #f0f2f5;
+            transform: translateX(3px);
         }
 
         .result-title {
-            color: #1a73e8;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1.1em;
-            display: block;
-            margin-bottom: 6px;
+            color: #202124;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            line-height: 1.4;
         }
 
-        .result-title:hover {
-            text-decoration: underline;
-        }
-
-        .result-snippet {
+        .result-content {
             color: #4a4a4a;
-            margin: 8px 0;
             font-size: 0.95em;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
-        .result-date {
+        .result-content p {
+            margin: 8px 0;
+        }
+
+        .section-subtitle {
+            color: #1a73e8;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin: 15px 0 10px;
+        }
+
+        .subsection-title {
+            color: #202124;
+            font-size: 1em;
+            font-weight: 600;
+            margin: 12px 0 8px;
+        }
+
+        .list-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .list-item:before {
+            content: "•";
+            color: #1a73e8;
+            position: absolute;
+            left: 0;
+        }
+
+        .emphasis {
             color: #666;
-            font-size: 0.85em;
+            font-style: italic;
+            margin: 8px 0;
+        }
+
+        .data-row {
+            display: flex;
+            margin: 8px 0;
+            align-items: baseline;
+        }
+
+        .data-label {
+            color: #666;
+            font-weight: 500;
+            margin-right: 8px;
+            min-width: 120px;
+        }
+
+        .data-value {
+            color: #202124;
+            flex: 1;
+        }
+
+        .source-link {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            padding: 8px;
+            background: #fff;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .source-link:hover {
+            background: #f0f2f5;
+        }
+
+        .source-favicon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
+        .link-domain {
+            color: #666;
+            font-size: 0.9em;
+            margin-left: 4px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 500;
         }
 
         pre {
