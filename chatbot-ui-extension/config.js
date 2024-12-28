@@ -1,6 +1,7 @@
 // Default configuration
 const defaultConfig = {
     apiEndpoint: 'http://localhost:3000/api/chat/public',
+    computerUseEndpoint: 'http://localhost:3000/api/claude/computer-use',
     defaultModel: 'anthropic/claude-3.5-sonnet',
     temperature: 0.7,
     maxTokens: 2000,

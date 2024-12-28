@@ -1,77 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Assistant</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <title>AI Computer Control</title>
+    <style>
+        body {
+            width: 300px;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }
+        #taskInput {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        #status {
+            margin-top: 10px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .success { background: #e8f5e9; }
+        .error { background: #ffebee; }
+        #progressContainer {
+            margin-top: 10px;
+            display: none;
+        }
+        progress {
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="mode-selector">
-                <button id="chatMode" class="mode-button active">Chat</button>
-                <button id="featuresMode" class="mode-button">Features</button>
-            </div>
-            <select id="modelSelector" class="model-selector">
-                <!-- Models will be populated by JavaScript -->
-            </select>
-        </div>
-
-        <div id="chatContainer" class="chat-container">
-            <div id="chat-history" class="chat-history">
-                <!-- Chat messages will be added here -->
-            </div>
-        </div>
-
-        <div id="featuresPanel" class="features-panel" style="display: none;">
-            <div class="features-grid">
-                <button class="feature-button" data-feature="screenshot">
-                    <span class="icon">📸</span>
-                    Take Screenshot
-                </button>
-                <button class="feature-button" data-feature="computer-control" data-action="click element">
-                    <span class="icon">🖱️</span>
-                    Click Element
-                </button>
-                <button class="feature-button" data-feature="computer-control" data-action="switch tab">
-                    <span class="icon">📑</span>
-                    Switch Tab
-                </button>
-                <button class="feature-button" data-feature="computer-control" data-action="navigate">
-                    <span class="icon">🔄</span>
-                    Navigate
-                </button>
-                <button class="feature-button" data-feature="computer-control" data-action="get system info">
-                    <span class="icon">💻</span>
-                    System Info
-                </button>
-                <button class="feature-button" data-feature="computer-control" data-action="check CPU usage">
-                    <span class="icon">📊</span>
-                    CPU Usage
-                </button>
-                <button class="feature-button" data-feature="computer-control" data-action="check memory usage">
-                    <span class="icon">📈</span>
-                    Memory Usage
-                </button>
-                <button class="feature-button" data-feature="computer-control" data-action="list running processes">
-                    <span class="icon">📋</span>
-                    Processes
-                </button>
-                <button class="feature-button" data-feature="computer-control" data-action="check disk space">
-                    <span class="icon">💾</span>
-                    Disk Space
-                </button>
-                <button class="feature-button" data-feature="computer-control" data-action="check network status">
-                    <span class="icon">🌐</span>
-                    Network
-                </button>
-            </div>
-        </div>
-
-        <div class="input-container">
-            <textarea id="userInput" placeholder="Do something ... " rows="1"></textarea>
-            <button id="sendButton">Send</button>
-        </div>
+    <textarea id="taskInput" placeholder="What would you like me to do?"></textarea>
+    <button id="executeBtn">Execute Task</button>
+    <div id="progressContainer">
+        <p>Step <span id="currentStep">0</span> of <span id="maxSteps">10</span></p>
+        <progress id="progress" value="0" max="10"></progress>
     </div>
+    <div id="status"></div>
     <script src="popup.js"></script>
 </body>
-</html> 
+</html>

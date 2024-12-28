@@ -1,680 +1,809 @@
-// Store session context
-let sessionContext = {
-    messages: [],
-    searchContext: {
-        lastSearchQuery: '',
-        searchResults: [],
-        extractedContent: []
-    },
-    currentTask: null
+import AGENT_THINKING from './agentThinking.js';
+import { agentLoop } from './agentLoop.js';
+
+// Now you can use AGENT_THINKING in your background script
+console.log('[background.js] agentThinking loaded:', AGENT_THINKING);
+
+// Initialize the service worker
+self.oninstall = (event) => {
+    console.log('Service Worker installed');
 };
 
-// Initialize or reset session context
-function initializeSessionContext() {
-    sessionContext = {
-        messages: [],
-        searchContext: {
-            lastSearchQuery: '',
-            searchResults: [],
-            extractedContent: []
-        },
-        currentTask: null
-    };
-}
+self.onactivate = (event) => {
+    console.log('Service Worker activated');
+};
 
-// Add task management
-let currentTask = null;
+// Constants
+const MAX_STEPS = 10;
+const SCREENSHOT_QUALITY = 0.8;
+const CONFIG = {
+    API_URL: 'http://localhost:3000/api/claude/computer-use',
+    MODEL: 'anthropic/claude-3.5-sonnet'
+};
 
-// Update the system prompt and agent capabilities
-const SYSTEM_PROMPT = `You are an AI research assistant that helps users gather and organize information. Current date: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
-
-Available Actions:
-1. SEARCH: Search on web platforms
-   EXECUTE:{"type": "search", "engine": "perplexity|google", "query": "search query"}
-
-2. EXTRACT: Extract content from current page
-   EXECUTE:{"type": "extract"}
-
-3. COPY_TO_DOC: Copy content to document
-   EXECUTE:{"type": "copyToDoc", "content": "text to copy", "format": "markdown|text", "section": "optional section name"}
-
-4. SWITCH_TAB: Switch to a tab with specific URL pattern
-   EXECUTE:{"type": "switchTab", "urlPattern": "domain-pattern"}
-
-For research tasks:
-1. I will search relevant information using both Perplexity and Google
-2. For each useful page:
-   - Extract key information
-   - Copy important content to the document
-3. Organize information in a structured way
-4. Provide a summary at the end
-
-I will work with existing tabs and maintain a professional writing style.
-I will execute one action at a time and wait for the result before proceeding.`;
-
-// Define the handler function
-async function handler(initialMessage, settings = {}, signal) {
-    const MAX_LOOPS = 5;
-    let loopCount = 0;
-
+// Add this helper function for tab navigation
+async function navigateTab(tabId, url) {
     try {
-        // Ensure sessionContext is properly initialized
-        if (!sessionContext || !Array.isArray(sessionContext.messages)) {
-            initializeSessionContext();
-        }
-
-        // If this is a new task, add the system prompt
-        if (sessionContext.messages.length === 0) {
-            sessionContext.messages.push({
-                role: 'system',
-                content: SYSTEM_PROMPT
-            });
-        }
-
-        // Add the new message to history
-        if (initialMessage) {
-            sessionContext.messages.push({
-                role: 'user',
-                content: initialMessage
-            });
-        }
-
-        let currentMessage = initialMessage;
-
-        // Update side panel with initial task
-        await updateSidePanel({
-            type: 'task_start',
-            message: initialMessage || 'Starting new task...'
-        });
-
-        while (loopCount < MAX_LOOPS && !signal.aborted) {
-            if (!currentMessage) {
-                console.warn('No current message to process');
-                break;
-            }
-
-            console.log(`Task loop ${loopCount + 1} starting...`);
-
-            // Update side panel with current status
-            await updateSidePanel({
-                type: 'status',
-                message: `Processing step ${loopCount + 1}...`
-            });
-
-            // Ensure messages array is valid before making API call
-            if (!Array.isArray(sessionContext.messages)) {
-                console.error('Invalid messages array');
-                throw new Error('Invalid session context');
-            }
-
-            // Get AI response
-            const response = await fetch('http://localhost:3000/api/chat/public', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Extension-Version': '1.0',
-                    'X-Extension-ID': chrome.runtime.id
-                },
-                body: JSON.stringify({
-                    chatSettings: settings,
-                    messages: sessionContext.messages,
-                    provider: 'openrouter'
-                }),
-                signal
-            });
-
-            if (signal.aborted) {
-                throw new Error('Task cancelled');
-            }
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('API error:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    body: errorText
-                });
-                throw new Error(`API error: ${response.status} - ${errorText}`);
-            }
-
-            const responseData = await response.json();
-            console.log('API response:', responseData);
-
-            const responseText = responseData.message?.content || 'No response generated';
-            console.log('Response text:', responseText);
-
-            // Add assistant's response to messages
-            sessionContext.messages.push({
-                role: 'assistant',
-                content: responseText
-            });
-
-            // Check for termination conditions
-            if (responseText.toLowerCase().includes('task complete') || 
-                responseText.toLowerCase().includes('finished') ||
-                responseText.toLowerCase().includes('done')) {
-                return responseText;
-            }
-
-            // Execute commands if present
-            if (responseText.includes('EXECUTE:')) {
-                const commands = responseText.split('EXECUTE:').slice(1);
-                for (const commandText of commands) {
-                    try {
-                        const command = JSON.parse(commandText.split('\n')[0]);
-                        console.log('Executing command:', command);
-                        
-                        // Update side panel with current action
-                        await updateSidePanel({
-                            type: 'action',
-                            action: command
-                        });
-
-                        // Execute the command
-                        const result = await executeAction(command);
-                        console.log('Command result:', result);
-
-                        // Update side panel with result
-                        await updateSidePanel({
-                            type: 'result',
-                            action: command,
-                            result: result
-                        });
-
-                        // Handle search results
-                        if (command.type === 'search' && result?.searchResults) {
-                            sessionContext.searchContext.lastSearchQuery = command.query;
-                            sessionContext.searchContext.searchResults.push({
-                                query: command.query,
-                                engine: command.engine,
-                                results: result.searchResults
-                            });
-
-                            // Format the results for the AI
-                            const formattedResults = result.searchResults.summary || 
-                                `Search results for "${command.query}":\n${JSON.stringify(result.searchResults, null, 2)}`;
-                            
-                            // Update side panel with formatted results
-                            await updateSidePanel({
-                                type: 'search_results',
-                                query: command.query,
-                                results: formattedResults
-                            });
-
-                            currentMessage = `I searched for "${command.query}" and found:\n\n${formattedResults}\n\nPlease analyze these results and suggest next steps.`;
-                            break;
-                        }
-
-                        // Handle extracted content
-                        if (command.type === 'extract' && result?.data) {
-                            sessionContext.searchContext.extractedContent.push({
-                                url: result.data.url,
-                                content: result.data.summary || result.data.content
-                            });
-
-                            // Update side panel with extracted content
-                            await updateSidePanel({
-                                type: 'extracted_content',
-                                url: result.data.url,
-                                content: result.data.summary || result.data.content
-                            });
-
-                            currentMessage = `I extracted the following content:\n\n${result.data.summary || result.data.content}\n\nPlease analyze this information and suggest next steps.`;
-                            break;
-                        }
-                    } catch (error) {
-                        console.error('Command execution error:', error);
-                        // Update side panel with error
-                        await updateSidePanel({
-                            type: 'error',
-                            error: error.message
-                        });
-                        sessionContext.messages.push({
-                            role: 'system',
-                            content: `Error executing command: ${error.message}`
-                        });
-                    }
-                }
-                loopCount++;
-                continue;
-            }
-
-            // Update side panel with completion
-            await updateSidePanel({
-                type: 'complete',
-                message: responseText
-            });
-
-            return responseText;
-        }
-
-        return 'Task completed.';
-    } catch (error) {
-        // Update side panel with error
-        await updateSidePanel({
-            type: 'error',
-            error: error.message
-        });
+        // Update tab URL
+        await chrome.tabs.update(tabId, { url });
         
-        if (error.message === 'Task cancelled') {
-            return 'Task cancelled by user.';
-        }
-        console.error('Task loop error:', error);
+        // Wait for navigation to complete
+        return new Promise((resolve) => {
+            chrome.tabs.onUpdated.addListener(function listener(updatedTabId, info) {
+                if (updatedTabId === tabId && info.status === 'complete') {
+                    chrome.tabs.onUpdated.removeListener(listener);
+                    resolve();
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Navigation error:', error);
         throw error;
     }
 }
 
-// Execute automation action
-async function executeAction(action) {
-    try {
-        // Get all tabs first
-        const tabs = await chrome.tabs.query({});
-        let targetTab = null;
+// Update the takeScreenshot function to use proper error handling
+async function takeScreenshot() {
+    const maxRetries = 3;
+    const retryDelay = 1000;
+    let lastError = null;
 
-        if (action.type === 'switchTab') {
-            try {
-                // First try to find an existing tab
-                const tabs = await chrome.tabs.query({});
-                let targetTab = tabs.find(tab => tab.url && tab.url.includes(action.urlPattern));
-                
-                if (targetTab) {
-                    // If tab exists, switch to it
-                    await chrome.tabs.update(targetTab.id, { active: true });
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for tab to be active
-                } else {
-                    // If tab doesn't exist, create it
-                    const url = action.urlPattern.startsWith('http') ? 
-                        action.urlPattern : 
-                        `https://${action.urlPattern}`;
-                    targetTab = await chrome.tabs.create({ url, active: true });
-                    // Wait for the new tab to load
-                    await new Promise((resolve) => {
-                        chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-                            if (tabId === targetTab.id && info.status === 'complete') {
-                                chrome.tabs.onUpdated.removeListener(listener);
-                                setTimeout(resolve, 1000); // Additional wait for dynamic content
-                            }
-                        });
-                    });
-                }
-                return { success: true, message: `Switched to tab with ${action.urlPattern}` };
-            } catch (error) {
-                console.error('Error in switchTab:', error);
-                return { success: false, error: error.message };
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (!tab?.id) {
+                throw new Error('No active tab found');
             }
-        }
 
-        if (action.type === 'search') {
-            try {
-                // Find existing search tab (Google or Perplexity)
-                const searchDomain = action.engine === 'perplexity' ? 'perplexity.ai' : 'google.com';
-                let targetTab = tabs.find(tab => tab.url && tab.url.includes(searchDomain));
-                
-                // Construct search URL
-                const searchUrl = action.engine === 'perplexity' 
-                    ? `https://www.perplexity.ai/?q=${encodeURIComponent(action.query)}`
-                    : `https://www.google.com/search?q=${encodeURIComponent(action.query)}`;
+            // Check if we're trying to capture a restricted URL
+            if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) {
+                console.log('Restricted URL detected, navigating to Google...');
+                await navigateTab(tab.id, 'https://www.google.com');
+                // Wait for page to settle
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
 
-                if (targetTab) {
-                    // Update existing tab
-                    await chrome.tabs.update(targetTab.id, { 
-                        active: true,
-                        url: searchUrl 
-                    });
-                } else {
-                    // Create new tab
-                    targetTab = await chrome.tabs.create({ 
-                        url: searchUrl,
-                        active: true 
-                    });
-                }
-
-                // Wait for the page to load and render
-                await new Promise((resolve) => {
-                    const checkContent = async () => {
-                        try {
-                            const result = await chrome.scripting.executeScript({
-                                target: { tabId: targetTab.id },
-                                func: () => {
-                                    if (window.location.href.includes('google.com')) {
-                                        return document.querySelectorAll('#search .g').length > 0;
-                                    } else if (window.location.href.includes('perplexity.ai')) {
-                                        return document.querySelector('.prose') !== null;
-                                    }
-                                    return false;
-                                }
-                            });
-
-                            if (result[0].result) {
-                                setTimeout(resolve, 2000); // Additional wait for dynamic content
-                            } else {
-                                setTimeout(checkContent, 500);
-                            }
-                        } catch (error) {
-                            setTimeout(checkContent, 500);
+            // Ensure the tab is fully loaded
+            if (tab.status !== 'complete') {
+                await new Promise(resolve => {
+                    const listener = (tabId, info) => {
+                        if (tabId === tab.id && info.status === 'complete') {
+                            chrome.tabs.onUpdated.removeListener(listener);
+                            resolve();
                         }
                     };
-
-                    chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-                        if (tabId === targetTab.id && info.status === 'complete') {
-                            chrome.tabs.onUpdated.removeListener(listener);
-                            checkContent();
-                        }
-                    });
+                    chrome.tabs.onUpdated.addListener(listener);
+                    // Timeout after 5 seconds
+                    setTimeout(() => {
+                        chrome.tabs.onUpdated.removeListener(listener);
+                        resolve();
+                    }, 5000);
                 });
+            }
 
-                // After loading, extract the content immediately
-                const extractResult = await executeAction({ type: 'extract' });
-                return {
-                    success: true,
-                    message: `Searched for ${action.query}`,
-                    searchResults: extractResult?.data?.searchResults
-                };
-            } catch (error) {
-                console.error('Error in search:', error);
-                return { success: false, error: error.message };
+            // Take the screenshot
+            const screenshot = await chrome.tabs.captureVisibleTab(null, {
+                format: 'jpeg',
+                quality: SCREENSHOT_QUALITY * 100
+            });
+            
+            if (!screenshot) {
+                throw new Error('Screenshot capture returned null');
+            }
+
+            console.log('📸 Screenshot captured successfully');
+            await updateSidebarScreenshot(screenshot);
+            return screenshot;
+
+        } catch (error) {
+            lastError = error;
+            console.warn(`Screenshot attempt ${attempt + 1} failed:`, error);
+            
+            if (attempt < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, retryDelay));
+                continue;
             }
         }
+    }
 
-        // For other actions, use the current active tab
-        const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        targetTab = currentTab;
+    throw new Error(`Failed to capture screenshot after ${maxRetries} attempts: ${lastError?.message}`);
+}
 
-        if (!targetTab) {
+// Add getPageType function
+function getPageType(url) {
+    try {
+        const urlObj = new URL(url);
+        if (urlObj.hostname.includes('google.com')) return 'google';
+        if (urlObj.hostname.includes('perplexity.ai')) return 'perplexity';
+        return 'unknown';
+    } catch {
+        return 'unknown';
+    }
+}
+
+// Update getCurrentPageInfo to better detect elements
+async function getCurrentPageInfo() {
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab?.id) {
             throw new Error('No active tab found');
         }
 
-        // Request permissions if needed
-        const permissions = {
-            permissions: ['activeTab', 'scripting'],
-            origins: [targetTab.url]
+        console.log('Getting page info for tab:', tab.url);
+
+        if (tab.url.startsWith('chrome://')) {
+            console.warn('Skipping getCurrentPageInfo for chrome:// URL:', tab.url);
+            return {
+                url: tab.url,
+                title: tab.title,
+                type: 'restricted',
+                elements: { searchInputs: [], buttons: [], forms: [] }
+            };
+        }
+
+        const result = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: () => {
+                // Helper function to get visible elements
+                const getVisibleElements = (selector) => {
+                    return Array.from(document.querySelectorAll(selector))
+                        .filter(el => {
+                            const style = window.getComputedStyle(el);
+                            return style.display !== 'none' && 
+                                   style.visibility !== 'hidden' && 
+                                   style.opacity !== '0' &&
+                                   el.offsetParent !== null;
+                        });
+                };
+
+                // Get all interactive elements
+                const searchInputs = getVisibleElements('input[type="text"], input[type="search"], textarea, [role="searchbox"], [role="textbox"]')
+                    .map(el => ({
+                        name: el.name || el.id || '',
+                        placeholder: el.placeholder || '',
+                        type: el.type || el.getAttribute('role') || ''
+                    }));
+
+                const buttons = getVisibleElements('button, input[type="button"], input[type="submit"], [role="button"]')
+                    .map(el => ({
+                        text: el.textContent || el.value || '',
+                        id: el.id || '',
+                        type: el.type || el.getAttribute('role') || ''
+                    }));
+
+                const forms = getVisibleElements('form')
+                    .map(el => ({
+                        id: el.id || '',
+                        action: el.action || '',
+                        method: el.method || ''
+                    }));
+
+                return {
+                    url: window.location.href,
+                    title: document.title,
+                    type: new URL(window.location.href).hostname.replace(/^www\./, '').split('.')[0],
+                    elements: { searchInputs, buttons, forms }
+                };
+            }
+        });
+
+        if (result && result[0] && result[0].result) {
+            const pageInfo = result[0].result;
+            console.log('Page info collected:', pageInfo);
+            return pageInfo;
+        } else {
+            console.warn('Could not retrieve page info from content script.');
+            return {
+                url: tab.url,
+                title: tab.title,
+                type: 'unknown',
+                elements: { searchInputs: [], buttons: [], forms: [] }
+            };
+        }
+
+    } catch (error) {
+        console.error('Error in getCurrentPageInfo:', error);
+        return {
+            url: 'unknown',
+            title: 'unknown',
+            type: 'unknown',
+            elements: { searchInputs: [], buttons: [], forms: [] }
+        };
+    }
+}
+
+// Add task control state
+let taskState = {
+    isRunning: false,
+    currentStep: 0,
+    extractedContent: '',
+    lastScreenshot: null,
+    stopRequested: false,
+    messageHistory: [],
+    lastPageState: null
+};
+
+// Add function to update message history with visual context
+async function updateMessageHistory(role, content, screenshot = null, pageInfo = null) {
+    const message = {
+        role,
+        content,
+        timestamp: new Date().toISOString()
+    };
+
+    if (screenshot) {
+        message.images = [{
+            type: "image/jpeg",
+            data: screenshot.replace(/^data:image\/[a-z]+;base64,/, "")
+        }];
+    }
+
+    if (pageInfo) {
+        message.pageState = pageInfo;
+    }
+
+    taskState.messageHistory.push(message);
+    taskState.lastPageState = pageInfo || taskState.lastPageState;
+
+    // Keep only last N messages to prevent memory issues
+    const MAX_HISTORY = 10;
+    if (taskState.messageHistory.length > MAX_HISTORY) {
+        taskState.messageHistory = taskState.messageHistory.slice(-MAX_HISTORY);
+    }
+
+    return message;
+}
+
+// Add function to analyze visual changes
+async function analyzeVisualChanges(beforeScreenshot, afterScreenshot, beforePageInfo, afterPageInfo) {
+    const changes = {
+        urlChanged: beforePageInfo.url !== afterPageInfo.url,
+        typeChanged: beforePageInfo.type !== afterPageInfo.type,
+        elementChanges: {
+            searchInputs: afterPageInfo.elements?.searchInputs?.length - (beforePageInfo.elements?.searchInputs?.length || 0),
+            buttons: afterPageInfo.elements?.buttons?.length - (beforePageInfo.elements?.buttons?.length || 0)
+        }
+    };
+
+    return {
+        changes,
+        summary: `Page changes detected:
+- URL: ${changes.urlChanged ? 'Changed' : 'Same'} (${afterPageInfo.url})
+- Type: ${changes.typeChanged ? 'Changed' : 'Same'} (${afterPageInfo.type})
+- Elements: ${JSON.stringify(changes.elementChanges)}`
+    };
+}
+
+// Add stop task function
+async function stopTask() {
+    taskState.stopRequested = true;
+    taskState.isRunning = false;
+    await updateSidebarStatus('Task stopped by user');
+}
+
+// Update status update function to be more detailed
+async function updateSidebarStatus(message, type = 'info') {
+    const timestamp = new Date().toLocaleTimeString();
+    const status = {
+        message,
+        type,
+        step: taskState.currentStep,
+        maxSteps: MAX_STEPS,
+        timestamp,
+        details: {
+            currentPage: await getCurrentPageInfo(),
+            taskRunning: taskState.isRunning,
+            extractedContent: taskState.extractedContent?.slice(0, 200) // First 200 chars only
+        }
+    };
+
+    await chrome.runtime.sendMessage({
+        type: 'STATUS_UPDATE',
+        status
+    }).catch(console.error);
+}
+
+// Update handleComputerUse function
+async function handleComputerUse(request, sender, sendResponse) {
+    try {
+        const result = await agentLoop({
+            task: request.query,
+            onScreenshot: async () => {
+                try {
+                    const screenshot = await takeScreenshot();
+                    const pageInfo = await chrome.tabs.query({ active: true, currentWindow: true })
+                        .then(([tab]) => ({
+                            type: getPageType(tab.url),
+                            url: tab.url,
+                            title: tab.title
+                        }));
+                    return { 
+                        pageInfo,
+                        image: screenshot 
+                    };
+                } catch (error) {
+                    console.error('Screenshot error:', error);
+                    return null;
+                }
+            },
+            onAction: async (action) => {
+                try {
+                    // Send action to content script
+                    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                    if (!tab?.id) {
+                        throw new Error('No active tab found');
+                    }
+
+                    const result = await chrome.tabs.sendMessage(tab.id, {
+                        type: 'EXECUTE_ACTION',
+                        action
+                    });
+
+                    return result || { success: false, error: 'No result from content script' };
+                } catch (error) {
+                    console.error('Action error:', error);
+                    return { success: false, error: error.message };
+                }
+            },
+            onThinking: async (thought) => {
+                await updateSidebarStatus({
+                    type: 'thinking',
+                    message: thought
+                });
+            },
+            onError: async (error) => {
+                await updateSidebarStatus({
+                    type: 'error',
+                    message: error.message
+                });
+            },
+            maxSteps: MAX_STEPS,
+            stopSignal: () => taskState.stopRequested
+        });
+
+        // Handle the result
+        if (result.success) {
+            await updateSidebarStatus({
+                type: 'success',
+                message: result.message
+            });
+            return { success: true };
+        } else {
+            throw new Error(result.error);
+        }
+
+    } catch (error) {
+        console.error('Computer use error:', error);
+        await updateSidebarStatus({
+            type: 'error',
+            message: error.message
+        });
+        return { success: false, error: error.message };
+    }
+}
+
+// Generic function to execute browser actions
+async function executeToolCall(toolCall, tabId) {
+    console.log(`🛠️ Executing tool:`, toolCall);
+    
+    try {
+        const args = JSON.parse(toolCall.function.arguments);
+        const pageInfo = await getCurrentPageInfo();
+
+        // Handle restricted pages
+        if (pageInfo.type === 'restricted') {
+            // For restricted pages, try to navigate to the desired URL
+            if (args.text && args.text.includes('.')) {
+                const url = args.text.startsWith('http') ? args.text : `https://${args.text}`;
+                await chrome.tabs.update(tabId, { url });
+                
+                // Wait for navigation
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                return {
+                    success: true,
+                    message: `Navigated to ${url}`
+                };
+            }
+            throw new Error('Cannot interact with this page type');
+        }
+
+        // Generic action handler with improved error handling
+        const executeAction = async (action, selector, text) => {
+            // Ensure all arguments are serializable strings
+            const serializedArgs = {
+                action: String(action),
+                selector: String(selector),
+                text: text ? String(text) : ''
+            };
+
+            const result = await chrome.scripting.executeScript({
+                target: { tabId },
+                func: (serializedArgs) => {
+                    // Helper to find element with multiple strategies
+                    const findElement = (selector) => {
+                        // Try direct selector
+                        let element = document.querySelector(selector);
+                        if (element) return element;
+
+                        // Try common variations
+                        const variations = [
+                            selector,
+                            `[name="${selector}"]`,
+                            `[id="${selector}"]`,
+                            `[title="${selector}"]`,
+                            `[placeholder="${selector}"]`,
+                            `input[type="${selector}"]`,
+                            `textarea[name="${selector}"]`
+                        ];
+
+                        // Try aria labels and roles
+                        variations.push(
+                            `[aria-label="${selector}"]`,
+                            `[role="${selector}"]`
+                        );
+
+                        // Try partial matches
+                        const partialMatches = [
+                            `[id*="${selector}"]`,
+                            `[name*="${selector}"]`,
+                            `[placeholder*="${selector}"]`
+                        ];
+
+                        // Try all variations
+                        for (const variant of [...variations, ...partialMatches]) {
+                            element = document.querySelector(variant);
+                            if (element) return element;
+                        }
+
+                        // Try finding by text content
+                        const elements = document.querySelectorAll('*');
+                        for (const el of elements) {
+                            if (el.textContent.toLowerCase().includes(selector.toLowerCase())) {
+                                return el;
+                            }
+                        }
+
+                        return null;
+                    };
+
+                    // Find the element with null checks
+                    const element = findElement(serializedArgs.selector);
+                    if (!element) {
+                        return { 
+                            success: false, 
+                            error: `Element not found: ${serializedArgs.selector}`,
+                            attempted: true
+                        };
+                    }
+
+                    // Perform the action with try-catch
+                    try {
+                        switch (serializedArgs.action) {
+                            case 'type':
+                                if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                                    element.focus();
+                                    element.value = serializedArgs.text || '';
+                                    element.dispatchEvent(new Event('input', { bubbles: true }));
+                                    
+                                    // Handle form submission
+                                    const form = element.closest('form');
+                                    if (form) {
+                                        form.dispatchEvent(new Event('submit', { bubbles: true }));
+                                    }
+                                    return { success: true, message: `Typed "${serializedArgs.text}" into ${serializedArgs.selector}` };
+                                }
+                                return { 
+                                    success: false, 
+                                    error: 'Element is not input or textarea',
+                                    attempted: true
+                                };
+
+                            case 'click':
+                                element.click();
+                                return { success: true, message: `Clicked ${serializedArgs.selector}` };
+
+                            case 'press':
+                                element.dispatchEvent(new KeyboardEvent('keypress', {
+                                    key: serializedArgs.text || 'Enter',
+                                    code: serializedArgs.text || 'Enter',
+                                    keyCode: 13,
+                                    which: 13,
+                                    bubbles: true
+                                }));
+                                return { success: true, message: `Pressed ${serializedArgs.text || 'Enter'} on ${serializedArgs.selector}` };
+
+                            default:
+                                return { 
+                                    success: false, 
+                                    error: `Unknown action: ${serializedArgs.action}`,
+                                    attempted: true
+                                };
+                        }
+                    } catch (error) {
+                        return { 
+                            success: false, 
+                            error: `Action failed: ${error.message}`,
+                            attempted: true
+                        };
+                    }
+                },
+                args: [serializedArgs]
+            });
+
+            return result[0].result;
         };
 
-        const hasPermission = await chrome.permissions.contains(permissions);
-        if (!hasPermission) {
-            const granted = await chrome.permissions.request(permissions);
-            if (!granted) {
-                throw new Error('Required permissions not granted');
+        // Execute with retry logic
+        const MAX_RETRIES = 3;
+        const RETRY_DELAY = 1000;
+
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            if (attempt > 0) {
+                console.log(`Retry attempt ${attempt + 1}/${MAX_RETRIES}`);
+                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+            }
+
+            const result = await executeAction(args.action, args.selector, args.text);
+            if (result.success) {
+                return result;
+            }
+
+            if (result.attempted) {
+                throw new Error(result.error);
             }
         }
 
-        // Forward all other actions to content script
-        console.log('[executeAction] Forwarding to content script:', action);
-        await injectContentScript(targetTab.id);
-        
-        const response = await chrome.scripting.executeScript({
-            target: { tabId: targetTab.id },
-            func: (actionObject) => {
-                return window.__universalAction?.(actionObject) ?? {
-                    success: false,
-                    error: 'No universalAction function found on window.'
-                };
+        throw new Error('Failed to execute action after retries');
+
+    } catch (error) {
+        console.error('Tool execution error:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// Utility functions for sidebar communication
+function updateSidebarScreenshot(screenshot) {
+    chrome.runtime.sendMessage({
+        type: 'SCREENSHOT_UPDATE',
+        screenshot: screenshot
+    }).catch(console.error);
+}
+
+// Add message listener for STOP_TASK
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.type === 'STOP_TASK') {
+        stopTask()
+            .then(() => sendResponse({ success: true }))
+            .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
+    }
+});
+
+// Message listeners
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('Background received message:', request);
+
+    if (request.type === 'COMPUTER_USE') {
+        handleComputerUse(request, sender, sendResponse)
+            .then(sendResponse)
+            .catch(error => sendResponse({ success: false, error: error.message }));
+        return true;
+    }
+
+    if (request.type === 'STOP_TASK') {
+        agentIsActive = false;
+        sendResponse({ success: true });
+        return true;
+    }
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('[background.js] onMessage:', request);
+    
+    if (request.type === "EXECUTE_ANY") {
+        chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+            if (tabs[0]) {
+                await chrome.tabs.sendMessage(tabs[0].id, {
+                    type: 'EXECUTE_ACTION',
+                    action: request.action
+                });
+                sendResponse({ success: true });
+            } else {
+                sendResponse({ success: false, error: 'No active tab' });
+            }
+        });
+        return true; // So we can async sendResponse
+    }
+
+    if (request.type === "CAPTURE_SCREEN") {
+        console.log('[background.js] CAPTURE_SCREEN request');
+        chrome.tabs.captureVisibleTab({ format: 'png' }, (dataUrl) => {
+            if (chrome.runtime.lastError) {
+                sendResponse({ success: false, error: chrome.runtime.lastError.message });
+            } else {
+                sendResponse({ success: true, screenshotDataUrl: dataUrl });
+            }
+        });
+        return true;
+    }
+});
+
+// A variable to hold state if the agent is running
+let agentIsActive = false;
+
+// Listen for messages from popup (or content)
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+    console.log('[background.js] onMessage:', request);
+
+    if (request.type === 'START_AGENT_TASK') {
+        if (!agentIsActive) {
+            agentIsActive = true;
+            handleAgentTask(request.payload.userTask)
+                .then(() => {
+                    agentIsActive = false;
+                    console.log('Agent completed.');
+                })
+                .catch((err) => {
+                    agentIsActive = false;
+                    console.error('Agent error:', err);
+                });
+            sendResponse({ success: true });
+        } else {
+            sendResponse({ success: false, error: 'Agent is already running.' });
+        }
+        return true; // keep sendResponse open for async
+    }
+
+    // existing message logic
+    if (request.type === 'COMPUTER_USE') {
+        // ...
+    } else if (request.type === "EXECUTE_ANY") {
+        // ...
+    } else if (request.type === "CAPTURE_SCREEN") {
+        // ...
+    }
+});
+
+async function handleAgentTask(userTask) {
+    console.log('[background.js] handleAgentTask called with task:', userTask);
+    console.log('[background.js] Starting agent with task:', userTask);
+    agentIsActive = true;
+
+    try {
+        const result = await agentLoop({
+            task: userTask,
+            onScreenshot: async () => {
+                const screenshot = await doCaptureScreenshot();
+                const pageInfo = await getCurrentPageInfo();
+                return { image: screenshot, pageInfo: pageInfo };
             },
-            args: [action]
+            onAction: executeAction,
+            onThinking: (message) => {
+                updateSidebarStatus({ type: 'thinking', message: message });
+            },
+            onError: (error) => {
+                updateSidebarStatus({ type: 'error', message: error.message });
+            },
+            maxSteps: 10,
+            stopSignal: () => !agentIsActive
         });
 
-        return { success: true, data: response[0].result };
+        console.log('[background.js] Agent loop completed:', result);
+        agentIsActive = false;
+    } catch (error) {
+        console.error('[background.js] Error running agent loop:', error);
+        agentIsActive = false;
+    }
+}
+
+// A function used by handleAgentTask to capture screenshot
+async function doCaptureScreenshot() {
+    try {
+        const dataUrl = await chrome.tabs.captureVisibleTab({ format: 'png' });
+        if (dataUrl) {
+            console.log('[background.js] Screenshot captured length:', dataUrl.length);
+            // Optionally do something with dataUrl or forward to your server
+            return dataUrl;
+        }
+    } catch (e) {
+        console.warn('Screenshot error:', e);
+    }
+    return null;
+}
+
+// Create context menu when extension is installed or updated
+chrome.runtime.onInstalled.addListener(() => {
+  // This context menu item appears when user right-clicks the extension icon
+  chrome.contextMenus.create({
+    id: 'openSidebar',
+    title: 'Open Sidebar',
+    contexts: ['action'] // Shows up when right-clicking extension icon
+  });
+});
+
+// Listen for context menu clicks
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  if (info.menuItemId === 'openSidebar') {
+    // Use the official sidePanel API
+    try {
+      await chrome.sidePanel.open({ windowId: tab.windowId });
+      console.log('Side panel opened successfully');
+    } catch (error) {
+      console.error('Failed to open side panel:', error);
+    }
+  }
+});
+
+// Update action handling
+async function executeAction(action) {
+    console.log('[background.js] executeAction called with action:', action);
+    
+    try {
+        // Get the active tab
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab) {
+            throw new Error('No active tab found');
+        }
+
+        // Handle navigation actions directly
+        if (action.type === 'navigate') {
+            await chrome.tabs.update(tab.id, { url: action.url });
+            // Wait for navigation to complete
+            await new Promise(resolve => {
+                chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+                    if (tabId === tab.id && info.status === 'complete') {
+                        chrome.tabs.onUpdated.removeListener(listener);
+                        resolve();
+                    }
+                });
+            });
+            return { success: true };
+        }
+
+        // Send action to content script
+        const response = await chrome.tabs.sendMessage(tab.id, {
+            type: 'executeAction',
+            action: action
+        });
+
+        // Handle response
+        if (!response) {
+            throw new Error('No response from content script');
+        }
+
+        console.log('Action execution response:', response);
+        return response;
     } catch (error) {
         console.error('Action execution error:', error);
         return { success: false, error: error.message };
     }
 }
 
-// Handle message from popup.js
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('Received message in background:', request);
-    if (request.type === 'SEND_MESSAGE') {
-        // Initialize AbortController for the current task
-        currentTask = new AbortController();
-        const { signal } = currentTask;
+// Update message handling
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log('Background received message:', message);
 
-        // Handler function to process the message
-        handler(request.message, request.settings, signal)
-            .then(response => {
-                if (currentTask && !currentTask.signal.aborted) {
-                    console.log('Sending response back to popup:', response);
-                    sendResponse({ reply: response });
-                } else {
-                    console.warn('Current task was aborted. Not sending response.');
-                }
+    if (message.type === 'executeAction') {
+        executeAction(message.action)
+            .then(result => {
+                console.log('Action execution result:', result);
+                sendResponse(result);
             })
             .catch(error => {
-                if (currentTask && !currentTask.signal.aborted) {
-                    console.error('Error in handler:', error);
-                    sendResponse({ error: error.message });
-                } else {
-                    console.warn('Current task was aborted. Not sending error response.');
-                }
-            })
-            .finally(() => {
-                // Clean up after task completion
-                console.log('Task completed. Cleaning up currentTask.');
-                currentTask = null;
+                console.error('Action execution error:', error);
+                sendResponse({ success: false, error: error.message });
             });
-        
-        return true; // Keeps the message channel open for async response
-    } else if (request.type === 'TAKE_SCREENSHOT') {
-        takeScreenshot().then(dataUrl => sendResponse({ screenshot: dataUrl }))
-            .catch(error => {
-                console.error('Screenshot error:', error);
-                sendResponse({ error: error.message });
-            });
-        return true;
-    } else if (request.type === 'EXECUTE_ACTION') {
-        executeAction(request.action).then(result => sendResponse({ result }))
-            .catch(error => {
-                console.error('Action error:', error);
-                sendResponse({ error: error.message });
-            });
-        return true;
-    } else if (request.type === 'EXTRACT_CONTENT') {
-        extractPageContent().then(content => sendResponse({ content }))
-            .catch(error => {
-                console.error('Content extraction error:', error);
-                sendResponse({ error: error.message });
-            });
-        return true;
+        return true; // Keep the message channel open
     }
 });
 
-// Take screenshot of current tab
-async function takeScreenshot() {
-    try {
-        // First check if we have an active tab
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tab) {
-            throw new Error('No active tab found');
-        }
-
-        // Request permissions if needed
-        const permissions = {
-            permissions: ['activeTab'],
-            origins: [tab.url]
-        };
-
-        const hasPermission = await chrome.permissions.contains(permissions);
-        if (!hasPermission) {
-            const granted = await chrome.permissions.request(permissions);
-            if (!granted) {
-                throw new Error('Screenshot permission not granted');
-            }
-        }
-
-        const dataUrl = await chrome.tabs.captureVisibleTab(null, { format: 'png' });
-        return dataUrl;
-    } catch (error) {
-        console.error('Screenshot error:', error);
-        throw error;
-    }
+// Helper function to get current tab
+async function getCurrentTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  return tab;
 }
 
-// Inject content script
-async function injectContentScript(tabId) {
-    try {
-        // Check if content script is already injected
-        try {
-            await chrome.tabs.sendMessage(tabId, { type: 'PING' });
-            console.log('Content script already injected');
-            return;
-        } catch (error) {
-            console.log('Injecting content script...');
-        }
 
-        await chrome.scripting.executeScript({
-            target: { tabId },
-            files: ['content.js']
-        });
-
-        // Wait a bit for the script to initialize
-        await new Promise(resolve => setTimeout(resolve, 100));
-    } catch (error) {
-        console.error('Script injection error:', error);
-        throw error;
-    }
-}
-
-// Extract content from current page
-async function extractPageContent() {
-    try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tab) {
-            throw new Error('No active tab found');
-        }
-
-        // Make sure we have the right permissions
-        const hasPermission = await chrome.permissions.contains({
-            permissions: ['activeTab', 'scripting'],
-            origins: [tab.url]
-        });
-
-        if (!hasPermission) {
-            throw new Error('Content extraction permission not granted');
-        }
-
-        // First try to inject our content script
-        await injectContentScript(tab.id);
-
-        // Then execute the content extraction
-        const results = await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: () => {
-                try {
-                    // Get main content
-                    const content = document.body.innerText || '';
-                    
-                    // Get all links
-                    const links = Array.from(document.querySelectorAll('a')).map(a => ({
-                        text: a.innerText || '',
-                        href: a.href || ''
-                    }));
-
-                    // Get meta information
-                    const title = document.title || '';
-                    const description = document.querySelector('meta[name="description"]')?.content || '';
-
-                    return {
-                        success: true,
-                        data: {
-                            title,
-                            description,
-                            content,
-                            links
-                        }
-                    };
-                } catch (error) {
-                    return {
-                        success: false,
-                        error: error.message
-                    };
-                }
-            }
-        });
-
-        if (!results || !results[0]) {
-            throw new Error('Failed to execute content extraction script');
-        }
-
-        const result = results[0].result;
-        if (!result.success) {
-            throw new Error(result.error || 'Content extraction failed');
-        }
-
-        return result.data;
-    } catch (error) {
-        console.error('Content extraction error:', error);
-        throw error;
-    }
-}
-
-// Initialize session context with available models
-chrome.runtime.onInstalled.addListener(() => {
-    sessionContext = {
-        models: [
-            'openai/gpt-4o-mini',
-            'openai/gpt-4o-2024-08-06',
-            'anthropic/claude-3-haiku',
-            'meta-llama/llama-3.1-405b-instruct',
-            'google/gemini-pro-1.5'
-        ],
-        defaultModel: 'openai/gpt-4o-mini',
-        settings: {
-            temperature: 0.7,
-            stream: false // Changed to false to handle responses better
-        }
-    };
-});
-
-const tasks = new Map(); // Map to track multiple tasks
-
-// Helper to find or create a tab with given URL
-async function ensureTab(url) {
-    // If no URL specified, just return the currently active tab
-    if (!url) {
-        const data = await chrome.tabs.query({ active: true, currentWindow: true });
-        return data.length ? [data[0]] : [];
-    }
-    
-    // Check if any existing tab has that domain
-    const domain = new URL(url).hostname.replace('www.', '');
-    const tabs = await chrome.tabs.query({});
-    let candidateTab = tabs.find(t => t.url && t.url.includes(domain));
-    if (!candidateTab) {
-        candidateTab = await chrome.tabs.create({ url });
-        // Wait for load
-        await new Promise((resolve) => {
-            chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-                if (tabId === candidateTab.id && info.status === 'complete') {
-                    chrome.tabs.onUpdated.removeListener(listener);
-                    // Give page a little time to settle
-                    setTimeout(resolve, 1500);
-                }
-            });
-        });
-    } else {
-        // Switch to the found tab
-        await chrome.tabs.update(candidateTab.id, { active: true });
-        // Wait in case it hasn’t fully loaded
-        await new Promise(resolve => setTimeout(resolve, 1500));
-    }
-    return [candidateTab];
-}
-
-// Function to update the side panel
-async function updateSidePanel(update) {
-    try {
-        // Send update to all side panel instances
-        chrome.runtime.sendMessage({
-            type: 'SIDEBAR_UPDATE',
-            data: update
-        });
-    } catch (error) {
-        console.error('Error updating side panel:', error);
-    }
-}
-
-// Listen for side panel toggle command
-chrome.commands.onCommand.addListener((command) => {
-    if (command === 'toggle_sidebar') {
-        chrome.sidePanel.toggle();
-    }
-});
