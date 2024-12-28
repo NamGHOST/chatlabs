@@ -22,7 +22,7 @@ const KNOWN_MODEL_NAMES: {
   },
   "deepseek/deepseek-chat": {
     provider: "deepseek",
-    modelName: "DeepSeek Chat V2.5",
+    modelName: "DeepSeek Chat V3",
     categories: [CATEGORIES.PROGRAMMING]
   },
   "gryphe/mythomax-l2-13b": {
