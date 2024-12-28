@@ -108,11 +108,11 @@ const ChatMessageCounter: React.FC<ChatMessageCounterProps> = () => {
     if (modelTier === "pro") {
       limit = LITE_PRO_MONTHLY_LIMIT
     } else {
-      showCounter = true
+      showCounter = false
     }
     if (modelTier === "free") {
       limit = LITE_MESSAGE_MONTHLY_LIMIT
-      showCounter = true
+      showCounter = false
     }
   }
 
