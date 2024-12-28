@@ -119,8 +119,8 @@ function parseSupportedModelsFromEnv() {
     "anthropic/claude-3.5-haiku",
 
     "google/gemini-pro-1.5",
-    "google/gemini-pro-1.5-exp",
-    "google/gemini-flash-1.5-exp",
+    "google/gemini-2.0-flash-thinking-exp:free",
+    "google/gemini-2.0-flash-exp:free",
     "google/gemini-flash-1.5-8b",
     "google/gemini-exp-1114",
 
@@ -136,9 +136,8 @@ function parseSupportedModelsFromEnv() {
     "qwen/qwen-2-vl-72b-instruct",
     "cohere/command-r-plus-08-2024",
     "cohere/command-r-08-2024",
-    "mythic/mythomax-13b",
     "perplexity/llama-3.1-sonar-large-128k-online",
-    "x-ai/grok-beta",
+    "x-ai/grok-2-1212",
     "nvidia/llama-3.1-nemotron-70b-instruct",
     "qwen/qwen-2.5-coder-32b-instruct",
     "mistralai/pixtral-large-2411",

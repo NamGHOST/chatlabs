@@ -96,28 +96,30 @@ const GEMINI_PRO_15: LLM = {
   tier: "pro" as LLMTier
 }
 
-const GEMINI_PRO_15_EXP: LLM = {
-  modelId: "google/gemini-pro-1.5-exp",
-  modelName: "Gemini 1.5 Pro Exp",
+const GEMINI_FLASH_20_FLASH_THINKING: LLM = {
+  modelId: "google/gemini-2.0-flash-thinking-exp:free",
+  modelName: "Gemini 2.0 Flash Thinking Exp",
   provider: "openrouter",
-  hostedId: "gemini-1.5-pro-exp",
+  hostedId: "gemini-2.0-flash-thinking-exp",
   platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: true,
+  imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "pro" as LLMTier
+  tier: "free" as LLMTier,
+  new: true
 }
 
-const GEMINI_FLASH_15_EXP: LLM = {
-  modelId: "google/gemini-flash-1.5-exp",
-  modelName: "Gemini Flash 1.5 Exp",
+const GEMINI_FLASH_20_FLASH: LLM = {
+  modelId: "google/gemini-2.0-flash-exp:free",
+  modelName: "Gemini Flash 2.0 Exp",
   provider: "openrouter",
-  hostedId: "gemini-flash-1.5-exp",
+  hostedId: "gemini-flash-2.0-exp",
   platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: true,
+  imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "free" as LLMTier
+  tier: "free" as LLMTier,
+  new: true
 }
 
 ///anthropic
@@ -142,8 +144,7 @@ const CLAUDE_35_HAIKU: LLM = {
   imageInput: true,
   tools: false,
   supportsStreaming: true,
-  tier: "pro" as LLMTier,
-  new: true
+  tier: "pro" as LLMTier
 }
 
 const CLAUDE_35_SONNET: LLM = {
@@ -220,14 +221,15 @@ const LLAMA_3_1_SONAR_HUGE_128K_ONLINE: LLM = {
 
 const DEEPSEEK_CHAT: LLM = {
   modelId: "deepseek/deepseek-chat",
-  modelName: "DeepSeek v2.5",
+  modelName: "DeepSeek v3",
   provider: "openrouter",
-  hostedId: "DeepSeek V2.5",
+  hostedId: "DeepSeek V3",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "free" as LLMTier
+  tier: "free" as LLMTier,
+  new: true
 }
 
 const LLAMA_32_90B_VISION: LLM = {
@@ -285,7 +287,7 @@ const COHERE_COMMAND_R_PLUS: LLM = {
   hostedId: "command-r-plus-08-2024",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
-  tools: false,
+  tools: true,
   supportsStreaming: true,
   tier: "pro" as LLMTier
 }
@@ -297,7 +299,7 @@ const COHERE_COMMAND_R: LLM = {
   hostedId: "command-r-08-2024",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
-  tools: false,
+  tools: true,
   supportsStreaming: true,
   tier: "free" as LLMTier
 }
@@ -309,18 +311,6 @@ const GEMINI_FLASH_15_8B: LLM = {
   hostedId: "gemini-flash-1.5-8b",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: true,
-  tools: false,
-  supportsStreaming: true,
-  tier: "free" as LLMTier
-}
-
-const MYTHOMAX_13B: LLM = {
-  modelId: "mythic/mythomax-13b",
-  modelName: "Mythomax 13B",
-  provider: "openrouter",
-  hostedId: "mythomax-13b",
-  platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: false,
   tools: false,
   supportsStreaming: true,
   tier: "free" as LLMTier
@@ -339,8 +329,8 @@ const LLAMA_31_SONAR_LARGE_128K_ONLINE: LLM = {
 }
 
 const GROK: LLM = {
-  modelId: "x-ai/grok-beta",
-  modelName: "Grok",
+  modelId: "x-ai/grok-2-1212",
+  modelName: "Grok 2",
   provider: "openrouter",
   hostedId: "grok",
   platformLink: OPENROUTER_PLATFORM_LINK,
@@ -360,8 +350,7 @@ const NVIDIA_LLAMA_31_NEMOTRON_70B: LLM = {
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "free" as LLMTier,
-  new: true
+  tier: "free" as LLMTier
 }
 
 const GEMINI_EXP_1114: LLM = {
@@ -373,8 +362,7 @@ const GEMINI_EXP_1114: LLM = {
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "free" as LLMTier,
-  new: true
+  tier: "free" as LLMTier
 }
 
 const QWEN_25_CODER_32B: LLM = {
@@ -386,8 +374,7 @@ const QWEN_25_CODER_32B: LLM = {
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "free" as LLMTier,
-  new: true
+  tier: "free" as LLMTier
 }
 
 const PIXTRAL_LARGE_2411: LLM = {
@@ -399,8 +386,7 @@ const PIXTRAL_LARGE_2411: LLM = {
   imageInput: true,
   tools: false,
   supportsStreaming: true,
-  tier: "pro" as LLMTier,
-  new: true
+  tier: "pro" as LLMTier
 }
 
 const META_LLAMA_3_3_70B_INSTRUCT: LLM = {
@@ -425,8 +411,7 @@ const AMAZON_NOVA_LITE_V1: LLM = {
   imageInput: true,
   tools: false,
   supportsStreaming: true,
-  tier: "free" as LLMTier,
-  new: true
+  tier: "free" as LLMTier
 }
 
 const AMAZON_NOVA_MICRO_V1: LLM = {
@@ -438,8 +423,7 @@ const AMAZON_NOVA_MICRO_V1: LLM = {
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "free" as LLMTier,
-  new: true
+  tier: "free" as LLMTier
 }
 
 const AMAZON_NOVA_PRO_V1: LLM = {
@@ -451,8 +435,7 @@ const AMAZON_NOVA_PRO_V1: LLM = {
   imageInput: true,
   tools: false,
   supportsStreaming: true,
-  tier: "pro" as LLMTier,
-  new: true
+  tier: "pro" as LLMTier
 }
 
 const EVA_QWEN_2_5_72B: LLM = {
@@ -474,8 +457,8 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   GPT_4O_MINI,
   GPT_4_VISION,
   GEMINI_PRO_15,
-  GEMINI_PRO_15_EXP,
-  GEMINI_FLASH_15_EXP,
+  GEMINI_FLASH_20_FLASH_THINKING,
+  GEMINI_FLASH_20_FLASH,
   GEMINI_FLASH_15_8B,
   CLAUDE_3_HAIKU,
   CLAUDE_35_HAIKU,
@@ -492,7 +475,6 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   DBRX_INSTRUCT,
   MIXTRAL_8X22B,
   WIZARDLM_2_8X22B,
-  MYTHOMAX_13B,
   LLAMA_31_SONAR_LARGE_128K_ONLINE,
   GROK,
   NVIDIA_LLAMA_31_NEMOTRON_70B,
@@ -510,8 +492,8 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
 //- openai/gpt-4o-mini
 //- openai/gpt-4-vision-preview
 //- google/gemini-pro-1.5
-//- google/gemini-pro-1.5-exp
-//- google/gemini-flash-1.5-exp
+//- google/gemini-2.0-flash-thinking-exp:free
+//- google/gemini-2.0-flash-exp:free
 //- google/gemini-pro-vision
 //- anthropic/claude-3-haiku
 //- anthropic/claude-3-5-haiku
@@ -520,5 +502,5 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
 //- deepseek/deepseek-chat
 //- openai/o1-mini
 //- openai/o1
-//- google/gemini-pro-1.5-exp
-//- google/gemini-flash-1.5-exp
+//- google/gemini-2.0-flash-thinking-exp:free
+//- google/gemini-2.0-flash-exp:free

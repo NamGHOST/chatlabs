@@ -394,17 +394,17 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
   },
 
   // GOOGLE MODELS
-  "google/gemini-pro-1.5-exp": {
+  "google/gemini-2.0-flash-thinking-exp:free": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
-    MAX_TOKEN_OUTPUT_LENGTH: 32768,
-    MAX_CONTEXT_LENGTH: 4000000
+    MAX_TOKEN_OUTPUT_LENGTH: 8000,
+    MAX_CONTEXT_LENGTH: 40000
   },
-  "google/gemini-flash-1.5-exp": {
+  "google/gemini-2.0-flash-exp:free": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
-    MAX_TOKEN_OUTPUT_LENGTH: 32768,
-    MAX_CONTEXT_LENGTH: 4000000
+    MAX_TOKEN_OUTPUT_LENGTH: 8000,
+    MAX_CONTEXT_LENGTH: 1048576
   },
   "google/gemini-pro-1.5": {
     MIN_TEMPERATURE: 0,
@@ -500,19 +500,13 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 8192,
     MAX_CONTEXT_LENGTH: 1000000
   },
-  "mythic/mythomax-13b": {
-    MIN_TEMPERATURE: 0.0,
-    MAX_TEMPERATURE: 1.0,
-    MAX_TOKEN_OUTPUT_LENGTH: 4096,
-    MAX_CONTEXT_LENGTH: 128000
-  },
   "perplexity/llama-3.1-sonar-large-128k-online": {
     MIN_TEMPERATURE: 0.0,
     MAX_TEMPERATURE: 1.0,
     MAX_TOKEN_OUTPUT_LENGTH: 127072,
     MAX_CONTEXT_LENGTH: 127072
   },
-  "x-ai/grok-beta": {
+  "x-ai/grok-2-1212": {
     MIN_TEMPERATURE: 0.0,
     MAX_TEMPERATURE: 1.0,
     MAX_TOKEN_OUTPUT_LENGTH: 4096,
