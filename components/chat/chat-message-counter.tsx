@@ -20,6 +20,7 @@ import { LLM_LIST } from "@/lib/models/llm/llm-list"
 import { tr } from "date-fns/locale"
 import { useTranslation } from "react-i18next"
 import { Zap } from "lucide-react"
+import React from "react"
 
 interface ChatMessageCounterProps {}
 
