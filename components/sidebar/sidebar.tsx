@@ -166,12 +166,15 @@ export const Sidebar: FC = () => {
     if (activeSubmenu) {
       setActiveSubmenu(null)
     } else {
-      setIsCollapsed(!isCollapsed)
-      try {
-        localStorage.setItem("sidebarCollapsed", (!isCollapsed).toString())
-      } catch (error) {
-        console.error("Error setting sidebar collapsed state:", error)
-      }
+      setIsCollapsed(prevState => {
+        const newState = !prevState
+        try {
+          localStorage.setItem("sidebarCollapsed", newState.toString())
+        } catch (error) {
+          console.error("Error setting sidebar collapsed state:", error)
+        }
+        return newState
+      })
     }
   }
 
@@ -341,11 +344,13 @@ export const Sidebar: FC = () => {
                 size="icon"
                 onClick={toggleCollapseOrSubmenu}
                 className={cn(
-                  "h-50 absolute -right-[12px] top-1/2 z-50 hidden w-4 -translate-y-1/2 md:block",
-                  "bg-border hover:bg-foreground/30 rounded-full transition-colors",
+                  "absolute -right-[12px] top-1/2 z-50 hidden h-24 w-4 -translate-y-1/2 md:block",
+                  "bg-border hover:bg-foreground/30 rounded-full transition-colors duration-200",
                   "before:absolute before:left-1/2 before:top-1/2 before:-translate-x-1/2 before:-translate-y-1/2",
                   "before:text-foreground/50 before:opacity-0 before:transition-opacity hover:before:opacity-100",
-                  isCollapsed ? "before:content-['>']" : "before:content-['<']"
+                  isCollapsed
+                    ? "before:content-['>']"
+                    : "bg-primary/20 hover:bg-primary/30 before:content-['<']"
                 )}
               />
             }
