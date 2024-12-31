@@ -1,0 +1,1 @@
+1|Type 'Generate a blog post' in chat, click send, and wait for response 

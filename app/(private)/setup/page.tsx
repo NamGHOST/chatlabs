@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useFeatureFlag } from "@/lib/amplitude" // Add this import
 import { toast } from "sonner"
 import { useTranslation } from "react-i18next"
+import { Button } from "@/components/ui/button"
 
 export default function SetupPage() {
   const { t } = useTranslation()
@@ -189,7 +190,7 @@ export default function SetupPage() {
     setWorkspaces(workspaces)
   }
 
-  const totalSteps = enableProfileStep ? 3 : 2
+  const totalSteps = enableProfileStep ? 2 : 1
 
   function getStepComponents() {
     const stepComponents = [
@@ -215,24 +216,12 @@ export default function SetupPage() {
       <StepContainer
         key={2}
         totalSteps={totalSteps}
-        stepDescription={t("Use all the AI models and features!")}
-        stepNum={currentStep}
-        stepTitle={t("Choose your plan")}
-        onShouldProceed={handleOnPlanShouldProceed}
-        showNextButton={true}
-        showBackButton={enableProfileStep}
-      >
-        <Plans onClose={() => {}} showCloseIcon={false} />
-      </StepContainer>,
-      <StepContainer
-        key={3}
-        totalSteps={totalSteps}
         stepDescription={t("You are all set up!")}
         stepNum={currentStep}
         stepTitle={t("Setup Complete")}
         onShouldProceed={handleOnFinishShouldProceed}
         showNextButton={true}
-        showBackButton={true}
+        showBackButton={enableProfileStep}
       >
         <FinishStep displayName={displayName} />
       </StepContainer>
@@ -262,7 +251,7 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="flex w-full grow items-center justify-center sm:my-6 sm:w-auto">
+    <div className="flex w-full grow items-center justify-center px-4 sm:my-6 sm:w-auto">
       {renderStep(currentStep)}
     </div>
   )

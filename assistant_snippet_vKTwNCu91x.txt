@@ -1,0 +1,1 @@
+1|Type 'hello' in the chat and click send 
