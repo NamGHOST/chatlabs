@@ -423,7 +423,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
       <div
         className={`dialog-container ${isDialogVisible ? "visible" : "hidden"} fixed inset-0 z-50 flex items-center justify-center bg-black/5 p-4 backdrop-blur-sm`}
       >
-        <div className="relative size-full max-h-[90vh] max-w-screen-lg">
+        <div className="relative size-full max-h-[900px] max-w-[1800px]">
           <div className="bg-background relative h-full overflow-hidden rounded-xl border border-gray-800/10 shadow-sm dark:border-white/10">
             <div className="absolute right-4 top-4 z-10">
               {showCloseIcon && (
@@ -436,9 +436,9 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
               )}
             </div>
 
-            <div className="grid h-full grid-cols-1 md:grid-cols-1 lg:grid-cols-[1fr_1fr]">
+            <div className="grid h-full grid-cols-1 md:grid-cols-1 lg:grid-cols-[1.6fr_1fr]">
               {/* Left side - Image and Text */}
-              <div className="relative h-[30vh] lg:h-full">
+              <div className="relative h-[40vh] lg:h-full">
                 <div className="h-full">
                   <div className="relative size-full bg-black">
                     <img
@@ -446,11 +446,11 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                       alt="Upgrade to Pro"
                       className="size-full object-cover"
                     />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-8 text-white">
-                      <h2 className="text-4xl font-bold">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-12 text-white">
+                      <h2 className="text-5xl font-bold">
                         {t("Unlock Full Potential")}
                       </h2>
-                      <p className="mt-3 text-xl text-white/90">
+                      <p className="mt-4 text-2xl text-white/90">
                         {t(
                           "Access premium features and enhance your AI experience"
                         )}
@@ -461,14 +461,14 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
               </div>
 
               {/* Right side - Plan Details */}
-              <div className="flex flex-col overflow-hidden px-4 pb-4 pt-6 md:p-6">
+              <div className="flex flex-col overflow-hidden px-6 pb-6 pt-8 md:p-8">
                 <form method={"POST"} className="flex h-full flex-col">
                   <input
                     type={"hidden"}
                     value={billingCycle}
                     name={"billingCycle"}
                   />
-                  <div className="mb-6 flex justify-center">
+                  <div className="mb-8 flex justify-center">
                     <ToggleGroup
                       type="single"
                       className="w-auto rounded-full bg-gray-200 p-1"
@@ -477,7 +477,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                     >
                       <ToggleGroupItem
                         value={BILLING_CYCLE_MONTHLY}
-                        className={`rounded-full px-4 py-2 transition-all duration-200 ${
+                        className={`rounded-full px-6 py-2.5 transition-all duration-200 ${
                           billingCycle === BILLING_CYCLE_MONTHLY
                             ? "bg-violet-700 text-white shadow-lg"
                             : "bg-transparent text-gray-700 hover:bg-gray-200"
@@ -487,7 +487,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                       </ToggleGroupItem>
                       <ToggleGroupItem
                         value={BILLING_CYCLE_YEARLY}
-                        className={`rounded-full px-4 py-2 transition-all duration-200 ${
+                        className={`rounded-full px-6 py-2.5 transition-all duration-200 ${
                           billingCycle === BILLING_CYCLE_YEARLY
                             ? "bg-violet-700 text-white shadow-lg"
                             : "bg-transparent text-gray-700 hover:bg-gray-200"
@@ -501,7 +501,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
                     </ToggleGroup>
                   </div>
                   <div className="min-h-0 flex-1 overflow-y-auto">
-                    <div className="grid grid-cols-1 gap-4 pb-6">
+                    <div className="grid grid-cols-1 gap-6 pb-6 xl:grid-cols-2">
                       <PlanColumn
                         title="Lite Plan"
                         monthlyPrice="11"

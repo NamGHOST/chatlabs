@@ -224,7 +224,7 @@ export default function SetupPage() {
         showBackButton={enableProfileStep}
       >
         <div className="relative">
-          <div className="absolute right-0 top-0 z-10">
+          <div className="bg-background/80 sticky right-0 top-0 z-50 flex justify-end p-2 backdrop-blur-sm">
             <Button
               variant="ghost"
               size="sm"
