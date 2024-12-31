@@ -171,12 +171,12 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
     features: any[]
     planPrefix: string
   }) => (
-    <div className="border-token-border-light relative flex flex-1 flex-col gap-5 border-t p-4 text-sm last:border-r-0 md:max-w-xs md:border-r md:border-t-0">
+    <div className="relative flex flex-1 flex-col gap-4 rounded-lg border border-gray-800/10 bg-black/5 p-4 backdrop-blur-sm dark:border-white/10">
       <div className="bg-token-main-surface-primary relative flex flex-col">
-        <div className="flex flex-col gap-1">
-          <p className="text-xl font-semibold">{title}</p>
+        <div className="flex flex-col gap-2">
+          <p className="text-lg font-semibold">{title}</p>
           <div className="flex items-baseline gap-2">
-            <p className="text-xl font-semibold">
+            <p className="text-2xl font-semibold">
               {billingCycle === "yearly" ? yearlyPrice : monthlyPrice} USD
             </p>
             {billingCycle === "yearly" && (
@@ -201,12 +201,12 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
           await createFormAction(planPrefix)(formData)
         }}
         data-testid={`select-plan-button-${planPrefix}-create`}
-        className="bg-violet-700 text-white hover:bg-white hover:text-violet-700 hover:outline hover:outline-violet-700"
+        className="w-full bg-violet-700 text-white hover:bg-white hover:text-violet-700 hover:outline hover:outline-violet-700"
       >
         {t("Upgrade NOW")}
       </Button>
-      <div className="flex grow flex-col gap-2">
-        <FeatureGroup icon={<IconRobot size={20} />} title={t("AI Models")}>
+      <div className="flex grow flex-col gap-2 text-sm">
+        <FeatureGroup icon={<IconRobot size={18} />} title={t("AI Models")}>
           {features
             .find(f => f.title === t("AI Models"))
             ?.items.map((item: string, index: number) => (
@@ -214,9 +214,9 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
             ))}
         </FeatureGroup>
         <FeatureGroup
-          icon={<IconPhotoAi size={20} />}
+          icon={<IconPhotoAi size={18} />}
           title={t("Image Generation")}
-          className={planPrefix === LITE_PLAN_PREFIX ? "mb-12" : undefined}
+          className={planPrefix === LITE_PLAN_PREFIX ? "mb-4" : undefined}
         >
           {features
             .find(f => f.title === t("Image Generation"))
@@ -224,7 +224,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
               <PlanFeature key={index} title={item} />
             ))}
         </FeatureGroup>
-        <FeatureGroup icon={<IconUsers size={20} />} title={t("AI Meeting")}>
+        <FeatureGroup icon={<IconUsers size={18} />} title={t("AI Meeting")}>
           {features
             .find(f => f.title === t("AI Meeting"))
             ?.items.map((item: string, index: number) => (
@@ -232,7 +232,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
             ))}
         </FeatureGroup>
         <FeatureGroup
-          icon={<IconKey size={20} />}
+          icon={<IconKey size={18} />}
           title={t("ImogenAI API Key Hub")}
         >
           {features
@@ -244,7 +244,7 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
         <div className="mb-2">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center">
-              <IconSparkles size={20} />
+              <IconSparkles size={18} />
               <span className="ml-2 font-semibold">
                 {t("Advanced Features")}
               </span>
@@ -254,9 +254,9 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
               className="text-gray-500 hover:text-gray-700"
             >
               {isAdvancedFeaturesExpanded ? (
-                <IconChevronUp size={20} />
+                <IconChevronUp size={18} />
               ) : (
-                <IconChevronDown size={20} />
+                <IconChevronDown size={18} />
               )}
             </button>
           </div>
@@ -421,68 +421,108 @@ export default function Plans({ onClose, showCloseIcon }: PlansProps) {
   return (
     <>
       <div
-        className={`dialog-container ${isDialogVisible ? "visible" : "hidden"} relative`}
+        className={`dialog-container ${isDialogVisible ? "visible" : "hidden"} fixed inset-0 z-50 flex items-center justify-center bg-black/5 p-4 backdrop-blur-sm`}
       >
-        <div className="absolute right-0 top-4">
-          {showCloseIcon && (
-            <button onClick={closeDialog}>
-              <IconX size={24} />
-            </button>
-          )}
-        </div>
-        <div className="my-2">
-          <form method={"POST"}>
-            <input type={"hidden"} value={billingCycle} name={"billingCycle"} />
-            <div className="mx-auto my-2 flex justify-center">
-              <ToggleGroup
-                type="single"
-                className="w-auto rounded-full bg-gray-200 p-1"
-                value={billingCycle}
-                onValueChange={handleBillingCycleChange}
-              >
-                <ToggleGroupItem
-                  value={BILLING_CYCLE_MONTHLY}
-                  className={`rounded-full px-4 py-2 transition-all duration-200 ${
-                    billingCycle === BILLING_CYCLE_MONTHLY
-                      ? "bg-violet-700 text-white shadow-lg"
-                      : "bg-transparent text-gray-700 hover:bg-gray-200"
-                  }`}
+        <div className="relative size-full max-h-[90vh] max-w-screen-lg">
+          <div className="bg-background relative h-full overflow-hidden rounded-xl border border-gray-800/10 shadow-sm dark:border-white/10">
+            <div className="absolute right-4 top-4 z-10">
+              {showCloseIcon && (
+                <button
+                  onClick={closeDialog}
+                  className="text-muted-foreground hover:text-foreground"
                 >
-                  {t("Monthly")}
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                  value={BILLING_CYCLE_YEARLY}
-                  className={`rounded-full px-4 py-2 transition-all duration-200 ${
-                    billingCycle === BILLING_CYCLE_YEARLY
-                      ? "bg-violet-700 text-white shadow-lg"
-                      : "bg-transparent text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {t("Yearly")}
-                  <span className="ml-2 line-clamp-1 text-nowrap rounded bg-green-500 px-2 py-1 text-xs text-white">
-                    {t("2 months free")}
-                  </span>
-                </ToggleGroupItem>
-              </ToggleGroup>
+                  <IconX size={24} />
+                </button>
+              )}
             </div>
-            <div className="flex flex-col-reverse md:flex-row">
-              <PlanColumn
-                title="Lite Plan"
-                monthlyPrice="11"
-                yearlyPrice="9.2"
-                features={liteFeatures}
-                planPrefix={LITE_PLAN_PREFIX}
-              />
 
-              <PlanColumn
-                title={t("Pro Plan")}
-                monthlyPrice="24"
-                yearlyPrice="20"
-                features={proFeatures}
-                planPrefix={PRO_PLAN_PREFIX}
-              />
+            <div className="grid h-full grid-cols-1 md:grid-cols-1 lg:grid-cols-[1fr_1fr]">
+              {/* Left side - Image and Text */}
+              <div className="relative h-[30vh] lg:h-full">
+                <div className="h-full">
+                  <div className="relative size-full bg-black">
+                    <img
+                      src="/images/upgrade-hero.png"
+                      alt="Upgrade to Pro"
+                      className="size-full object-cover"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-8 text-white">
+                      <h2 className="text-4xl font-bold">
+                        {t("Unlock Full Potential")}
+                      </h2>
+                      <p className="mt-3 text-xl text-white/90">
+                        {t(
+                          "Access premium features and enhance your AI experience"
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right side - Plan Details */}
+              <div className="flex flex-col overflow-hidden px-4 pb-4 pt-6 md:p-6">
+                <form method={"POST"} className="flex h-full flex-col">
+                  <input
+                    type={"hidden"}
+                    value={billingCycle}
+                    name={"billingCycle"}
+                  />
+                  <div className="mb-6 flex justify-center">
+                    <ToggleGroup
+                      type="single"
+                      className="w-auto rounded-full bg-gray-200 p-1"
+                      value={billingCycle}
+                      onValueChange={handleBillingCycleChange}
+                    >
+                      <ToggleGroupItem
+                        value={BILLING_CYCLE_MONTHLY}
+                        className={`rounded-full px-4 py-2 transition-all duration-200 ${
+                          billingCycle === BILLING_CYCLE_MONTHLY
+                            ? "bg-violet-700 text-white shadow-lg"
+                            : "bg-transparent text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        {t("Monthly")}
+                      </ToggleGroupItem>
+                      <ToggleGroupItem
+                        value={BILLING_CYCLE_YEARLY}
+                        className={`rounded-full px-4 py-2 transition-all duration-200 ${
+                          billingCycle === BILLING_CYCLE_YEARLY
+                            ? "bg-violet-700 text-white shadow-lg"
+                            : "bg-transparent text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        {t("Yearly")}
+                        <span className="ml-2 line-clamp-1 text-nowrap rounded bg-green-500 px-2 py-1 text-xs text-white">
+                          {t("2 months free")}
+                        </span>
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                  <div className="min-h-0 flex-1 overflow-y-auto">
+                    <div className="grid grid-cols-1 gap-4 pb-6">
+                      <PlanColumn
+                        title="Lite Plan"
+                        monthlyPrice="11"
+                        yearlyPrice="9.2"
+                        features={liteFeatures}
+                        planPrefix={LITE_PLAN_PREFIX}
+                      />
+
+                      <PlanColumn
+                        title={t("Pro Plan")}
+                        monthlyPrice="24"
+                        yearlyPrice="20"
+                        features={proFeatures}
+                        planPrefix={PRO_PLAN_PREFIX}
+                      />
+                    </div>
+                  </div>
+                </form>
+              </div>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </>

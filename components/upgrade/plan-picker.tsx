@@ -32,7 +32,7 @@ export const PlanPicker: FC<PlanPickerProps> = () => {
       <VisuallyHidden>
         <DialogTitle></DialogTitle>
       </VisuallyHidden>
-      <DialogContent className="sm:max-w-2xl sm:border">
+      <DialogContent className="max-w-screen-lg border p-0">
         <Plans onClose={() => setIsPaywallOpen(false)} showCloseIcon={true} />
       </DialogContent>
     </Dialog>

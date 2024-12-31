@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useFeatureFlag } from "@/lib/amplitude" // Add this import
 import { toast } from "sonner"
 import { useTranslation } from "react-i18next"
+import { Button } from "@/components/ui/button"
 
 export default function SetupPage() {
   const { t } = useTranslation()
@@ -222,7 +223,19 @@ export default function SetupPage() {
         showNextButton={true}
         showBackButton={enableProfileStep}
       >
-        <Plans onClose={() => {}} showCloseIcon={false} />
+        <div className="relative">
+          <div className="absolute right-0 top-0 z-10">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOnPlanShouldProceed(true)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {t("Skip")}
+            </Button>
+          </div>
+          <Plans onClose={() => {}} showCloseIcon={false} />
+        </div>
       </StepContainer>,
       <StepContainer
         key={3}
@@ -262,7 +275,7 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="flex w-full grow items-center justify-center sm:my-6 sm:w-auto">
+    <div className="flex w-full grow items-center justify-center px-4 sm:my-6 sm:w-auto">
       {renderStep(currentStep)}
     </div>
   )
