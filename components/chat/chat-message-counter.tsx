@@ -20,6 +20,7 @@ import { LLM_LIST } from "@/lib/models/llm/llm-list"
 import { tr } from "date-fns/locale"
 import { useTranslation } from "react-i18next"
 import { Zap } from "lucide-react"
+import React from "react"
 
 interface ChatMessageCounterProps {}
 
@@ -108,11 +109,11 @@ const ChatMessageCounter: React.FC<ChatMessageCounterProps> = () => {
     if (modelTier === "pro") {
       limit = LITE_PRO_MONTHLY_LIMIT
     } else {
-      showCounter = true
+      showCounter = false
     }
     if (modelTier === "free") {
       limit = LITE_MESSAGE_MONTHLY_LIMIT
-      showCounter = true
+      showCounter = false
     }
   }
 
