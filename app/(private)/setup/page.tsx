@@ -190,7 +190,7 @@ export default function SetupPage() {
     setWorkspaces(workspaces)
   }
 
-  const totalSteps = enableProfileStep ? 3 : 2
+  const totalSteps = enableProfileStep ? 2 : 1
 
   function getStepComponents() {
     const stepComponents = [
@@ -216,36 +216,12 @@ export default function SetupPage() {
       <StepContainer
         key={2}
         totalSteps={totalSteps}
-        stepDescription={t("Use all the AI models and features!")}
-        stepNum={currentStep}
-        stepTitle={t("Choose your plan")}
-        onShouldProceed={handleOnPlanShouldProceed}
-        showNextButton={true}
-        showBackButton={enableProfileStep}
-      >
-        <div className="relative">
-          <div className="bg-background/80 sticky right-0 top-0 z-50 flex justify-end p-2 backdrop-blur-sm">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleOnPlanShouldProceed(true)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              {t("Skip")}
-            </Button>
-          </div>
-          <Plans onClose={() => {}} showCloseIcon={false} />
-        </div>
-      </StepContainer>,
-      <StepContainer
-        key={3}
-        totalSteps={totalSteps}
         stepDescription={t("You are all set up!")}
         stepNum={currentStep}
         stepTitle={t("Setup Complete")}
         onShouldProceed={handleOnFinishShouldProceed}
         showNextButton={true}
-        showBackButton={true}
+        showBackButton={enableProfileStep}
       >
         <FinishStep displayName={displayName} />
       </StepContainer>
