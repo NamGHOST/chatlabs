@@ -75,7 +75,7 @@ export const Dashboard: FC<DashboardProps> = ({ children }) => {
   return useMemo(
     () => (
       <div className="relative flex size-full overflow-x-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-200 to-orange-600 opacity-15"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-100 to-yellow-200 opacity-5 blur-xl"></div>
         <div className="relative z-10 flex size-full">
           <CommandK />
           <PlanPicker />
