@@ -24,7 +24,7 @@ END;
 $$;
 
 -- Remove the trigger on users table (it's not needed for generated images)
-DROP TRIGGER IF EXISTS delete_old_generated_image ON users;
+DROP TRIGGER IF EXISTS delete_old_generated_image ON auth.users;
 
 -- STORAGE --
 

@@ -4,10 +4,13 @@ import { stableDiffusionTools } from "@/lib/platformTools/library/stableDiffusio
 import { flux1ProTools } from "@/lib/platformTools/library/lfuxImageGenerator"
 import { exaResearcherTool } from "./library/exaSearch"
 import { webSearchTool } from "./library/TavilySearch"
+import { yahooFinanceTool } from "./library/yahooFinanceTool"
+
 // Add your tool to the list
 export const platformToolList = [
   //exaResearcherTool,
-  webScraperTool
+  webScraperTool,
+  yahooFinanceTool
   ///webSearchTool,
   ///imageGeneratorTool,
   ///stableDiffusionTools,
