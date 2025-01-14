@@ -7,7 +7,7 @@ project_id = "chatbotui"
 port = 54321
 # Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
 # endpoints. public and storage are always included.
-schemas = ["public", "storage", "graphql_public"]
+schemas = ["api", "public", "graphql_public", "graphql"]
 # Extra schemas to add to the search_path of every request. public is always included.
 extra_search_path = ["public", "extensions"]
 # The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
@@ -16,11 +16,10 @@ max_rows = 1000
 
 [db]
 # Port to use for the local database URL.
-port = 54322
+port = 5432
 # Port used by db diff command to initialise the shadow database.
 shadow_port = 54320
-# The database major version to use. This has to be the same as your remote database's. Run `SHOW
-# server_version;` on the remote database to check.
+# The database major version to use. This has to be the same as your remote database's.
 major_version = 15
 
 [db.pooler]
