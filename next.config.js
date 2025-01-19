@@ -10,53 +10,37 @@ const withPWA = require("next-pwa")({
 
 const { withSentryConfig } = require("@sentry/nextjs");
 
-const newrelicConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["sharp", "onnxruntime-node", "newrelic"]
-  },
-  webpack: config => {
-    nrExternals(config);
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: ['@svgr/webpack'],
-    });
-    return config;
-  }
-};
-
+// Base Next.js config
 const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
       {
         protocol: "http",
-        hostname: "localhost"
-      },
-      {
-        protocol: "http",
-        hostname: "127.0.0.1"
-      },
-      {
-        protocol: "https",
         hostname: "**"
       },
       {
         protocol: "https",
-        hostname: "replicate.delivery"
-      },
-      {
-        protocol: "https",
-        hostname: "*.replicate.delivery"
+        hostname: "**"
       }
     ]
+  },
+  experimental: {
+    serverComponentsExternalPackages: ["sharp", "onnxruntime-node", "newrelic"]
+  },
+  webpack: (config) => {
+    nrExternals(config);
+    return config;
   }
 };
 
-const config = withBundleAnalyzer(
+// Combine configurations
+let config = withBundleAnalyzer(
   process.env.NODE_ENV === "production" ? withPWA(nextConfig) : nextConfig
 );
 
-module.exports = withSentryConfig(config, {
+// Sentry configuration
+const sentryConfig = {
   org: "nam1st-app",
   project: "javascript-nextjs",
   silent: !process.env.CI,
@@ -68,4 +52,7 @@ module.exports = withSentryConfig(config, {
   disableLogger: true,
   automaticVercelMonitors: true,
   authToken: process.env.SENTRY_AUTH_TOKEN,
-});
+};
+
+// Export the final configuration
+module.exports = withSentryConfig(config, sentryConfig);
