@@ -54,7 +54,7 @@ const KNOWN_MODEL_NAMES: {
   //paid: true,
   //supportsStreaming: true
   //},
-  //"openai/gpt-4o-2024-08-06": {
+  //"openai/gpt-4o-2024-11-20": {
   //  provider: "openai",
   //  modelName: "GPT-4o 2024-08-06",
   //  imageInput: true,
@@ -111,7 +111,7 @@ function parseSupportedModelsFromEnv() {
   let SUPPORTED_OPENROUTER_MODELS = [
     "openai/o1-mini",
     "openai/o1",
-    "openai/gpt-4o-2024-08-06",
+    "openai/gpt-4o-2024-11-20",
     "openai/gpt-4o-mini",
 
     "anthropic/claude-3.5-sonnet",

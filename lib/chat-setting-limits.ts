@@ -222,7 +222,7 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 16384,
     MAX_CONTEXT_LENGTH: 128000
   },
-  "gpt-4o-2024-08-06": {
+  "gpt-4o-2024-11-20": {
     MIN_TEMPERATURE: 0.0,
     MAX_TEMPERATURE: 2.0,
     MAX_TOKEN_OUTPUT_LENGTH: 16384,
@@ -354,18 +354,13 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 32768,
     MAX_CONTEXT_LENGTH: 128000
   },
-  "openai/gpt-4o-2024-08-06": {
+  "openai/gpt-4o-2024-11-20": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
     MAX_TOKEN_OUTPUT_LENGTH: 16384,
     MAX_CONTEXT_LENGTH: 128000
   },
-  "openai/gpt-4-vision-preview": {
-    MIN_TEMPERATURE: 0,
-    MAX_TEMPERATURE: 0,
-    MAX_TOKEN_OUTPUT_LENGTH: 0,
-    MAX_CONTEXT_LENGTH: 0
-  },
+
   "openai/gpt-4o-mini": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,

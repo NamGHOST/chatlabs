@@ -30,7 +30,7 @@ const O1_PREVIEW: LLM = {
 }
 
 const GPT_4O: LLM = {
-  modelId: "openai/gpt-4o-2024-08-06",
+  modelId: "openai/gpt-4o-2024-11-20",
   modelName: "GPT-4o",
   provider: "openrouter",
   hostedId: "gpt-4o",
@@ -63,23 +63,6 @@ const GPT_4O_MINI: LLM = {
     unit: "1M tokens",
     inputCost: 0.15,
     outputCost: 0.6
-  }
-}
-
-const GPT_4_VISION: LLM = {
-  modelId: "openai/gpt-4-vision-preview",
-  modelName: "GPT-4 Vision",
-  provider: "openrouter",
-  hostedId: "gpt-4-vision-preview",
-  platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: true,
-  tier: "pro" as LLMTier,
-  tools: false,
-  supportsStreaming: true,
-  pricing: {
-    currency: "USD",
-    unit: "1M tokens",
-    inputCost: 10
   }
 }
 
@@ -455,7 +438,6 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   O1_PREVIEW,
   GPT_4O,
   GPT_4O_MINI,
-  GPT_4_VISION,
   GEMINI_PRO_15,
   GEMINI_FLASH_20_FLASH_THINKING,
   GEMINI_FLASH_20_FLASH,
@@ -488,9 +470,8 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   EVA_QWEN_2_5_72B
 ]
 
-//- openai/gpt-4o-2024-08-06
+//- openai/gpt-4o-2024-11-20
 //- openai/gpt-4o-mini
-//- openai/gpt-4-vision-preview
 //- google/gemini-pro-1.5
 //- google/gemini-2.0-flash-thinking-exp:free
 //- google/gemini-2.0-flash-exp:free

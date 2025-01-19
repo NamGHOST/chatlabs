@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     const openai = new OpenAI({
       apiKey: profile.openrouter_api_key || "",
-      baseURL: "https://openrouter.ai/api/v1",
+      baseURL: process.env.OPENROUTER_BASE_URL,
       defaultHeaders: {
         "HTTP-Referer": `https://imogenai.app`,
         "X-Title": `ImogenAI`,

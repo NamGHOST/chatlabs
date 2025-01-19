@@ -85,7 +85,7 @@ const GPT4O: LLM = {
   modelId: "gpt-4o",
   modelName: "GPT-4o",
   provider: "openai",
-  hostedId: "gpt-4o-2024-08-06",
+  hostedId: "gpt-4o-2024-11-20",
   platformLink: OPENAI_PLATORM_LINK,
   imageInput: true,
   tools: true,

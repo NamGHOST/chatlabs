@@ -20,7 +20,7 @@ export type OpenAILLMID =
   | "gpt-4-turbo" // GPT-4 Turbo
   | "gpt-4o" // GPT-4o
   | "gpt-4o-mini" // GPT-4 Vision
-  | "gpt-4o-2024-08-06" // GPT-4o (updated 8/6/24)
+  | "gpt-4o-2024-11-20" // GPT-4o (updated 8/6/24)
   | "o1-mini" // O1 Mini
   | "o1" // O1
 
@@ -92,8 +92,7 @@ export type LLMTier = "free" | "pro" | "ultimate"
 export type OpenRouterLLMID =
   | "openai/o1-mini"
   | "openai/o1"
-  | "openai/gpt-4o-2024-08-06"
-  | "openai/gpt-4-vision-preview"
+  | "openai/gpt-4o-2024-11-20"
   | "openai/gpt-4o-mini"
   | "google/gemini-pro-1.5"
   | "google/gemini-pro-vision"
