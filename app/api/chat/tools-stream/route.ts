@@ -78,7 +78,7 @@ function getClient(model: string, profile: Tables<"profiles">) {
     logger.debug("Creating OpenRouter client")
     return new OpenAI({
       apiKey: profile.openrouter_api_key || "",
-      baseURL: "https://openrouter.ai/api/v1"
+      baseURL: process.env.OPENROUTER_BASE_URL
     })
   }
 

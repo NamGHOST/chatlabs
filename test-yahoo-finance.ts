@@ -1,6 +1,7 @@
-const { yahooFinanceTool } = require('./lib/platformTools/library/yahooFinanceTool');
+import { yahooFinanceTool } from './lib/platformTools/library/yahooFinanceTool';
 
-async function testYahooFinance() {
+// Main function to run tests
+const main = async () => {
   try {
     // Test stock data
     console.log('Testing get_stock_data...');
@@ -10,16 +11,33 @@ async function testYahooFinance() {
     });
     console.log('Stock Data:', JSON.stringify(stockResult, null, 2));
 
-    // Test options data with closer expiration
+    // Add delay between tests
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Test options data
     console.log('\nTesting get_option_chain...');
     const optionsResult = await yahooFinanceTool.toolsFunctions[1].toolFunction({
       symbol: 'AAPL',
-      expirationDate: '2025-01-17'  // Using the closest expiration
+      expirationDate: '2025-01-17'
     });
     console.log('Options Data:', JSON.stringify(optionsResult, null, 2));
-  } catch (error) {
-    console.error('Test failed:', error);
-  }
-}
 
-testYahooFinance(); 
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Test failed:', error.message);
+    } else {
+      console.error('Test failed with unknown error');
+    }
+    process.exit(1);
+  }
+};
+
+// Run the tests
+main().catch((error) => {
+  if (error instanceof Error) {
+    console.error('Unhandled error:', error.message);
+  } else {
+    console.error('Unhandled unknown error');
+  }
+  process.exit(1);
+}); 
