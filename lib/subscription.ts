@@ -133,10 +133,15 @@ export function validatePlanForTools(
   tools: any[],
   model?: LLMID
 ) {
-  if (model && validatePlanForModel(profile, model)) {
-    return true
+  if (!profile?.plan || profile.plan === PLAN_FREE) {
+    return false
   }
-  return false
+
+  if (model) {
+    return validatePlanForModel(profile, model)
+  }
+
+  return true
 }
 
 export {

@@ -451,6 +451,12 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 4096,
     MAX_CONTEXT_LENGTH: 128000
   },
+  "deepseek/deepseek-r1": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 1,
+    MAX_TOKEN_OUTPUT_LENGTH: 8000,
+    MAX_CONTEXT_LENGTH: 64000
+  },
 
   // New OpenRouter models
   "meta-llama/llama-3.2-90b-vision-instruct": {

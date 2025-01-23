@@ -110,6 +110,7 @@ export type OpenRouterLLMID =
   | "meta-llama/llama-3.2-11b-vision-instruct"
   | "perplexity/llama-3.1-sonar-huge-128k-online"
   | "deepseek/deepseek-chat"
+  | "deepseek/deepseek-r1"
   | "qwen/qwen-2.5-72b-instruct"
   | "qwen/qwen-2-vl-72b-instruct"
   | "cohere/command-r-plus-08-2024"

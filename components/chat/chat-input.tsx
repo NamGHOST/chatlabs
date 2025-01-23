@@ -33,7 +33,7 @@ import { ChatSelectedHtmlElements } from "@/components/chat/chat-selected-html-e
 import { ChatMessage } from "@/types"
 import { useTranslation } from "react-i18next"
 import { WebBrowseToggle } from "./web-browse-toggle"
-
+import { FinanceToggle } from "./finance-toggle"
 interface ChatInputProps {
   showAssistant: boolean
   handleSendMessage?: (
@@ -391,6 +391,7 @@ export const ChatInput: FC<ChatInputProps> = ({
               </button>
 
               <WebBrowseToggle />
+              <FinanceToggle />
 
               <button
                 className="hover:bg-accent rounded-lg p-2 transition-colors"
