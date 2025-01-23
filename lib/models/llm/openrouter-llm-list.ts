@@ -212,6 +212,19 @@ const DEEPSEEK_CHAT: LLM = {
   tools: false,
   supportsStreaming: true,
   tier: "free" as LLMTier,
+  new: false
+}
+
+const DEEPSEEK_CHAT_R1: LLM = {
+  modelId: "deepseek/deepseek-r1",
+  modelName: "DeepSeek R1",
+  provider: "openrouter",
+  hostedId: "DeepSeek R1",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "pro" as LLMTier,
   new: true
 }
 
@@ -450,6 +463,8 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   LLAMA_32_90B_VISION,
   LLAMA_32_11B_VISION,
   DEEPSEEK_CHAT,
+  DEEPSEEK_CHAT_R1,
+
   QWEN_25_72B,
   QWEN_2_VL_72B,
   COHERE_COMMAND_R_PLUS,

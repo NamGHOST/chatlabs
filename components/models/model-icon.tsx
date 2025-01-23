@@ -5,6 +5,7 @@ import meta from "@/public/providers/meta.png"
 import perplexity from "@/public/providers/perplexity.png"
 import databricks from "@/public/providers/databricks.png"
 import googleGemini from "@/public/providers/googleGemini.png"
+import deepseek from "@/public/providers/deepseek.png"
 
 import { XaiSVG } from "@/components/icons/xai-svg"
 import { ModelProvider } from "@/types"
@@ -100,7 +101,7 @@ export const ModelIcon: FC<ModelIconProps> = ({
       return (
         <Image
           className={cn(
-            "rounded-sm p-1",
+            "rounded-sm p-0",
             className,
             theme === "dark" ? "bg-white" : "border-foreground/10 border"
           )}
@@ -208,6 +209,21 @@ export const ModelIcon: FC<ModelIconProps> = ({
             theme === "dark" ? "bg-white" : "border-foreground/10 border",
             className
           )}
+          width={width}
+          height={height}
+        />
+      )
+
+    case "deepseek":
+      return (
+        <Image
+          className={cn(
+            "rounded-sm p-0",
+            theme === "dark" ? "bg-white" : "border-foreground/10 border",
+            className
+          )}
+          src={deepseek.src}
+          alt="Deepseek"
           width={width}
           height={height}
         />
