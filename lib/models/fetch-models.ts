@@ -30,6 +30,11 @@ const KNOWN_MODEL_NAMES: {
     modelName: "DeepSeek Chat R1",
     categories: [CATEGORIES.PROGRAMMING]
   },
+  "deepseek/deepseek-r1-distill-llama-70b": {
+    provider: "deepseek",
+    modelName: "DeepSeek R1 Distill Llama 70B",
+    categories: [CATEGORIES.PROGRAMMING]
+  },
 
   "gryphe/mythomax-l2-13b": {
     provider: "gryphe" as any,
@@ -139,6 +144,7 @@ function parseSupportedModelsFromEnv() {
     "perplexity/llama-3.1-sonar-huge-128k-online",
     "deepseek/deepseek-chat",
     "deepseek/deepseek-r1",
+    "deepseek/deepseek-r1-distill-llama-70b",
 
     "qwen/qwen-2.5-72b-instruct",
     "qwen/qwen-2-vl-72b-instruct",

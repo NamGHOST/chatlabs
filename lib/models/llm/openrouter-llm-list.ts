@@ -86,7 +86,7 @@ const GEMINI_FLASH_20_FLASH_THINKING: LLM = {
   hostedId: "gemini-2.0-flash-thinking-exp",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
-  tools: false,
+  tools: true,
   supportsStreaming: true,
   tier: "free" as LLMTier,
   new: true
@@ -209,7 +209,7 @@ const DEEPSEEK_CHAT: LLM = {
   hostedId: "DeepSeek V3",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
-  tools: false,
+  tools: true,
   supportsStreaming: true,
   tier: "free" as LLMTier,
   new: false
@@ -225,6 +225,19 @@ const DEEPSEEK_CHAT_R1: LLM = {
   tools: false,
   supportsStreaming: true,
   tier: "pro" as LLMTier,
+  new: true
+}
+
+const DEEPSEEK_CHAT_R1_DISTILL_LLAMA_70B: LLM = {
+  modelId: "deepseek/deepseek-r1-distill-llama-70b",
+  modelName: "DeepSeek R1 Distill Llama 70B",
+  provider: "openrouter",
+  hostedId: "DeepSeek: DeepSeek R1 Distill Llama 70B",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
   new: true
 }
 
@@ -331,7 +344,7 @@ const GROK: LLM = {
   hostedId: "grok",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
-  tools: false,
+  tools: true,
   supportsStreaming: true,
   tier: "pro" as LLMTier,
   new: true
@@ -392,7 +405,7 @@ const META_LLAMA_3_3_70B_INSTRUCT: LLM = {
   hostedId: "llama-3.3-70b-instruct",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
-  tools: false,
+  tools: true,
   supportsStreaming: true,
   tier: "free" as LLMTier,
   new: true
@@ -405,7 +418,7 @@ const AMAZON_NOVA_LITE_V1: LLM = {
   hostedId: "nova-lite-v1",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: true,
-  tools: false,
+  tools: true,
   supportsStreaming: true,
   tier: "free" as LLMTier
 }
@@ -417,7 +430,7 @@ const AMAZON_NOVA_MICRO_V1: LLM = {
   hostedId: "nova-micro-v1",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
-  tools: false,
+  tools: true,
   supportsStreaming: true,
   tier: "free" as LLMTier
 }
@@ -429,7 +442,7 @@ const AMAZON_NOVA_PRO_V1: LLM = {
   hostedId: "nova-pro-v1",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: true,
-  tools: false,
+  tools: true,
   supportsStreaming: true,
   tier: "pro" as LLMTier
 }
@@ -464,6 +477,7 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   LLAMA_32_11B_VISION,
   DEEPSEEK_CHAT,
   DEEPSEEK_CHAT_R1,
+  DEEPSEEK_CHAT_R1_DISTILL_LLAMA_70B,
 
   QWEN_25_72B,
   QWEN_2_VL_72B,

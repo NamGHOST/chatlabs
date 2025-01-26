@@ -97,6 +97,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "perplexity/llama-3.1-sonar-huge-128k-online": false,
   "deepseek/deepseek-chat": true,
   "deepseek/deepseek-r1": true,
+  "deepseek/deepseek-r1-distill-llama-70b": true,
 
   "qwen/qwen-2.5-72b-instruct": false,
   "qwen/qwen-2-vl-72b-instruct": false,
