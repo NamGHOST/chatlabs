@@ -144,7 +144,7 @@ import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
                 contextLength: 16385,
                 includeProfileContext: false,
                 includeWorkspaceInstructions: false,
-                embeddingsProvider: "openai"
+                embeddingsProvider: "jina"
             },
             messages: [ // required
                 {
