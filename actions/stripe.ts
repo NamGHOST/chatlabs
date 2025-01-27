@@ -58,6 +58,9 @@ export async function createCheckoutSession(
         mode: "subscription",
         customer: customerId,
         allow_promotion_codes: true,
+        metadata: {
+          userId
+        },
         line_items: [
           {
             price: price,

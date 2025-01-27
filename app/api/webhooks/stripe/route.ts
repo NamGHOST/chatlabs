@@ -38,6 +38,7 @@ export async function POST(req: Request) {
   console.log(`[${event.id}][${event.type}]: Event received`)
 
   const permittedEvents = [
+    "checkout.session.completed",
     "customer.subscription.created",
     "customer.subscription.deleted",
     "customer.subscription.updated"
