@@ -79,14 +79,14 @@ const META_LLAMA_3_70B_8192: LLM = {
     "Meta's latest class of model (Llama 3) launched with a variety of sizes & flavors. This 8B instruct-tuned version is fast and efficient."
 }
 
-const LLAMA3_GROQ_70B_8192_TOOL_USE_PREVIEW: LLM = {
-  modelId: "llama3-groq-70b-8192-tool-use-preview",
-  modelName: "Meta LLama 3 70B Tool Use Preview",
+const DEEPSEEK_R1_DISTILL_LLAMA_70B: LLM = {
+  modelId: "deepseek-r1-distill-llama-70b",
+  modelName: "DeepSeek R1 Distill Llama 70B",
   provider: "groq",
-  hostedId: "llama3-groq-70b-8192-tool-use-preview",
+  hostedId: "deepseek-r1-distill-llama-70b",
   platformLink: GROQ_PLATORM_LINK,
   imageInput: false,
-  tools: true,
+  tools: false,
   supportsStreaming: true,
   pricing: {
     currency: "USD",
@@ -95,7 +95,8 @@ const LLAMA3_GROQ_70B_8192_TOOL_USE_PREVIEW: LLM = {
     outputCost: 0.79
   },
   categories: [CATEGORIES.TECHNOLOGY, CATEGORIES.PROGRAMMING, CATEGORIES.TOOLS],
-  description: "70B parameter model optimized for tool use and function calling"
+  description:
+    "A powerful 70B parameter model from DeepSeek, distilled from Llama architecture."
 }
 
 const LLAMA_3_2_11B_VISION: LLM = {
@@ -221,7 +222,7 @@ const LLAMA_3_3_70B_VERSATILE: LLM = {
   hostedId: "llama-3.3-70b-versatile",
   platformLink: GROQ_PLATORM_LINK,
   imageInput: false,
-  tools: false,
+  tools: true,
   supportsStreaming: true,
   pricing: {
     currency: "USD",
@@ -240,7 +241,7 @@ export const GROQ_LLM_LIST: LLM[] = [
   LLAMA_3_3_70B_VERSATILE,
   META_LLAMA_3_8B_8192,
   META_LLAMA_3_70B_8192,
-  LLAMA3_GROQ_70B_8192_TOOL_USE_PREVIEW,
+  DEEPSEEK_R1_DISTILL_LLAMA_70B,
   LLAMA_3_2_11B_VISION,
   LLAMA_3_2_1B,
   LLAMA_3_2_3B,

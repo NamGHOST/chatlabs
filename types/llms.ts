@@ -56,7 +56,7 @@ export type GroqLLMID =
   | "llama-guard-3-8b" // Llama Guard 3 8B
   | "llama3-70b-8192" // LLaMA3 70B
   | "llama3-8b-8192" // LLaMA3 8B
-  | "llama3-groq-70b-8192-tool-use-preview" // LLaMA3 70B Tool Use Preview
+  | "deepseek-r1-distill-llama-70b" // LLaMA3 70B Tool Use Preview
   | "llama3-groq-8b-8192-tool-use-preview" // LLaMA3 8B Tool Use Preview
   | "llama-3.2-1b-preview" // Llama 3.2 1B Preview
   | "llama-3.2-3b-preview" // Llama 3.2 3B Preview

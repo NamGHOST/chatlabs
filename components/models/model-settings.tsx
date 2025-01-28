@@ -69,7 +69,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "llama3-70b-8192": false,
   "llama-3.1-70b-versatile": false,
   "llama3-8b-8192": false,
-  "llama3-groq-70b-8192-tool-use-preview": true,
+  "deepseek-r1-distill-llama-70b": true,
   "gpt-4o": false,
   "gemini-1.5-flash-latest": false,
 
