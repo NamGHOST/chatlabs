@@ -12,7 +12,8 @@ import {
   IconFileText,
   IconMoodSmile,
   IconPuzzle,
-  IconBulb
+  IconBulb,
+  IconBrain
 } from "@tabler/icons-react"
 import Image from "next/image"
 import { FC, useContext, useEffect, useMemo, useRef, useState } from "react"
@@ -42,6 +43,7 @@ import {
   reconstructContentWithCodeBlocksInChatMessage
 } from "@/lib/messages"
 import { getMessageImageFromStorage } from "@/db/storage/message-images"
+import { motion } from "framer-motion"
 
 const ICON_SIZE = 32
 
@@ -62,6 +64,45 @@ interface MessageProps {
   onSelectCodeBlock?: (codeBlock: ChatMessageCodeBlock | null) => void
   isExperimentalCodeEditor?: boolean
   showResponseTime?: boolean
+}
+
+const ThinkingDisplay: React.FC<{ content: string }> = ({ content }) => {
+  const lines = content.split("\n").filter(line => line.trim())
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="bg-secondary/30 my-4 rounded-lg p-4 font-mono text-sm"
+    >
+      <div className="mb-2 flex items-center space-x-2 text-blue-500">
+        <IconBrain size={16} />
+        <span className="font-semibold">Thought Process</span>
+      </div>
+      <div className="text-muted-foreground space-y-2">
+        {lines.map((line, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            {line}
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+const processMessageContent = (content: string) => {
+  if (content.includes("<think>") && content.includes("</think>")) {
+    const parts = content.split("</think>")
+    const thinkingContent = parts[0].split("<think>")[1]
+    const responseContent = parts[1].trim()
+    return { thinkingContent, responseContent }
+  }
+  return { thinkingContent: null, responseContent: content }
 }
 
 export const Message: FC<MessageProps> = ({
@@ -405,12 +446,9 @@ export const Message: FC<MessageProps> = ({
   return (
     <div
       className={cn(
-        "group flex w-full justify-center",
-        // message.role === "user" ? "" : "bg-secondary",
-        "role-" + message.role,
-        isLast ? "is-last" : ""
+        "group relative mb-4 flex items-start md:mb-6",
+        message.role === "assistant" ? "flex-row" : "flex-row-reverse"
       )}
-      onKeyDown={handleKeyDown}
     >
       <div className="relative flex w-full flex-col p-4">
         <div className="space-y-3">
@@ -492,28 +530,41 @@ export const Message: FC<MessageProps> = ({
             </div>
           )}
           <Annotations annotation={message.annotation as Annotation} />
-          {!firstTokenReceived &&
-          isGenerating &&
-          isLast &&
-          message.role === "assistant" ? (
-            <LoadingMessage isGenerating={isGenerating} />
-          ) : isEditing ? (
-            <TextareaAutosize
-              textareaRef={editInputRef}
-              className="text-md"
-              value={editedMessage}
-              onValueChange={setEditedMessage}
-              maxRows={20}
-            />
-          ) : (
-            <MessageMarkdown
-              isGenerating={isGenerating && isLast}
-              codeBlocks={codeBlocks}
-              content={message.content}
-              onSelectCodeBlock={onSelectCodeBlock}
-              experimental_code_editor={isExperimentalCodeEditor}
-            />
-          )}
+          {(() => {
+            const { thinkingContent, responseContent } = processMessageContent(
+              message.content
+            )
+
+            return (
+              <>
+                {thinkingContent && (
+                  <ThinkingDisplay content={thinkingContent} />
+                )}
+                {!firstTokenReceived &&
+                isGenerating &&
+                isLast &&
+                message.role === "assistant" ? (
+                  <LoadingMessage isGenerating={true} />
+                ) : isEditing ? (
+                  <TextareaAutosize
+                    textareaRef={editInputRef}
+                    className="text-md"
+                    value={editedMessage}
+                    onValueChange={setEditedMessage}
+                    maxRows={20}
+                  />
+                ) : (
+                  <MessageMarkdown
+                    isGenerating={isGenerating && isLast}
+                    codeBlocks={codeBlocks}
+                    content={responseContent}
+                    onSelectCodeBlock={onSelectCodeBlock}
+                    experimental_code_editor={isExperimentalCodeEditor}
+                  />
+                )}
+              </>
+            )
+          })()}
         </div>
 
         {fileItems.length > 0 && (
