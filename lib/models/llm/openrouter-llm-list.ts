@@ -4,17 +4,19 @@ import { LLMTier } from "@/types"
 
 const OPENROUTER_PLATFORM_LINK = "https://openrouter.ai/api/v1"
 
-const O1_MINI: LLM = {
-  modelId: "openai/o1-mini",
-  modelName: "O1 Mini",
+const O3_MINI: LLM = {
+  modelId: "openai/o3-mini",
+  modelName: "O3 Mini",
   provider: "openrouter",
-  hostedId: "o1-mini",
+  hostedId: "o3-mini",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
   tools: false,
   supportsStreaming: true,
   tier: "pro" as LLMTier,
-  categories: [CATEGORIES.TECHNOLOGY]
+  categories: [CATEGORIES.TECHNOLOGY],
+  include_reasoning: true,
+  new: true
 }
 
 const O1_PREVIEW: LLM = {
@@ -89,7 +91,7 @@ const GEMINI_FLASH_20_FLASH_THINKING: LLM = {
   tools: true,
   supportsStreaming: true,
   tier: "free" as LLMTier,
-  new: true
+  include_reasoning: true
 }
 
 const GEMINI_FLASH_20_FLASH: LLM = {
@@ -190,18 +192,6 @@ const META_LLAMA_3_1_405B: LLM = {
   tier: "free" as LLMTier
 }
 
-const LLAMA_3_1_SONAR_HUGE_128K_ONLINE: LLM = {
-  modelId: "perplexity/llama-3.1-sonar-huge-128k-online",
-  modelName: "Llama 3.1 Sonar 405B Online",
-  provider: "openrouter",
-  hostedId: "llama-3.1-sonar-405b-online",
-  platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: false,
-  tools: false,
-  supportsStreaming: true,
-  tier: "pro" as LLMTier
-}
-
 const DEEPSEEK_CHAT: LLM = {
   modelId: "deepseek/deepseek-chat",
   modelName: "DeepSeek v3",
@@ -225,7 +215,8 @@ const DEEPSEEK_CHAT_R1: LLM = {
   tools: false,
   supportsStreaming: true,
   tier: "pro" as LLMTier,
-  new: true
+  new: true,
+  include_reasoning: true
 }
 
 const DEEPSEEK_CHAT_R1_DISTILL_LLAMA_70B: LLM = {
@@ -238,7 +229,36 @@ const DEEPSEEK_CHAT_R1_DISTILL_LLAMA_70B: LLM = {
   tools: false,
   supportsStreaming: true,
   tier: "free" as LLMTier,
-  new: true
+  new: true,
+  include_reasoning: true
+}
+
+const DEEPSEEK_R1_DISTILL_QWEN_32B: LLM = {
+  modelId: "deepseek/deepseek-r1-distill-qwen-32b",
+  modelName: "DeepSeek R1 Distill Qwen 32B",
+  provider: "openrouter",
+  hostedId: "DeepSeek R1 Distill Qwen 32B",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true,
+  include_reasoning: true
+}
+
+const DEEPSEEK_R1_DISTILL_QWEN_14B: LLM = {
+  modelId: "deepseek/deepseek-r1-distill-qwen-14b",
+  modelName: "DeepSeek R1 Distill Qwen 14B",
+  provider: "openrouter",
+  hostedId: "DeepSeek R1 Distill Qwen 14B",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true,
+  include_reasoning: true
 }
 
 const LLAMA_32_90B_VISION: LLM = {
@@ -325,16 +345,31 @@ const GEMINI_FLASH_15_8B: LLM = {
   tier: "free" as LLMTier
 }
 
-const LLAMA_31_SONAR_LARGE_128K_ONLINE: LLM = {
-  modelId: "perplexity/llama-3.1-sonar-large-128k-online",
-  modelName: "Llama 3.1 Sonar Large 70B Online",
+const PERPLEXITY_SONAR_REASONING: LLM = {
+  modelId: "perplexity/sonar-reasoning",
+  modelName: "Perplexity Sonar Reasoning",
   provider: "openrouter",
-  hostedId: "llama-3.1-sonar-large-70B-online",
+  hostedId: "perplexity-sonar-reasoning",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "free" as LLMTier
+  tier: "pro" as LLMTier,
+  new: true,
+  include_reasoning: true
+}
+
+const PERPLEXITY_SONAR: LLM = {
+  modelId: "perplexity/sonar",
+  modelName: "Perplexity Sonar",
+  provider: "openrouter",
+  hostedId: "perplexity-sonar",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true
 }
 
 const GROK: LLM = {
@@ -346,8 +381,7 @@ const GROK: LLM = {
   imageInput: false,
   tools: true,
   supportsStreaming: true,
-  tier: "pro" as LLMTier,
-  new: true
+  tier: "pro" as LLMTier
 }
 
 const NVIDIA_LLAMA_31_NEMOTRON_70B: LLM = {
@@ -407,8 +441,7 @@ const META_LLAMA_3_3_70B_INSTRUCT: LLM = {
   imageInput: false,
   tools: true,
   supportsStreaming: true,
-  tier: "free" as LLMTier,
-  new: true
+  tier: "free" as LLMTier
 }
 
 const AMAZON_NOVA_LITE_V1: LLM = {
@@ -460,7 +493,7 @@ const EVA_QWEN_2_5_72B: LLM = {
 }
 
 export const OPENROUTER_LLM_LIST: LLM[] = [
-  O1_MINI,
+  O3_MINI,
   O1_PREVIEW,
   GPT_4O,
   GPT_4O_MINI,
@@ -471,13 +504,16 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   CLAUDE_3_HAIKU,
   CLAUDE_35_HAIKU,
   CLAUDE_35_SONNET,
-  LLAMA_3_1_SONAR_HUGE_128K_ONLINE,
+  PERPLEXITY_SONAR_REASONING,
+  PERPLEXITY_SONAR,
   META_LLAMA_3_1_405B,
   LLAMA_32_90B_VISION,
   LLAMA_32_11B_VISION,
   DEEPSEEK_CHAT,
   DEEPSEEK_CHAT_R1,
   DEEPSEEK_CHAT_R1_DISTILL_LLAMA_70B,
+  DEEPSEEK_R1_DISTILL_QWEN_32B,
+  DEEPSEEK_R1_DISTILL_QWEN_14B,
 
   QWEN_25_72B,
   QWEN_2_VL_72B,
@@ -486,7 +522,6 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   DBRX_INSTRUCT,
   MIXTRAL_8X22B,
   WIZARDLM_2_8X22B,
-  LLAMA_31_SONAR_LARGE_128K_ONLINE,
   GROK,
   NVIDIA_LLAMA_31_NEMOTRON_70B,
   GEMINI_EXP_1114,
@@ -510,7 +545,7 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
 //- anthropic/claude-3.5-sonnet
 //- meta-llama/llama-3.1-405b-instruct
 //- deepseek/deepseek-chat
-//- openai/o1-mini
+//- openai/o3-mini
 //- openai/o1
 //- google/gemini-2.0-flash-thinking-exp:free
 //- google/gemini-2.0-flash-exp:free

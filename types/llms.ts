@@ -90,7 +90,7 @@ export type Category = {
 export type LLMTier = "free" | "pro" | "ultimate"
 // Update the LLM interface to include categories
 export type OpenRouterLLMID =
-  | "openai/o1-mini"
+  | "openai/o3-mini"
   | "openai/o1"
   | "openai/gpt-4o-2024-11-20"
   | "openai/gpt-4o-mini"
@@ -108,15 +108,17 @@ export type OpenRouterLLMID =
   | "meta-llama/llama-3.1-405b-instruct"
   | "meta-llama/llama-3.2-90b-vision-instruct"
   | "meta-llama/llama-3.2-11b-vision-instruct"
-  | "perplexity/llama-3.1-sonar-huge-128k-online"
+  | "perplexity/sonar-reasoning"
   | "deepseek/deepseek-chat"
   | "deepseek/deepseek-r1"
   | "deepseek/deepseek-r1-distill-llama-70b"
+  | "deepseek/deepseek-r1-distill-qwen-32b"
+  | "deepseek/deepseek-r1-distill-qwen-14b"
   | "qwen/qwen-2.5-72b-instruct"
   | "qwen/qwen-2-vl-72b-instruct"
   | "cohere/command-r-plus-08-2024"
   | "cohere/command-r-08-2024"
-  | "perplexity/llama-3.1-sonar-large-128k-online"
+  | "perplexity/sonar"
   | "x-ai/grok-2-1212"
   | "nvidia/llama-3.1-nemotron-70b-instruct"
   | "google/gemini-exp-1114"
@@ -148,6 +150,7 @@ export interface LLM {
   new?: boolean
   tier?: "free" | "pro" | "ultimate" | undefined
   categories?: Category[]
+  include_reasoning?: boolean
 }
 
 export interface OpenRouterLLM extends LLM {
@@ -162,4 +165,5 @@ export interface OpenRouterLLM extends LLM {
   new?: boolean
   tier?: "free" | "pro" | "ultimate" | undefined
   categories?: Category[]
+  include_reasoning?: boolean
 }

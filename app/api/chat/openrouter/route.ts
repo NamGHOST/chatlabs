@@ -9,6 +9,18 @@ import { ServerRuntime } from "next"
 import OpenAI from "openai"
 import { ChatCompletionCreateParamsBase } from "openai/resources/chat/completions.mjs"
 
+// Add OpenRouter specific parameters
+interface OpenRouterChatCompletionParams
+  extends ChatCompletionCreateParamsBase {
+  include_reasoning?: boolean
+}
+
+interface OpenRouterMessage {
+  content: string
+  role: string
+  reasoning?: string
+}
+
 export const runtime: ServerRuntime = "edge"
 
 export async function POST(request: Request) {
@@ -66,10 +78,67 @@ export async function POST(request: Request) {
       messages: processedMessages as ChatCompletionCreateParamsBase["messages"],
       temperature: chatSettings.temperature,
       max_tokens: undefined,
-      stream: true
-    })
+      stream: true,
+      include_reasoning: true
+    } as OpenRouterChatCompletionParams)
 
-    const stream = OpenAIStream(response)
+    // Create a transform stream to process the response
+    const stream = new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder()
+        let accumulatedReasoning = ""
+        let hasReasoningBeenSent = false
+
+        try {
+          // @ts-ignore
+          for await (const chunk of response) {
+            // Accumulate reasoning chunks
+            if (
+              !hasReasoningBeenSent &&
+              chunk.choices?.[0]?.delta?.reasoning !== undefined
+            ) {
+              const reasoning = chunk.choices[0].delta.reasoning
+              if (reasoning !== null) {
+                accumulatedReasoning += reasoning
+              }
+              // If we get a content chunk and haven't sent reasoning yet, send it now
+              if (chunk.choices?.[0]?.delta?.content && accumulatedReasoning) {
+                controller.enqueue(
+                  encoder.encode(`<think>${accumulatedReasoning}</think>\n\n`)
+                )
+                hasReasoningBeenSent = true
+                accumulatedReasoning = ""
+              }
+            }
+            // Handle content chunks
+            if (chunk.choices?.[0]?.delta?.content) {
+              const content = chunk.choices[0].delta.content
+              if (content) {
+                // If we still have reasoning and haven't sent it, send it now
+                if (!hasReasoningBeenSent && accumulatedReasoning) {
+                  controller.enqueue(
+                    encoder.encode(`<think>${accumulatedReasoning}</think>\n\n`)
+                  )
+                  hasReasoningBeenSent = true
+                  accumulatedReasoning = ""
+                }
+                controller.enqueue(encoder.encode(content))
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error processing stream:", error)
+        } finally {
+          // If we have any remaining reasoning, send it
+          if (accumulatedReasoning && !hasReasoningBeenSent) {
+            controller.enqueue(
+              encoder.encode(`<think>${accumulatedReasoning}</think>\n\n`)
+            )
+          }
+          controller.close()
+        }
+      }
+    })
 
     return new StreamingTextResponse(stream)
   } catch (error: any) {

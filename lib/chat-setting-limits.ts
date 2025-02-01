@@ -342,7 +342,7 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
   //openrouter models
 
   // OPENAI MODELS
-  "openai/o1-mini": {
+  "openai/o3-mini": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
     MAX_TOKEN_OUTPUT_LENGTH: 65536,
@@ -439,11 +439,11 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_CONTEXT_LENGTH: 0
   },
 
-  "perplexity/llama-3.1-sonar-huge-128k-online": {
+  "perplexity/sonar-reasoning": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
-    MAX_TOKEN_OUTPUT_LENGTH: 0,
-    MAX_CONTEXT_LENGTH: 0
+    MAX_TOKEN_OUTPUT_LENGTH: 127000,
+    MAX_CONTEXT_LENGTH: 127000
   },
   "deepseek/deepseek-chat": {
     MIN_TEMPERATURE: 0,
@@ -458,6 +458,20 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_CONTEXT_LENGTH: 64000
   },
   "deepseek/deepseek-r1-distill-llama-70b": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 1,
+    MAX_TOKEN_OUTPUT_LENGTH: 128000,
+    MAX_CONTEXT_LENGTH: 128000
+  },
+
+  "deepseek/deepseek-r1-distill-qwen-32b": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 1,
+    MAX_TOKEN_OUTPUT_LENGTH: 128000,
+    MAX_CONTEXT_LENGTH: 128000
+  },
+
+  "deepseek/deepseek-r1-distill-qwen-14b": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
     MAX_TOKEN_OUTPUT_LENGTH: 131000,
@@ -507,7 +521,7 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 8192,
     MAX_CONTEXT_LENGTH: 1000000
   },
-  "perplexity/llama-3.1-sonar-large-128k-online": {
+  "perplexity/sonar": {
     MIN_TEMPERATURE: 0.0,
     MAX_TEMPERATURE: 1.0,
     MAX_TOKEN_OUTPUT_LENGTH: 127072,

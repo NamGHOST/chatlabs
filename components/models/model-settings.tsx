@@ -74,7 +74,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "gemini-1.5-flash-latest": false,
 
   //openrouter models
-  "openai/o1-mini": false,
+  "openai/o3-mini": false,
   "openai/o1": false,
   "openai/gpt-4o-2024-11-20": false,
   "openai/gpt-4o-mini": true,
@@ -94,10 +94,12 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "mistralai/pixtral-large-2411": false,
   "microsoft/wizardlm-2-8x22b": false,
   "meta-llama/llama-3.1-405b-instruct": false,
-  "perplexity/llama-3.1-sonar-huge-128k-online": false,
+  "perplexity/sonar-reasoning": false,
   "deepseek/deepseek-chat": true,
   "deepseek/deepseek-r1": true,
   "deepseek/deepseek-r1-distill-llama-70b": true,
+  "deepseek/deepseek-r1-distill-qwen-32b": true,
+  "deepseek/deepseek-r1-distill-qwen-14b": true,
 
   "qwen/qwen-2.5-72b-instruct": false,
   "qwen/qwen-2-vl-72b-instruct": false,
@@ -112,7 +114,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "meta-llama/llama-3.2-11b-vision-instruct": false,
   "meta-llama/llama-3.3-70b-instruct": true,
 
-  "perplexity/llama-3.1-sonar-large-128k-online": false,
+  "perplexity/sonar": false,
   "x-ai/grok-2-1212": false,
   "nvidia/llama-3.1-nemotron-70b-instruct": false,
 

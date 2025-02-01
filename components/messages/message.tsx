@@ -64,10 +64,14 @@ interface MessageProps {
   onSelectCodeBlock?: (codeBlock: ChatMessageCodeBlock | null) => void
   isExperimentalCodeEditor?: boolean
   showResponseTime?: boolean
+  include_reasoning?: boolean
 }
 
 const ThinkingDisplay: React.FC<{ content: string }> = ({ content }) => {
-  const lines = content.split("\n").filter(line => line.trim())
+  const lines = content
+    .split("\n")
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
 
   return (
     <motion.div
@@ -86,6 +90,7 @@ const ThinkingDisplay: React.FC<{ content: string }> = ({ content }) => {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
+            className="whitespace-pre-wrap"
           >
             {line}
           </motion.div>
@@ -96,13 +101,15 @@ const ThinkingDisplay: React.FC<{ content: string }> = ({ content }) => {
 }
 
 const processMessageContent = (content: string) => {
-  if (content.includes("<think>") && content.includes("</think>")) {
-    const parts = content.split("</think>")
-    const thinkingContent = parts[0].split("<think>")[1]
-    const responseContent = parts[1].trim()
+  const thinkMatch = content.match(/<think>([\s\S]*?)<\/think>/)
+  if (thinkMatch) {
+    const thinkingContent = thinkMatch[1].trim()
+    const responseContent = content
+      .replace(/<think>[\s\S]*?<\/think>\n*/, "")
+      .trim()
     return { thinkingContent, responseContent }
   }
-  return { thinkingContent: null, responseContent: content }
+  return { thinkingContent: null, responseContent: content.trim() }
 }
 
 export const Message: FC<MessageProps> = ({
