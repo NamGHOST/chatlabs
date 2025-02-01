@@ -17,22 +17,52 @@ let lastCallTime = 0
 const MIN_CALL_INTERVAL = 1000 // 1 second
 const MAX_RETRIES = 3
 
+// Add a prompt to inform users about potential delays
+const INITIALIZATION_PROMPT =
+  "Initializing Yahoo Finance connection. This may take a few seconds..."
+
 async function getYahooFinanceInstance() {
   for (let i = 0; i < MAX_RETRIES; i++) {
     try {
-      // Create a new instance and force a fresh authentication
+      // Create a new instance and suppress notices
       const yf = yahooFinance
-      // Force a new crumb by making a test query
-      await yf.quote("AAPL", { fields: ["symbol"] })
+      // Suppress the survey notice
+      yf.suppressNotices(["yahooSurvey"])
+
+      // Add delay between retries to avoid rate limiting
+      if (i > 0) {
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      }
+
+      // Force a new crumb by making a test query with more robust error handling
+      try {
+        await yf.quote("AAPL", {
+          fields: ["symbol"]
+        })
+      } catch (queryError: unknown) {
+        if (queryError instanceof Error) {
+          console.warn(
+            "Initial test query failed, but continuing:",
+            queryError.message
+          )
+        }
+        // Continue anyway as sometimes the test query fails but subsequent queries work
+      }
+
       return yf
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred"
+      console.error(
+        `Yahoo Finance initialization attempt ${i + 1} failed:`,
+        errorMessage
+      )
+
       if (i === MAX_RETRIES - 1) {
         throw new Error(
-          "Failed to initialize Yahoo Finance after multiple attempts"
+          `Failed to initialize Yahoo Finance after ${MAX_RETRIES} attempts. Please try again later.`
         )
       }
-      // Wait longer between retries (2 seconds)
-      await new Promise(resolve => setTimeout(resolve, 2000))
     }
   }
   throw new Error("Failed to initialize Yahoo Finance")
@@ -80,6 +110,58 @@ function formatOptionsResponse(
   }
 }
 
+function formatStockResponse(
+  quote: any,
+  historicalData: any,
+  params: { symbol: string; range?: string }
+) {
+  const priceChange = quote.regularMarketChange || 0
+  const changePercent = quote.regularMarketChangePercent || 0
+  const marketStatus =
+    quote.marketState === "REGULAR"
+      ? "during market hours"
+      : "in after-hours trading"
+
+  // Calculate some basic statistics if historical data is available
+  let historicalStats = null
+  if (historicalData && historicalData.close) {
+    const prices = historicalData.close.filter(
+      (p: number) => p !== null && !isNaN(p)
+    )
+    if (prices.length > 0) {
+      const high = Math.max(...prices)
+      const low = Math.min(...prices)
+      const avg =
+        prices.reduce((a: number, b: number) => a + b, 0) / prices.length
+
+      historicalStats = {
+        period: params.range || "N/A",
+        highestPrice: high.toFixed(2),
+        lowestPrice: low.toFixed(2),
+        averagePrice: avg.toFixed(2),
+        dataPoints: prices.length
+      }
+    }
+  }
+
+  return {
+    summary: `${quote.symbol} is trading at $${quote.regularMarketPrice} ${marketStatus}, ${priceChange >= 0 ? "up" : "down"} $${Math.abs(priceChange).toFixed(2)} (${Math.abs(changePercent).toFixed(2)}%) with a volume of ${quote.regularMarketVolume?.toLocaleString()} shares.`,
+    currentData: {
+      price: quote.regularMarketPrice,
+      change: {
+        value: priceChange.toFixed(2),
+        percentage: changePercent.toFixed(2) + "%"
+      },
+      volume: quote.regularMarketVolume?.toLocaleString(),
+      marketCap: quote.marketCap
+        ? `$${(quote.marketCap / 1e9).toFixed(2)}B`
+        : "N/A",
+      dayRange: `$${quote.regularMarketDayLow} - $${quote.regularMarketDayHigh}`
+    },
+    historicalStats
+  }
+}
+
 const getStockData: ToolFunction = {
   id: "get_stock_data",
   description: "Get real-time and historical stock data for a given symbol",
@@ -109,6 +191,8 @@ const getStockData: ToolFunction = {
       if ("parameters" in params) {
         params = params.parameters
       }
+
+      console.log(INITIALIZATION_PROMPT)
 
       // Add symbol validation
       if (!params.symbol.match(/^[A-Za-z.]+$/)) {
@@ -150,84 +234,52 @@ const getStockData: ToolFunction = {
             ]
             if (!validRanges.includes(params.range)) {
               throw new Error(
-                `Invalid range. Must be one of: ${validRanges.join(", ")}`
+                `Invalid range parameter. Valid ranges are: ${validRanges.join(", ")}`
               )
             }
 
-            const endDate = new Date()
-            const startDate = new Date()
-            switch (params.range) {
-              case "1d":
-                startDate.setDate(startDate.getDate() - 1)
-                break
-              case "5d":
-                startDate.setDate(startDate.getDate() - 5)
-                break
-              case "1mo":
-                startDate.setMonth(startDate.getMonth() - 1)
-                break
-              case "3mo":
-                startDate.setMonth(startDate.getMonth() - 3)
-                break
-              case "6mo":
-                startDate.setMonth(startDate.getMonth() - 6)
-                break
-              case "1y":
-                startDate.setFullYear(startDate.getFullYear() - 1)
-                break
-              default:
-                startDate.setMonth(startDate.getMonth() - 1) // default to 1mo
-            }
-
-            historicalData = await yf.historical(params.symbol, {
-              period1: startDate,
-              period2: endDate,
-              interval: "1d"
+            historicalData = await yf.chart(params.symbol, {
+              period1: new Date(
+                Date.now() -
+                  (params.range === "1d"
+                    ? 24 * 60 * 60 * 1000
+                    : 7 * 24 * 60 * 60 * 1000)
+              ),
+              period2: new Date(),
+              interval: params.range === "1d" ? "5m" : "1d"
             })
           }
 
           // Enhanced result formatting with more context for LLM
-          const priceChange = quote.regularMarketChange || 0
-          const changePercent = quote.regularMarketChangePercent || 0
-          const marketStatus =
-            quote.marketState === "REGULAR"
-              ? "during market hours"
-              : "in after-hours trading"
+          const formattedResponse = formatStockResponse(
+            quote,
+            historicalData,
+            params
+          )
+          return formattedResponse
+        } catch (error: unknown) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error occurred"
+          console.error(
+            `Yahoo Finance retrieval attempt ${i + 1} failed:`,
+            errorMessage
+          )
 
-          return {
-            quote: {
-              symbol: quote.symbol,
-              price: quote.regularMarketPrice,
-              change: priceChange,
-              changePercent: changePercent,
-              volume: quote.regularMarketVolume,
-              marketCap: quote.marketCap,
-              high: quote.regularMarketDayHigh,
-              low: quote.regularMarketDayLow,
-              summary: `${quote.symbol} is trading at $${quote.regularMarketPrice} ${marketStatus}, ${priceChange >= 0 ? "up" : "down"} $${Math.abs(priceChange).toFixed(2)} (${Math.abs(changePercent).toFixed(2)}%) with a volume of ${quote.regularMarketVolume?.toLocaleString()} shares.`
-            },
-            historicalData: historicalData?.map((day: YahooFinanceDay) => ({
-              date: day.date,
-              open: day.open,
-              high: day.high,
-              low: day.low,
-              close: day.close,
-              volume: day.volume
-            }))
-          }
-        } catch (error) {
           if (i === MAX_RETRIES - 1) {
-            throw error
+            throw new Error(
+              `Failed to retrieve data from Yahoo Finance after ${MAX_RETRIES} attempts. Please try again later.`
+            )
           }
-          // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, 1000))
         }
       }
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Failed to fetch stock data: ${error.message}`)
-      }
-      throw new Error("Failed to fetch stock data: Unknown error occurred")
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred"
+      console.error("Error in getStockData:", errorMessage)
+
+      throw new Error(
+        `Failed to retrieve data from Yahoo Finance. Please try again later. Error: ${errorMessage}`
+      )
     }
   }
 }
@@ -260,6 +312,8 @@ const getOptionChain: ToolFunction = {
       if ("parameters" in params) {
         params = params.parameters
       }
+
+      console.log(INITIALIZATION_PROMPT)
 
       // Add symbol validation
       if (!params.symbol.match(/^[A-Za-z.]+$/)) {
@@ -305,11 +359,12 @@ const getOptionChain: ToolFunction = {
 
       const options = await yf.options(params.symbol, queryOptions)
       return formatOptionsResponse(options, params)
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Failed to fetch option data: ${error.message}`)
-      }
-      throw new Error("Failed to fetch option data: Unknown error occurred")
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred"
+      console.error("Error in getOptionChain:", errorMessage)
+
+      throw new Error(`Failed to fetch option data: ${errorMessage}`)
     }
   }
 }

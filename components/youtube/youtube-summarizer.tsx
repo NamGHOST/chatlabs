@@ -29,6 +29,11 @@ interface SummaryData {
   fullTranscript: string
   keyPoints: string[]
   overview: string
+  detectedLanguage?: string
+  timeline: Array<{
+    time: string
+    content: string
+  }>
 }
 
 export const YouTubeSummarizer = () => {
@@ -42,17 +47,35 @@ export const YouTubeSummarizer = () => {
   } | null>(null)
   const [videoId, setVideoId] = useState<string | null>(null)
 
-  const [summaryData, setSummaryData] = useState<{
-    summary: string
-    keyPoints: string[]
-    timeline: Array<{
-      time: string
-      content: string
-    }>
-    overview: string
-  } | null>(null)
+  const [summaryData, setSummaryData] = useState<SummaryData | null>(null)
 
   const [language, setLanguage] = useState("english")
+  const [sourceLanguage, setSourceLanguage] = useState("auto")
+
+  const languageOptions = [
+    { value: "english", label: "English" },
+    { value: "chinese", label: "Chinese (繁體中文)" },
+    { value: "japanese", label: "Japanese (日本語)" },
+    { value: "korean", label: "Korean (한국어)" },
+    { value: "spanish", label: "Spanish (Español)" },
+    { value: "french", label: "French (Français)" },
+    { value: "german", label: "German (Deutsch)" },
+    { value: "vietnamese", label: "Vietnamese (Tiếng Việt)" },
+    { value: "thai", label: "Thai (ภาษาไทย)" }
+  ]
+
+  const sourceLanguageOptions = [
+    { value: "auto", label: "Auto Detect" },
+    { value: "ja", label: "Japanese (日本語)" },
+    { value: "en", label: "English" },
+    { value: "zh", label: "Chinese (中文)" },
+    { value: "ko", label: "Korean (한국어)" },
+    { value: "es", label: "Spanish (Español)" },
+    { value: "fr", label: "French (Français)" },
+    { value: "de", label: "German (Deutsch)" },
+    { value: "vi", label: "Vietnamese (Tiếng Việt)" },
+    { value: "th", label: "Thai (ภาษาไทย)" }
+  ]
 
   const handleSummarize = async () => {
     try {
@@ -75,7 +98,10 @@ export const YouTubeSummarizer = () => {
       const captionsResponse = await fetch("/api/youtube", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoId })
+        body: JSON.stringify({
+          videoId,
+          language: sourceLanguage
+        })
       })
 
       const captionsData = await captionsResponse.json()
@@ -103,7 +129,11 @@ export const YouTubeSummarizer = () => {
           content: sub.text
         })),
         keyPoints: summaryData.keyPoints,
-        overview: summaryData.overview
+        overview: summaryData.overview,
+        fullTranscript: captionsData.subtitles
+          .map((sub: any) => sub.text)
+          .join(" "),
+        detectedLanguage: captionsData.detectedLanguage
       })
 
       setVideoInfo({
@@ -179,10 +209,20 @@ export const YouTubeSummarizer = () => {
     const link = document.createElement("a")
     link.href = url
     link.download = `${filename}.${format}`
+    link.style.display = "none"
     document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+
+    try {
+      link.click()
+    } finally {
+      // Cleanup
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link)
+        }
+        URL.revokeObjectURL(url)
+      }, 100)
+    }
   }
 
   return (
@@ -201,15 +241,28 @@ export const YouTubeSummarizer = () => {
           onChange={e => setUrl(e.target.value)}
           className="flex-1"
         />
-        <Select value={language} onValueChange={setLanguage}>
+        <Select value={sourceLanguage} onValueChange={setSourceLanguage}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select Language" />
+            <SelectValue placeholder="Select Source Language" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="english">English</SelectItem>
-            <SelectItem value="chinese">Chinese</SelectItem>
-            <SelectItem value="japanese">Japanese</SelectItem>
-            <SelectItem value="korean">Korean</SelectItem>
+            {sourceLanguageOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={language} onValueChange={setLanguage}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Summary Language" />
+          </SelectTrigger>
+          <SelectContent>
+            {languageOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Button onClick={handleSummarize} disabled={loading}>
