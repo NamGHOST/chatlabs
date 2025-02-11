@@ -68,6 +68,7 @@ interface MessageProps {
 }
 
 const ThinkingDisplay: React.FC<{ content: string }> = ({ content }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const lines = content
     .split("\n")
     .map(line => line.trim())
@@ -79,23 +80,33 @@ const ThinkingDisplay: React.FC<{ content: string }> = ({ content }) => {
       animate={{ opacity: 1 }}
       className="bg-secondary/30 my-4 rounded-lg p-4 font-mono text-sm"
     >
-      <div className="mb-2 flex items-center space-x-2 text-blue-500">
+      <div
+        className="mb-2 flex cursor-pointer items-center space-x-2 text-blue-500"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
         <IconBrain size={16} />
         <span className="font-semibold">Thought Process</span>
+        {isCollapsed ? (
+          <IconCaretRightFilled size={16} />
+        ) : (
+          <IconCaretDownFilled size={16} />
+        )}
       </div>
-      <div className="text-muted-foreground space-y-2">
-        {lines.map((line, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="whitespace-pre-wrap"
-          >
-            {line}
-          </motion.div>
-        ))}
-      </div>
+      {!isCollapsed && (
+        <div className="text-muted-foreground space-y-2">
+          {lines.map((line, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="whitespace-pre-wrap"
+            >
+              {line}
+            </motion.div>
+          ))}
+        </div>
+      )}
     </motion.div>
   )
 }
@@ -110,6 +121,55 @@ const processMessageContent = (content: string) => {
     return { thinkingContent, responseContent }
   }
   return { thinkingContent: null, responseContent: content.trim() }
+}
+
+const ResponseContent: React.FC<{
+  content: string
+  isGenerating: boolean
+  isLast: boolean
+  codeBlocks?: ChatMessageCodeBlock[]
+  onSelectCodeBlock?: (codeBlock: ChatMessageCodeBlock | null) => void
+  isExperimentalCodeEditor?: boolean
+}> = ({
+  content,
+  isGenerating,
+  isLast,
+  codeBlocks,
+  onSelectCodeBlock,
+  isExperimentalCodeEditor
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  if (isCollapsed) {
+    return (
+      <div
+        className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center space-x-2"
+        onClick={() => setIsCollapsed(false)}
+      >
+        <span className="font-light">Show</span>
+        <IconCaretRightFilled size={16} />
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div
+        className="text-muted-foreground hover:text-foreground mb-2 flex cursor-pointer items-center space-x-2 border-b pb-2"
+        onClick={() => setIsCollapsed(true)}
+      >
+        <span className="font-light">Hide</span>
+        <IconCaretDownFilled size={16} />
+      </div>
+      <MessageMarkdown
+        isGenerating={isGenerating && isLast}
+        codeBlocks={codeBlocks}
+        content={content}
+        onSelectCodeBlock={onSelectCodeBlock}
+        experimental_code_editor={isExperimentalCodeEditor}
+      />
+    </div>
+  )
 }
 
 export const Message: FC<MessageProps> = ({
@@ -136,18 +196,13 @@ export const Message: FC<MessageProps> = ({
   const editInputRef = useRef<HTMLTextAreaElement>(null)
 
   const [editedMessage, setEditedMessage] = useState(message.content)
-
   const [showImagePreview, setShowImagePreview] = useState(false)
   const [selectedImage, setSelectedImage] = useState<MessageImage | null>(null)
-
   const [showFileItemPreview, setShowFileItemPreview] = useState(false)
   const [selectedFileItem, setSelectedFileItem] =
     useState<Tables<"file_items"> | null>(null)
-
   const [viewSources, setViewSources] = useState(false)
-
   const [isVoiceToTextPlaying, setIsVoiceToTextPlaying] = useState(false)
-
   const [images, setImages] = useState<string[]>([])
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -561,12 +616,13 @@ export const Message: FC<MessageProps> = ({
                     maxRows={20}
                   />
                 ) : (
-                  <MessageMarkdown
-                    isGenerating={isGenerating && isLast}
-                    codeBlocks={codeBlocks}
+                  <ResponseContent
                     content={responseContent}
+                    isGenerating={isGenerating}
+                    isLast={isLast}
+                    codeBlocks={codeBlocks}
                     onSelectCodeBlock={onSelectCodeBlock}
-                    experimental_code_editor={isExperimentalCodeEditor}
+                    isExperimentalCodeEditor={isExperimentalCodeEditor}
                   />
                 )}
               </>

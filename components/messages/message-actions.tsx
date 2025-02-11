@@ -123,18 +123,20 @@ export const MessageActions: FC<MessageActionsProps> = ({
         }
       />
 
-      <WithTooltip
-        delayDuration={1000}
-        side="bottom"
-        display={<div>Regenerate</div>}
-        trigger={
-          <IconRepeat
-            className="hidden cursor-pointer hover:opacity-50 group-[.is-last]:block"
-            size={MESSAGE_ICON_SIZE}
-            onClick={onRegenerate}
-          />
-        }
-      />
+      {isAssistant && isLast && (
+        <WithTooltip
+          delayDuration={1000}
+          side="bottom"
+          display={<div>Regenerate</div>}
+          trigger={
+            <IconRepeat
+              className="hidden cursor-pointer hover:opacity-50 group-hover:block"
+              size={MESSAGE_ICON_SIZE}
+              onClick={onRegenerate}
+            />
+          }
+        />
+      )}
 
       {/* {1 > 0 && isAssistant && <MessageReplies />} */}
     </div>
