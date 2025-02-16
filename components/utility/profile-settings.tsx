@@ -690,19 +690,19 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                   "Anthropic API Key",
                   anthropicAPIKey,
                   setAnthropicAPIKey,
-                  profile?.plan === "free"
+                  false
                 )}
                 {renderAPIKeyInput(
                   "Google Gemini API Key",
                   googleGeminiAPIKey,
                   setGoogleGeminiAPIKey,
-                  profile?.plan === "free"
+                  false
                 )}
                 {renderAPIKeyInput(
                   "Mistral API Key",
                   mistralAPIKey,
                   setMistralAPIKey,
-                  profile?.plan === "free"
+                  false
                 )}
                 {renderAPIKeyInput(
                   "Groq API Key",
@@ -720,7 +720,7 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                   "OpenRouter API Key",
                   openrouterAPIKey,
                   setOpenrouterAPIKey,
-                  profile?.plan === "free"
+                  false
                 )}
               </div>
               {profile?.plan === "free" && (
