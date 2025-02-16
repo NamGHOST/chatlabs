@@ -121,7 +121,7 @@ export function parseOpenRouterModelName(modelId: string): Partial<LLM> {
 function parseSupportedModelsFromEnv() {
   let SUPPORTED_OPENROUTER_MODELS = [
     "openai/o3-mini",
-    "openai/o1",
+    "openai/o3-mini-high",
     "openai/gpt-4o-2024-11-20",
     "openai/gpt-4o-mini",
 
@@ -131,7 +131,7 @@ function parseSupportedModelsFromEnv() {
 
     "google/gemini-pro-1.5",
     "google/gemini-2.0-flash-thinking-exp:free",
-    "google/gemini-2.0-flash-exp:free",
+    "google/gemini-2.0-flash-001",
     "google/gemini-flash-1.5-8b",
     "google/gemini-exp-1114",
 
@@ -161,7 +161,9 @@ function parseSupportedModelsFromEnv() {
     "amazon/nova-lite-v1",
     "amazon/nova-micro-v1",
     "amazon/nova-pro-v1",
-    "eva-unit-01/eva-qwen-2.5-72b"
+    "deepseek/deepseek-r1-distill-qwen-1.5b",
+    "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+    "cognitivecomputations/dolphin3.0-mistral-24b:free"
   ]
 
   if (process.env.NEXT_PUBLIC_OPENROUTER_MODELS) {

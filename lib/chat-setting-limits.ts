@@ -348,7 +348,7 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 65536,
     MAX_CONTEXT_LENGTH: 128000
   },
-  "openai/o1": {
+  "openai/o3-mini-high": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
     MAX_TOKEN_OUTPUT_LENGTH: 32768,
@@ -395,7 +395,7 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 8000,
     MAX_CONTEXT_LENGTH: 40000
   },
-  "google/gemini-2.0-flash-exp:free": {
+  "google/gemini-2.0-flash-001": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
     MAX_TOKEN_OUTPUT_LENGTH: 8000,
@@ -581,10 +581,22 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 4096,
     MAX_CONTEXT_LENGTH: 300000
   },
-  "eva-unit-01/eva-qwen-2.5-72b": {
+  "deepseek/deepseek-r1-distill-qwen-1.5b": {
     MIN_TEMPERATURE: 0.0,
     MAX_TEMPERATURE: 1.0,
     MAX_TOKEN_OUTPUT_LENGTH: 32768,
-    MAX_CONTEXT_LENGTH: 32768
+    MAX_CONTEXT_LENGTH: 131000
+  },
+  "cognitivecomputations/dolphin3.0-r1-mistral-24b:free": {
+    MIN_TEMPERATURE: 0.0,
+    MAX_TEMPERATURE: 1.0,
+    MAX_TOKEN_OUTPUT_LENGTH: 4096,
+    MAX_CONTEXT_LENGTH: 33000
+  },
+  "cognitivecomputations/dolphin3.0-mistral-24b:free": {
+    MIN_TEMPERATURE: 0.0,
+    MAX_TEMPERATURE: 1.0,
+    MAX_TOKEN_OUTPUT_LENGTH: 4096,
+    MAX_CONTEXT_LENGTH: 33000
   }
 }

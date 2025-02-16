@@ -75,7 +75,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
 
   //openrouter models
   "openai/o3-mini": false,
-  "openai/o1": false,
+  "openai/o3-mini-high": false,
   "openai/gpt-4o-2024-11-20": false,
   "openai/gpt-4o-mini": true,
 
@@ -85,7 +85,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
 
   "google/gemini-pro-1.5": false,
   "google/gemini-pro-vision": false,
-  "google/gemini-2.0-flash-exp:free": true,
+  "google/gemini-2.0-flash-001": true,
   "google/gemini-2.0-flash-thinking-exp:free": false,
   "google/gemini-exp-1114": false,
 
@@ -121,7 +121,9 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "amazon/nova-lite-v1": false,
   "amazon/nova-micro-v1": false,
   "amazon/nova-pro-v1": false,
-  "eva-unit-01/eva-qwen-2.5-72b": false,
+  "deepseek/deepseek-r1-distill-qwen-1.5b": false,
+  "cognitivecomputations/dolphin3.0-r1-mistral-24b:free": false,
+  "cognitivecomputations/dolphin3.0-mistral-24b:free": false,
 
   ///groq
   "gemma-7b-it": false,

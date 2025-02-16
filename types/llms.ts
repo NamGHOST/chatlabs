@@ -91,12 +91,12 @@ export type LLMTier = "free" | "pro" | "ultimate"
 // Update the LLM interface to include categories
 export type OpenRouterLLMID =
   | "openai/o3-mini"
-  | "openai/o1"
+  | "openai/o3-mini-high"
   | "openai/gpt-4o-2024-11-20"
   | "openai/gpt-4o-mini"
   | "google/gemini-pro-1.5"
   | "google/gemini-pro-vision"
-  | "google/gemini-2.0-flash-exp:free"
+  | "google/gemini-2.0-flash-001"
   | "google/gemini-2.0-flash-thinking-exp:free"
   | "google/gemini-flash-1.5-8b"
   | "anthropic/claude-3-haiku"
@@ -128,7 +128,9 @@ export type OpenRouterLLMID =
   | "amazon/nova-lite-v1"
   | "amazon/nova-micro-v1"
   | "amazon/nova-pro-v1"
-  | "eva-unit-01/eva-qwen-2.5-72b"
+  | "deepseek/deepseek-r1-distill-qwen-1.5b"
+  | "cognitivecomputations/dolphin3.0-r1-mistral-24b:free"
+  | "cognitivecomputations/dolphin3.0-mistral-24b:free"
 
 export interface LLM {
   modelId: LLMID

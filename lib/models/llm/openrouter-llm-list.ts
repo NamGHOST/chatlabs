@@ -19,16 +19,19 @@ const O3_MINI: LLM = {
   new: true
 }
 
-const O1_PREVIEW: LLM = {
-  modelId: "openai/o1",
-  modelName: "O1",
+const O3_MINI_HIGH: LLM = {
+  modelId: "openai/o3-mini-high",
+  modelName: "O3 Mini High",
   provider: "openrouter",
-  hostedId: "o1",
+  hostedId: "o3-mini-high",
   platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: true,
+  imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "ultimate" as LLMTier
+  tier: "pro" as LLMTier,
+  categories: [CATEGORIES.TECHNOLOGY],
+  include_reasoning: true,
+  new: true
 }
 
 const GPT_4O: LLM = {
@@ -95,10 +98,10 @@ const GEMINI_FLASH_20_FLASH_THINKING: LLM = {
 }
 
 const GEMINI_FLASH_20_FLASH: LLM = {
-  modelId: "google/gemini-2.0-flash-exp:free",
-  modelName: "Gemini Flash 2.0 Exp",
+  modelId: "google/gemini-2.0-flash-001",
+  modelName: "Gemini Flash 2.0",
   provider: "openrouter",
-  hostedId: "gemini-flash-2.0-exp",
+  hostedId: "gemini-flash-2.0",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
   tools: false,
@@ -480,21 +483,50 @@ const AMAZON_NOVA_PRO_V1: LLM = {
   tier: "pro" as LLMTier
 }
 
-const EVA_QWEN_2_5_72B: LLM = {
-  modelId: "eva-unit-01/eva-qwen-2.5-72b",
-  modelName: "Eva Qwen 2.5 72B",
+const DEEPSEEK_R1_DISTILL_QWEN_15B: LLM = {
+  modelId: "deepseek/deepseek-r1-distill-qwen-1.5b",
+  modelName: "DeepSeek R1 Distill Qwen 1.5B",
   provider: "openrouter",
-  hostedId: "eva-qwen-2.5-72b",
+  hostedId: "deepseek-r1-distill-qwen-1.5b",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "free" as LLMTier
+  tier: "free" as LLMTier,
+  include_reasoning: true,
+  new: true
+}
+
+const DOLPHIN_30_R1_MISTRAL_24B: LLM = {
+  modelId: "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
+  modelName: "Dolphin 3.0 R1 Mistral 24B",
+  provider: "openrouter",
+  hostedId: "dolphin3.0-r1-mistral-24b",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  include_reasoning: true,
+  new: true
+}
+
+const DOLPHIN_30_MISTRAL_24B: LLM = {
+  modelId: "cognitivecomputations/dolphin3.0-mistral-24b:free",
+  modelName: "Dolphin 3.0 Mistral 24B",
+  provider: "openrouter",
+  hostedId: "dolphin3.0-mistral-24b",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "free" as LLMTier,
+  new: true
 }
 
 export const OPENROUTER_LLM_LIST: LLM[] = [
   O3_MINI,
-  O1_PREVIEW,
+  O3_MINI_HIGH,
   GPT_4O,
   GPT_4O_MINI,
   GEMINI_PRO_15,
@@ -531,14 +563,16 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   AMAZON_NOVA_LITE_V1,
   AMAZON_NOVA_MICRO_V1,
   AMAZON_NOVA_PRO_V1,
-  EVA_QWEN_2_5_72B
+  DEEPSEEK_R1_DISTILL_QWEN_15B,
+  DOLPHIN_30_R1_MISTRAL_24B,
+  DOLPHIN_30_MISTRAL_24B
 ]
 
 //- openai/gpt-4o-2024-11-20
 //- openai/gpt-4o-mini
 //- google/gemini-pro-1.5
 //- google/gemini-2.0-flash-thinking-exp:free
-//- google/gemini-2.0-flash-exp:free
+//- google/gemini-2.0-flash-001
 //- google/gemini-pro-vision
 //- anthropic/claude-3-haiku
 //- anthropic/claude-3-5-haiku
@@ -548,4 +582,4 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
 //- openai/o3-mini
 //- openai/o1
 //- google/gemini-2.0-flash-thinking-exp:free
-//- google/gemini-2.0-flash-exp:free
+//- google/gemini-2.0-flash-001
