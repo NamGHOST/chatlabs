@@ -690,13 +690,13 @@ export const ProfileSettings: FC<ProfileSettingsProps> = ({ isCollapsed }) => {
                   "Anthropic API Key",
                   anthropicAPIKey,
                   setAnthropicAPIKey,
-                  false
+                  profile?.plan === "free"
                 )}
                 {renderAPIKeyInput(
                   "Google Gemini API Key",
                   googleGeminiAPIKey,
                   setGoogleGeminiAPIKey,
-                  false
+                  profile?.plan === "free"
                 )}
                 {renderAPIKeyInput(
                   "Mistral API Key",
