@@ -67,6 +67,7 @@ export const Sidebar: FC = () => {
   } = useContext(ChatbotUIContext)
   const { handleNewChat } = useChatHandler()
   const [activeSubmenu, setActiveSubmenu] = useState<ContentType | null>(null)
+  const [showMobileFeatures, setShowMobileFeatures] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(() => {
     const storedCollapsedState = localStorage.getItem("sidebarCollapsed")
     return storedCollapsedState === "true"
@@ -359,67 +360,88 @@ export const Sidebar: FC = () => {
 
           <div className="flex grow flex-col overflow-y-auto">
             <div className="p-2">
-              <SidebarItem
-                icon={<IconBulb {...iconProps} />}
-                label={t("Prompts")}
-                onClick={() => handleSubmenuOpen("prompts")}
-                hasSubmenu
-                isCollapsed={isCollapsed}
-              />
-              <SidebarItem
-                icon={<IconRobot {...iconProps} />}
-                label={t("Assistants")}
-                onClick={() => handleSubmenuOpen("assistants")}
-                hasSubmenu
-                isCollapsed={isCollapsed}
-              />
-              <SidebarItem
-                icon={<IconFolder {...iconProps} />}
-                label={t("Files")}
-                onClick={() => handleSubmenuOpen("files")}
-                hasSubmenu
-                isCollapsed={isCollapsed}
-              />
-              <SidebarItem
-                icon={<IconPuzzle {...iconProps} />}
-                label={t("Plugins")}
-                onClick={() => handleSubmenuOpen("tools")}
-                hasSubmenu
-                isCollapsed={isCollapsed}
-              />
-              <Link href="/splitview" target="_blank" passHref>
+              {/* Mobile features toggle button */}
+              <div className="mb-2 md:hidden">
+                <Button
+                  variant="ghost"
+                  className="flex w-full items-center justify-between"
+                  onClick={() => setShowMobileFeatures(!showMobileFeatures)}
+                >
+                  <span>Additional Features</span>
+                  <IconChevronRight
+                    className={cn(
+                      "transition-transform",
+                      showMobileFeatures ? "rotate-90" : ""
+                    )}
+                    size={20}
+                  />
+                </Button>
+              </div>
+
+              {/* Features section - show based on mobile toggle or desktop */}
+              <div className={cn("md:block", !showMobileFeatures && "hidden")}>
                 <SidebarItem
-                  icon={<IconLayoutColumns {...iconProps} />}
-                  label={t("Split view")}
-                  onClick={() => {}} // This onClick is now optional
+                  icon={<IconBulb {...iconProps} />}
+                  label={t("Prompts")}
+                  onClick={() => handleSubmenuOpen("prompts")}
+                  hasSubmenu
                   isCollapsed={isCollapsed}
                 />
-              </Link>
-              <Link href="/memo-draw" target="_blank" passHref>
                 <SidebarItem
-                  icon={<IconFileAnalytics {...iconProps} />}
-                  label={t("Memo draw")}
-                  onClick={() => {}}
+                  icon={<IconRobot {...iconProps} />}
+                  label={t("Assistants")}
+                  onClick={() => handleSubmenuOpen("assistants")}
+                  hasSubmenu
                   isCollapsed={isCollapsed}
                 />
-              </Link>
-              <SidebarMeetingItem />
-              <Link href="/image-generation" target="_blank" passHref>
                 <SidebarItem
-                  icon={<IconPhotoAi {...iconProps} />}
-                  label={t("Text to Image")}
-                  onClick={() => {}}
+                  icon={<IconFolder {...iconProps} />}
+                  label={t("Files")}
+                  onClick={() => handleSubmenuOpen("files")}
+                  hasSubmenu
                   isCollapsed={isCollapsed}
                 />
-              </Link>
-              <Link href="/youtube-summarizer" target="_blank" passHref>
                 <SidebarItem
-                  icon={<IconBrandYoutube {...iconProps} />}
-                  label={t("YouTube Summarizer")}
-                  onClick={() => {}}
+                  icon={<IconPuzzle {...iconProps} />}
+                  label={t("Plugins")}
+                  onClick={() => handleSubmenuOpen("tools")}
+                  hasSubmenu
                   isCollapsed={isCollapsed}
                 />
-              </Link>
+                <Link href="/splitview" target="_blank" passHref>
+                  <SidebarItem
+                    icon={<IconLayoutColumns {...iconProps} />}
+                    label={t("Split view")}
+                    onClick={() => {}}
+                    isCollapsed={isCollapsed}
+                  />
+                </Link>
+                <Link href="/memo-draw" target="_blank" passHref>
+                  <SidebarItem
+                    icon={<IconFileAnalytics {...iconProps} />}
+                    label={t("Memo draw")}
+                    onClick={() => {}}
+                    isCollapsed={isCollapsed}
+                  />
+                </Link>
+                <SidebarMeetingItem />
+                <Link href="/image-generation" target="_blank" passHref>
+                  <SidebarItem
+                    icon={<IconPhotoAi {...iconProps} />}
+                    label={t("Text to Image")}
+                    onClick={() => {}}
+                    isCollapsed={isCollapsed}
+                  />
+                </Link>
+                <Link href="/youtube-summarizer" target="_blank" passHref>
+                  <SidebarItem
+                    icon={<IconBrandYoutube {...iconProps} />}
+                    label={t("YouTube Summarizer")}
+                    onClick={() => {}}
+                    isCollapsed={isCollapsed}
+                  />
+                </Link>
+              </div>
             </div>
 
             <div
@@ -441,7 +463,7 @@ export const Sidebar: FC = () => {
                   contentType="chats"
                   data={dataMap.chats}
                   folders={foldersMap.chats}
-                  onLoadMore={loadMoreChats} // Pass loadMoreChats only for chats
+                  onLoadMore={loadMoreChats}
                 />
               </div>
             </div>
@@ -554,7 +576,8 @@ export const Sidebar: FC = () => {
       profile,
       isPaywallOpen, // Use context's state
       loadMoreChats, // Add loadMoreChats to dependencies
-      searchLoading // Add searchLoading to dependencies
+      searchLoading, // Add searchLoading to dependencies
+      showMobileFeatures
     ]
   )
 }
