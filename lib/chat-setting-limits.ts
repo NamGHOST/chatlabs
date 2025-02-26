@@ -369,7 +369,13 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
   },
 
   // ANTHROPIC MODELS
-  "anthropic/claude-3.5-sonnet": {
+  "anthropic/claude-3.7-sonnet": {
+    MIN_TEMPERATURE: 0,
+    MAX_TEMPERATURE: 1,
+    MAX_TOKEN_OUTPUT_LENGTH: 8192,
+    MAX_CONTEXT_LENGTH: 200000
+  },
+  "anthropic/claude-3.7-sonnet:thinking-exp:free": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
     MAX_TOKEN_OUTPUT_LENGTH: 8192,
@@ -401,11 +407,11 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TOKEN_OUTPUT_LENGTH: 8000,
     MAX_CONTEXT_LENGTH: 1048576
   },
-  "google/gemini-pro-1.5": {
+  "google/gemini-2.0-flash-lite-001": {
     MIN_TEMPERATURE: 0,
     MAX_TEMPERATURE: 1,
     MAX_TOKEN_OUTPUT_LENGTH: 32768,
-    MAX_CONTEXT_LENGTH: 4000000
+    MAX_CONTEXT_LENGTH: 1000000
   },
   "google/gemini-pro-vision": {
     MIN_TEMPERATURE: 0,
@@ -598,5 +604,11 @@ export const CHAT_SETTING_LIMITS: Record<LLMID, ChatSettingLimits> = {
     MAX_TEMPERATURE: 1.0,
     MAX_TOKEN_OUTPUT_LENGTH: 4096,
     MAX_CONTEXT_LENGTH: 33000
+  },
+  "perplexity/r1-1776": {
+    MIN_TEMPERATURE: 0.0,
+    MAX_TEMPERATURE: 1.0,
+    MAX_TOKEN_OUTPUT_LENGTH: 128000,
+    MAX_CONTEXT_LENGTH: 128000
   }
 }

@@ -57,7 +57,7 @@ const KNOWN_MODEL_NAMES: {
     provider: "meta",
     modelName: "Meta Llama 3.3 70B"
   }
-  ///"google/gemini-pro-1.5": {
+  ///"google/gemini-2.0-flash-lite-001": {
   //provider: "google",
   //modelName: "Gemini Pro 1.5",
   //imageInput: true,
@@ -83,7 +83,7 @@ const KNOWN_MODEL_NAMES: {
   //new: true,
   //supportsStreaming: true
   /// },
-  ///"anthropic/claude-3.5-sonnet": {
+  ///"anthropic/claude-3.7-sonnet": {
   //provider: "anthropic",
   //modelName: "Claude 3.5 Sonnet",
   //new: true,
@@ -125,11 +125,12 @@ function parseSupportedModelsFromEnv() {
     "openai/gpt-4o-2024-11-20",
     "openai/gpt-4o-mini",
 
-    "anthropic/claude-3.5-sonnet",
+    "anthropic/claude-3.7-sonnet",
+    "anthropic/claude-3.7-sonnet:thinking-exp:free",
     "anthropic/claude-3-haiku",
     "anthropic/claude-3.5-haiku",
 
-    "google/gemini-pro-1.5",
+    "google/gemini-2.0-flash-lite-001",
     "google/gemini-2.0-flash-thinking-exp:free",
     "google/gemini-2.0-flash-001",
     "google/gemini-flash-1.5-8b",
@@ -163,7 +164,8 @@ function parseSupportedModelsFromEnv() {
     "amazon/nova-pro-v1",
     "deepseek/deepseek-r1-distill-qwen-1.5b",
     "cognitivecomputations/dolphin3.0-r1-mistral-24b:free",
-    "cognitivecomputations/dolphin3.0-mistral-24b:free"
+    "cognitivecomputations/dolphin3.0-mistral-24b:free",
+    "perplexity/r1-1776"
   ]
 
   if (process.env.NEXT_PUBLIC_OPENROUTER_MODELS) {

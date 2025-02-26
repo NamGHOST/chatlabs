@@ -80,10 +80,11 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "openai/gpt-4o-mini": true,
 
   "anthropic/claude-3.5-haiku": false,
-  "anthropic/claude-3.5-sonnet": false,
+  "anthropic/claude-3.7-sonnet": false,
+  "anthropic/claude-3.7-sonnet:thinking-exp:free": false,
   "anthropic/claude-3-haiku": true,
 
-  "google/gemini-pro-1.5": false,
+  "google/gemini-2.0-flash-lite-001": false,
   "google/gemini-pro-vision": false,
   "google/gemini-2.0-flash-001": true,
   "google/gemini-2.0-flash-thinking-exp:free": false,
@@ -95,6 +96,7 @@ export const DEFAULT_MODEL_VISIBILITY: Record<LLMID, boolean> = {
   "microsoft/wizardlm-2-8x22b": false,
   "meta-llama/llama-3.1-405b-instruct": false,
   "perplexity/sonar-reasoning": false,
+  "perplexity/r1-1776": false,
   "deepseek/deepseek-chat": true,
   "deepseek/deepseek-r1": true,
   "deepseek/deepseek-r1-distill-llama-70b": true,

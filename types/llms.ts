@@ -94,14 +94,15 @@ export type OpenRouterLLMID =
   | "openai/o3-mini-high"
   | "openai/gpt-4o-2024-11-20"
   | "openai/gpt-4o-mini"
-  | "google/gemini-pro-1.5"
+  | "google/gemini-2.0-flash-lite-001"
   | "google/gemini-pro-vision"
   | "google/gemini-2.0-flash-001"
   | "google/gemini-2.0-flash-thinking-exp:free"
   | "google/gemini-flash-1.5-8b"
   | "anthropic/claude-3-haiku"
   | "anthropic/claude-3.5-haiku"
-  | "anthropic/claude-3.5-sonnet"
+  | "anthropic/claude-3.7-sonnet"
+  | "anthropic/claude-3.7-sonnet:thinking-exp:free"
   | "databricks/dbrx-instruct"
   | "mistralai/mixtral-8x22b-instruct"
   | "microsoft/wizardlm-2-8x22b"
@@ -131,7 +132,7 @@ export type OpenRouterLLMID =
   | "deepseek/deepseek-r1-distill-qwen-1.5b"
   | "cognitivecomputations/dolphin3.0-r1-mistral-24b:free"
   | "cognitivecomputations/dolphin3.0-mistral-24b:free"
-
+  | "perplexity/r1-1776"
 export interface LLM {
   modelId: LLMID
   modelName: string

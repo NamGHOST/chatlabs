@@ -72,16 +72,17 @@ const GPT_4O_MINI: LLM = {
 }
 
 ///google
-const GEMINI_PRO_15: LLM = {
-  modelId: "google/gemini-pro-1.5",
-  modelName: "Gemini 1.5 Pro",
+const GEMINI_20_FLASH_LITE: LLM = {
+  modelId: "google/gemini-2.0-flash-lite-001",
+  modelName: "Gemini 2.0 Flash Lite",
   provider: "openrouter",
-  hostedId: "gemini-1.5-pro-latest",
+  hostedId: "gemini-2.0-flash-lite-001",
   platformLink: OPENROUTER_PLATFORM_LINK,
-  imageInput: true,
+  imageInput: false,
   tools: false,
   supportsStreaming: true,
-  tier: "pro" as LLMTier
+  tier: "free" as LLMTier,
+  new: true
 }
 
 const GEMINI_FLASH_20_FLASH_THINKING: LLM = {
@@ -135,16 +136,31 @@ const CLAUDE_35_HAIKU: LLM = {
   tier: "pro" as LLMTier
 }
 
-const CLAUDE_35_SONNET: LLM = {
-  modelId: "anthropic/claude-3.5-sonnet",
-  modelName: "Claude 3.5 Sonnet",
+const CLAUDE_37_SONNET: LLM = {
+  modelId: "anthropic/claude-3.7-sonnet",
+  modelName: "Claude 3.7 Sonnet",
   provider: "openrouter",
-  hostedId: "claude-3.5-sonnet",
+  hostedId: "claude-3.7-sonnet",
   platformLink: OPENROUTER_PLATFORM_LINK,
   imageInput: true,
   tools: true,
   supportsStreaming: true,
-  tier: "pro" as LLMTier
+  tier: "pro" as LLMTier,
+  new: true
+}
+
+const CLAUDE_37_SONNET_THINKING: LLM = {
+  modelId: "anthropic/claude-3.7-sonnet:thinking-exp:free",
+  modelName: "Claude 3.7 Sonnet Thinking Exp",
+  provider: "openrouter",
+  hostedId: "claude-3.7-sonnet:thinking-exp",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: true,
+  tools: true,
+  supportsStreaming: true,
+  tier: "pro" as LLMTier,
+  new: true,
+  include_reasoning: true
 }
 
 ///other
@@ -524,18 +540,33 @@ const DOLPHIN_30_MISTRAL_24B: LLM = {
   new: true
 }
 
+const PERPLEXITY_R1_1776: LLM = {
+  modelId: "perplexity/r1-1776",
+  modelName: "Perplexity R1 1776",
+  provider: "openrouter",
+  hostedId: "perplexity-r1-1776",
+  platformLink: OPENROUTER_PLATFORM_LINK,
+  imageInput: false,
+  tools: false,
+  supportsStreaming: true,
+  tier: "pro" as LLMTier,
+  new: true,
+  include_reasoning: true
+}
+
 export const OPENROUTER_LLM_LIST: LLM[] = [
   O3_MINI,
   O3_MINI_HIGH,
   GPT_4O,
   GPT_4O_MINI,
-  GEMINI_PRO_15,
+  GEMINI_20_FLASH_LITE,
   GEMINI_FLASH_20_FLASH_THINKING,
   GEMINI_FLASH_20_FLASH,
   GEMINI_FLASH_15_8B,
   CLAUDE_3_HAIKU,
   CLAUDE_35_HAIKU,
-  CLAUDE_35_SONNET,
+  CLAUDE_37_SONNET,
+  CLAUDE_37_SONNET_THINKING,
   PERPLEXITY_SONAR_REASONING,
   PERPLEXITY_SONAR,
   META_LLAMA_3_1_405B,
@@ -565,18 +596,19 @@ export const OPENROUTER_LLM_LIST: LLM[] = [
   AMAZON_NOVA_PRO_V1,
   DEEPSEEK_R1_DISTILL_QWEN_15B,
   DOLPHIN_30_R1_MISTRAL_24B,
-  DOLPHIN_30_MISTRAL_24B
+  DOLPHIN_30_MISTRAL_24B,
+  PERPLEXITY_R1_1776
 ]
 
 //- openai/gpt-4o-2024-11-20
 //- openai/gpt-4o-mini
-//- google/gemini-pro-1.5
+//- google/gemini-2.0-flash-lite-001
 //- google/gemini-2.0-flash-thinking-exp:free
 //- google/gemini-2.0-flash-001
 //- google/gemini-pro-vision
 //- anthropic/claude-3-haiku
 //- anthropic/claude-3-5-haiku
-//- anthropic/claude-3.5-sonnet
+//- anthropic/claude-3.7-sonnet
 //- meta-llama/llama-3.1-405b-instruct
 //- deepseek/deepseek-chat
 //- openai/o3-mini

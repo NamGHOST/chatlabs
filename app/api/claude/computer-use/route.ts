@@ -115,7 +115,7 @@ export async function POST(request: Request) {
               "X-Title": "Chrome Extension Agent"
             },
             body: JSON.stringify({
-              model: chatSettings.model || "anthropic/claude-3.5-sonnet",
+              model: chatSettings.model || "anthropic/claude-3.7-sonnet",
               messages: messages,
               temperature: chatSettings.temperature || 0.7,
               tools: computerUseTools,
